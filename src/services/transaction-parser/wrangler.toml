@@ -1,0 +1,12 @@
+name = "transaction-parser"
+main = "src/index.ts"
+compatibility_date = "2023-02-16"
+
+[[services]]
+binding = 'TelegramBot'
+service = 'telegram-bot'
+
+[[vars]]
+
+# - FORWARD_EMAIL
+# - SOURCE_EMAIL

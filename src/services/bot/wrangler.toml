@@ -1,0 +1,9 @@
+name = "telegram-bot"
+main = "src/index.ts"
+compatibility_date = "2023-02-16"
+
+# The necessary secrets are:
+# - API_KEY
+# - CHAT_ID
+# - SECRET_TOKEN
+
