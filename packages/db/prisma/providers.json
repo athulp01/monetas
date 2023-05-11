@@ -1,0 +1,32 @@
+[
+  {
+    "name": "HDFC Bank",
+    "icon": "https://asset.brandfetch.io/idxQAAj1t_/id8bPSMu5F.png",
+    "id": "6e7d3e51-3c8d-4b8a-881f-c5864eca0447"
+  },
+  {
+    "name": "ICICI Bank",
+    "icon": "https://asset.brandfetch.io/idJHpX8apR/ids8EgwKY1.png",
+    "id": "98a62cb6-3a15-45a9-af5d-4fe13aef5c74"
+  },
+  {
+    "name": "SBI Bank",
+    "icon": "https://asset.brandfetch.io/id-3TXkPxs/id9yPSIWP_.png",
+    "id": "aa4a0053-04f5-4cde-8e0b-4b5144ca7ada"
+  },
+  {
+    "name": "Axis Bank",
+    "icon": "https://asset.brandfetch.io/id78YVtrRp/idCKxuopm4.png",
+    "id": "2bc3d601-3ed1-47a2-9b89-ad024fb70f72"
+  },
+  {
+    "name": "Amazon Pay",
+    "icon": "https://asset.brandfetch.io/id5WXF6Iyd/idfCEvJwT3.jpeg",
+    "id": "4ff70a84-5d22-46e5-8283-ca08472cb85a"
+  },
+  {
+    "name": "American Express",
+    "icon": "https://asset.brandfetch.io/id5WXF6Iyd/idfCEvJwT3.jpeg",
+    "id": "83696ab1-5e0f-4d79-abe9-9578ee6b35e6"
+  }
+]

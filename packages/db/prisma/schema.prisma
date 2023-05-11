@@ -1,65 +1,180 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider  = "postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model Post {
-    id      String @id @default(cuid())
-    title   String
-    content String
-}
-
-// NextAuth.js Models
-// NOTE: When using postgresql, mysql or sqlserver, 
-// uncomment the @db.Text annotations below
-// @see https://next-auth.js.org/schemas/models
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
+}
+
+model FinancialAccount {
+  balance                       Int                      @default(0) @db.Integer
+  name                          String
+  id                            String                   @id @default(uuid()) @db.Uuid
+  accountTypeId                 String                   @db.Uuid
+  accountProviderId             String                   @db.Uuid
+  accountNumber                 String?
+  accountProvider               FinancialAccountProvider @relation(fields: [accountProviderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  accountType                   FinancialAccountType     @relation(fields: [accountTypeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sourceAccounts                Transaction[]            @relation("SourceAccounts")
+  transferredAccount            Transaction[]            @relation("TransferredAccounts")
+  sourceAccountsUnverified      UnverifiedTransaction[]  @relation("SourceAccountsUnverified")
+  transferredAccountsUnverified UnverifiedTransaction[]  @relation("TransferredAccountsUnverified")
+  Transaction                   Transaction[]
+}
+
+model FinancialAccountProvider {
+  name    String             @unique
+  icon    String?
+  id      String             @id @default(uuid()) @db.Uuid
+  account FinancialAccount[]
+}
+
+model FinancialAccountType {
+  name    String             @unique
+  id      String             @id @default(uuid()) @db.Uuid
+  account FinancialAccount[]
+}
+
+model BudgetScreen {
+  monthAndYear   DateTime @db.Timestamp
+  budgetedAmount Int      @default(0) @db.Integer
+  id             String   @unique @default(uuid()) @db.Uuid
+  categoryId     String   @db.Uuid
+  spent          Int      @default(0) @db.Integer
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([monthAndYear, categoryId])
+}
+
+model Category {
+  name                  String                  @unique
+  icon                  String?
+  id                    String                  @id @default(uuid()) @db.Uuid
+  type                  TRANSACTION_TYPE        @default(CREDIT)
+  budget                Budget[]
+  transaction           Transaction[]
+  unverifiedTransaction UnverifiedTransaction[]
+  payees                Payee[]
+}
+
+model Payee {
+  name                  String                  @unique
+  icon                  String?
+  notes                 String?
+  id                    String                  @id @default(uuid()) @db.Uuid
+  transaction           Transaction[]
+  unverifiedTransaction UnverifiedTransaction[]
+  PayeeAlias            PayeeAlias[]
+  categories            Category[]
+}
+
+model Transaction {
+  amount               Int?              @default(0) @db.Integer
+  notes                String?
+  timeCreated          DateTime          @default(now()) @db.Timestamp(6)
+  type                 TRANSACTION_TYPE  @default(DEBIT)
+  id                   String            @id @default(uuid()) @db.Uuid
+  payeeId              String?           @db.Uuid
+  sourceAccountId      String            @db.Uuid
+  transferredAccountId String?           @db.Uuid
+  categoryId           String            @db.Uuid
+  sourceAccount        FinancialAccount  @relation("SourceAccounts", fields: [sourceAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category             Category          @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payee                Payee?            @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transferredAccount   FinancialAccount? @relation("TransferredAccounts", fields: [transferredAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  FinancialAccount     FinancialAccount? @relation(fields: [financialAccountId], references: [id])
+  financialAccountId   String?           @db.Uuid
+}
+
+model UnverifiedTransaction {
+  amount               Int               @default(0) @db.Integer
+  notes                String?
+  timeCreated          DateTime          @default(now()) @db.Timestamp(6)
+  type                 TRANSACTION_TYPE?
+  id                   String            @id @default(uuid()) @db.Uuid
+  payeeId              String?           @db.Uuid
+  accountId            String?           @db.Uuid
+  transferredAccountId String?           @db.Uuid
+  categoryId           String?           @db.Uuid
+  payeeAlias           String?
+  sourceAccount        FinancialAccount? @relation("SourceAccountsUnverified", fields: [accountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category             Category?         @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payee                Payee?            @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transferredAccount   FinancialAccount? @relation("TransferredAccountsUnverified", fields: [transferredAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Investment {
+  symbol       String          @unique
+  name         String
+  id           String          @id @default(uuid()) @db.Uuid
+  type         INVESTMENT_TYPE
+  units        Int             @default(0) @db.Integer
+  buyPrice     Int             @default(0) @db.Integer
+  buyDate      DateTime
+  currentPrice Int             @default(0) @db.Integer
+}
+
+model PayeeAlias {
+  alias   String @unique
+  id      String @id @default(uuid()) @db.Uuid
+  payeeId String @db.Uuid
+  payee   Payee  @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum TRANSACTION_TYPE {
+  CREDIT
+  DEBIT
+  TRANSFER
+}
+
+enum INVESTMENT_TYPE {
+  STOCK
+  MUTUAL_FUND
 }

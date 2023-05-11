@@ -1,0 +1,13 @@
+name = "email-listener"
+main = "index.ts"
+compatibility_date = "2023-02-16"
+
+[vars]
+NEW_UNVERIFIED_TRANSACTION_WEBHOOK_URL = "http://monetas-app.vercel.app/api/transaction/unverified"
+FORWARD_EMAIL = "athul929@gmail.com"
+
+[env.dev]
+name = "email-listener-dev"
+
+[env.dev.vars]
+NEW_UNVERIFIED_TRANSACTION_WEBHOOK_URL = "https://monetas-dev.athulp.in.net/api/transaction/unverified"

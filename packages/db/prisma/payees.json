@@ -1,0 +1,128 @@
+[
+  {
+    "name": "Amazon",
+    "icon": "https://asset.brandfetch.io/search/icon/idawOgYOsG/idNElpn6qu/1668988800000",
+    "notes": "df",
+    "id": "cae78c47-8062-4cf1-9a78-8c91b0fc751e",
+    "categoryId": "0864e28c-8eac-44a9-87c4-342b11ad0701"
+  },
+  {
+    "name": "Flipkart",
+    "icon": "https://asset.brandfetch.io/idWdImNSUt/idY7oGKkSH.png",
+    "notes": "df",
+    "id": "369c7464-fc35-4294-8136-5ff45451ffaf",
+    "categoryId": "0b247546-b772-489c-8314-3c8091e0036c"
+  },
+  {
+    "name": "Zepto",
+    "icon": "https://asset.brandfetch.io/idmjhO-S03/idROVK3KNL.png",
+    "notes": "df",
+    "id": "8ee2fb27-545b-44a6-9c83-61e8b75c1fdb",
+    "categoryId": "b0226a05-c25f-4e93-bd31-983357e3256a"
+  },
+  {
+    "name": "Airtel",
+    "icon": "https://asset.brandfetch.io/idXiu94p0S/idFJ5x2uoZ.png",
+    "notes": "df",
+    "id": "cc6dca73-f647-48e8-8188-eb756f4b9ca0",
+    "categoryId": "2f86a506-45be-4ec5-aab6-7dd48c8380e4"
+  },
+  {
+    "name": "Big Basket",
+    "icon": "https://asset.brandfetch.io/idmjhO-S03/idROVK3KNL.png\"",
+    "notes": "df",
+    "id": "1749e747-68f9-430d-bbb2-46ceefd3cbea",
+    "categoryId": "b0226a05-c25f-4e93-bd31-983357e3256a"
+  },
+  {
+    "name": "Swiggy",
+    "icon": "https://asset.brandfetch.io/ideeTxiKQK/idVpMoayNt.png",
+    "notes": "df",
+    "id": "7d06efdd-d5f9-4a52-aa7d-b3dfd120deeb",
+    "categoryId": "b0226a05-c25f-4e93-bd31-983357e3256a"
+  },
+  {
+    "name": "Electricity board",
+    "icon": "https://asset.brandfetch.io/idtOn2H6Kv/idJHh_urSV.png",
+    "notes": "df",
+    "id": "bf309295-dee5-4a3c-ad0e-bf3a0efc35a8",
+    "categoryId": "2f86a506-45be-4ec5-aab6-7dd48c8380e4"
+  },
+  {
+    "name": "Gas",
+    "icon": "https://asset.brandfetch.io/ido_65sFN7/idwJa9_YQ1.png",
+    "notes": "df",
+    "id": "0ae060bc-800e-4da6-9bd1-5d99b039077c",
+    "categoryId": "2f86a506-45be-4ec5-aab6-7dd48c8380e4"
+  },
+  {
+    "name": "Health Insurance",
+    "icon": "https://asset.brandfetch.io/idMSQfZy71/id-p-6MGBT.png",
+    "notes": "df",
+    "id": "d2c26918-5b45-4b7a-8d6a-fc0c52576b46",
+    "categoryId": "f8acb13a-dce0-40c8-b95f-dc9e4ba01e2a"
+  },
+  {
+    "name": "Health Check Up",
+    "icon": "https://asset.brandfetch.io/idwjy2DTay/idixXBabTH.png",
+    "notes": "df",
+    "id": "de9c70ca-3a68-4bd3-b73b-b894430336d8",
+    "categoryId": "f8acb13a-dce0-40c8-b95f-dc9e4ba01e2a"
+  },
+  {
+    "name": "Movie Ticket",
+    "icon": "https://asset.brandfetch.io/idDumjYIyP/id8VbwLas2.png",
+    "notes": "df",
+    "id": "563c537f-ad09-432d-9407-307aee8f7c38",
+    "categoryId": "dca09b52-1c7e-404c-be75-4212323abc0c"
+  },
+  {
+    "name": "Train Ticket",
+    "icon": "https://asset.brandfetch.io/idEIAJmZT0/iddGKnYw9D.jpeg",
+    "notes": "df",
+    "id": "2cf58e34-c9cc-4d20-a2d8-d196b93e9b82",
+    "categoryId": "d1d5836f-5ba0-4061-8285-3813986e8b46"
+  },
+  {
+    "name": "Flight Ticket",
+    "icon": "https://asset.brandfetch.io/idgxZfGN5H/idXFATVR71.png",
+    "notes": "df",
+    "id": "f03f42bf-8ca4-4e16-8ad6-b5951bf0121f",
+    "categoryId": "d1d5836f-5ba0-4061-8285-3813986e8b46"
+  },
+  {
+    "name": "Petrol",
+    "icon": "https://asset.brandfetch.io/idCtPphFmO/idY7hw0GuL.png",
+    "notes": "df",
+    "id": "987e3587-9c80-44c9-b7d2-6ebe4b62aa62",
+    "categoryId": "9f9b204b-7135-4440-a654-038b2a330661"
+  },
+  {
+    "name": "Spar",
+    "icon": "https://asset.brandfetch.io/idpZ7pJbM3/iddlnAg_hL.png",
+    "notes": "df",
+    "id": "cc081349-4fa0-4db2-b5c3-79d09777692a",
+    "categoryId": "3eed5a10-c928-4948-a219-7328252abc73"
+  },
+  {
+    "name": "Croma",
+    "icon": "https://asset.brandfetch.io/id9J1O8vnD/idB5aaVRiJ.png",
+    "notes": "df",
+    "id": "9eda3320-78d4-4f8c-bf29-b2e16bae01fc",
+    "categoryId": "0864e28c-8eac-44a9-87c4-342b11ad0701"
+  },
+  {
+    "name": "Saravana Stores",
+    "icon": "https://asset.brandfetch.io/idR43G60m6/idA-G2ko2c.png",
+    "notes": "df",
+    "id": "2c296b41-3c98-49f4-919e-a6f5b2060cf3",
+    "categoryId": "2736b7fe-3f9c-4bc4-9b11-66a2be08a16f"
+  },
+  {
+    "name": "Jwellery",
+    "icon": "https://asset.brandfetch.io/idSE_7OMIZ/idpsZibIuL.png",
+    "notes": "df",
+    "id": "acc30f7c-1135-470f-b5d7-d9b71f567bf5",
+    "categoryId": "2736b7fe-3f9c-4bc4-9b11-66a2be08a16f"
+  }
+]

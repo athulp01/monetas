@@ -5,13 +5,14 @@ import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import superjson from "superjson";
 
-import { type AppRouter } from "@acme/api";
+import { type AppRouter } from "@monetas/api";
+import { useAuth } from "@clerk/clerk-expo";
 
 /**
  * A set of typesafe hooks for consuming your API.
  */
 export const api = createTRPCReact<AppRouter>();
-export { type RouterInputs, type RouterOutputs } from "@acme/api";
+export { type RouterInputs, type RouterOutputs } from "@monetas/api";
 
 /**
  * Extend this function when going to production by
@@ -47,11 +48,19 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [queryClient] = React.useState(() => new QueryClient());
+  const { getToken } = useAuth();
+
   const [trpcClient] = React.useState(() =>
     api.createClient({
       transformer: superjson,
       links: [
         httpBatchLink({
+          async headers() {
+            const authToken = await getToken();
+            return {
+              Authorization: authToken,
+            };
+          },
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],

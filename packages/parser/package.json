@@ -1,0 +1,30 @@
+{
+  "name": "@monetas/parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "devDependencies": {
+    "@ava/typescript": "^4.0.0",
+    "ava": "^5.2.0",
+    "@types/node": "^18.15.3",
+    "typescript": "^5.0.2",
+    "ts-node": "^10.9.1"
+  },
+  "scripts": {
+    "test": "ava "
+  },
+  "private": true,
+  "author": "",
+  "license": "ISC",
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "files": [
+      "./test/index.ts"
+    ]
+  }
+}
