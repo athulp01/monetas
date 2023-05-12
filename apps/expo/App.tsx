@@ -1,13 +1,15 @@
 import React from "react";
-import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { ClerkProvider } from "@clerk/clerk-expo";
+
+import { tokenCache } from "~/utils/cache";
 import useCachedResources from "./src/hooks/useCachedResources";
 import Navigation from "./src/navigation";
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from "~/utils/cache";
 
 // Your publishable Key goes here
-const publishableKey = "pk_test_d29ya2FibGUtYmF0LTg5LmNsZXJrLmFjY291bnRzLmRldiQ";
+const publishableKey =
+  "pk_test_d29ya2FibGUtYmF0LTg5LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -16,11 +18,10 @@ export default function App() {
     return null;
   } else {
     return (
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}
-      >
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
         <SafeAreaProvider>
           <Navigation />
-          <StatusBar style={"light"} translucent networkActivityIndicatorVisible />
+          <StatusBar style={"dark"} networkActivityIndicatorVisible />
         </SafeAreaProvider>
       </ClerkProvider>
     );

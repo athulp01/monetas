@@ -1,143 +1,147 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from '@mdi/js'
-import { useState } from 'react'
-import BaseButton from '../common/buttons/BaseButton'
-import BaseButtons from '../common/buttons/BaseButtons'
-import 'flowbite'
-import TableLoading from '../common/loading/TableLoading'
-import 'react-datetime/css/react-datetime.css'
-import CardBoxModal, { type DialogProps } from '../common/cards/CardBoxModal'
-import { api, type RouterInputs, type RouterOutputs } from '~/utils/api'
-import { useTable } from '~/hooks/useTable'
-import { toast } from 'react-toastify'
-import { TableHeader } from '../common/table/TableHeader'
-import { ControlledInput } from '../forms/ControlledInput'
-import { ControlledSelect } from '../forms/ControlledSelect'
 
-export type PayeeList = RouterOutputs['payee']['listPayees']['payees']
-export type PayeeCreate = RouterInputs['payee']['addPayee']
-export type PayeeUpdate = RouterInputs['payee']['updatePayee']
+import { useState } from "react";
+import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+
+import BaseButton from "../common/buttons/BaseButton";
+import BaseButtons from "../common/buttons/BaseButtons";
+import "flowbite";
+import TableLoading from "../common/loading/TableLoading";
+import "react-datetime/css/react-datetime.css";
+import { toast } from "react-toastify";
+
+import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { useTable } from "~/hooks/useTable";
+import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import { TableHeader } from "../common/table/TableHeader";
+import { ControlledInput } from "../forms/ControlledInput";
+import { ControlledSelect } from "../forms/ControlledSelect";
+
+export type PayeeList = RouterOutputs["payee"]["listPayees"]["payees"];
+export type PayeeCreate = RouterInputs["payee"]["addPayee"];
+export type PayeeUpdate = RouterInputs["payee"]["updatePayee"];
 
 interface Props {
-  isCreateMode: boolean
-  handleCreateModeCancel: () => void
+  isCreateMode: boolean;
+  handleCreateModeCancel: () => void;
 }
 
 const PayeeTableView = (props: Props) => {
-  const [isInEditMode, setIsInEditMode, createForm, editForm] = useTable<PayeeList[0]>()
-  const categoriesQuery = api.category.listCategories.useQuery()
-  const payeesQuery = api.payee.listPayees.useQuery()
+  const [isInEditMode, setIsInEditMode, createForm, editForm] =
+    useTable<PayeeList[0]>();
+  const categoriesQuery = api.category.listCategories.useQuery();
+  const payeesQuery = api.payee.listPayees.useQuery();
 
   const payeeUpdateMutation = api.payee.updatePayee.useMutation({
     onSuccess: async () => {
-      createForm.reset()
-      props?.handleCreateModeCancel()
-      toast.success('Payee updated successfully')
-      await payeesQuery.refetch()
+      createForm.reset();
+      props?.handleCreateModeCancel();
+      toast.success("Payee updated successfully");
+      await payeesQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error updating payee')
-      console.log(err)
+      toast.error("Error updating payee");
+      console.log(err);
     },
     onSettled: () => {
-      setIsInEditMode(-1)
-      setIsDialogOpen(false)
+      setIsInEditMode(-1);
+      setIsDialogOpen(false);
     },
-  })
+  });
   const payeeCreateMutation = api.payee.addPayee.useMutation({
     onSuccess: async () => {
-      editForm.reset()
-      props?.handleCreateModeCancel()
-      toast.success('Payee created successfully')
-      await payeesQuery.refetch()
+      editForm.reset();
+      props?.handleCreateModeCancel();
+      toast.success("Payee created successfully");
+      await payeesQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error creating payee')
-      console.log(err)
+      toast.error("Error creating payee");
+      console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     },
-  })
+  });
   const payeeDeleteMutation = api.payee.deletePayee.useMutation({
     onSuccess: async () => {
-      toast.success('Payee deleted successfully')
-      await payeesQuery.refetch()
+      toast.success("Payee deleted successfully");
+      await payeesQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error deleting payee')
-      console.log(err)
+      toast.error("Error deleting payee");
+      console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     },
-  })
+  });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogProps, setDialogProps] =
-    useState<Pick<DialogProps, 'title' | 'buttonColor' | 'onConfirm' | 'message'>>(null)
-  const [hack, setHack] = useState(false)
+    useState<
+      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
+    >(null);
+  const [hack, setHack] = useState(false);
 
   const onCreateFormSubmit = (data: PayeeList[0]) => {
-    console.log(data)
+    console.log(data);
     const payload: PayeeCreate = {
       name: data.name,
       categoryIds: data.categories.map((c) => c.id),
-    }
+    };
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to create this payee?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to create this payee?",
       onConfirm: () => {
-        payeeCreateMutation.mutate(payload)
+        payeeCreateMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const onEditFormSubmit = (data: PayeeList[0]) => {
     if (hack) {
-      setHack(false)
-      return
+      setHack(false);
+      return;
     }
     const payload: PayeeUpdate = {
       name: data.name,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       id: payeesQuery.data.payees[isInEditMode].id,
       categoryIds: data.categories.map((c) => c.id),
-    }
+    };
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to edit this payee?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to edit this payee?",
       onConfirm: () => {
-        payeeUpdateMutation.mutate(payload)
+        payeeUpdateMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const handleEdit = (i: number) => {
-    editForm.reset(payeesQuery.data.payees[i])
-    setIsInEditMode(i)
+    editForm.reset(payeesQuery.data.payees[i]);
+    setIsInEditMode(i);
     // setHack(true)
-  }
+  };
 
   const handleDelete = (id: string) => {
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'danger',
-      message: 'Do you want to delete this payee?',
+      title: "Confirmation",
+      buttonColor: "danger",
+      message: "Do you want to delete this payee?",
       onConfirm: () => {
-        payeeDeleteMutation.mutate({ id })
+        payeeDeleteMutation.mutate({ id });
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   if (payeesQuery.isLoading) {
-    return <TableLoading></TableLoading>
+    return <TableLoading></TableLoading>;
   }
 
   return (
@@ -149,8 +153,16 @@ const PayeeTableView = (props: Props) => {
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
       <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
-        <form id="createForm" hidden onSubmit={createForm.handleSubmit(onCreateFormSubmit)}></form>
-        <form id="editForm" hidden onSubmit={editForm.handleSubmit(onEditFormSubmit)}></form>
+        <form
+          id="createForm"
+          hidden
+          onSubmit={createForm.handleSubmit(onCreateFormSubmit)}
+        ></form>
+        <form
+          id="editForm"
+          hidden
+          onSubmit={editForm.handleSubmit(onEditFormSubmit)}
+        ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
           <div className="relative ml-6">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -194,7 +206,11 @@ const PayeeTableView = (props: Props) => {
                       form="createForm"
                       control={createForm.control}
                       name="name"
-                      inputProps={{ placeholder: 'Name', type: 'text', required: true }}
+                      inputProps={{
+                        placeholder: "Name",
+                        type: "text",
+                        required: true,
+                      }}
                     ></ControlledInput>
                   </td>
                   <td scope="row" className="px-1 py-4">
@@ -237,7 +253,11 @@ const PayeeTableView = (props: Props) => {
                         form="editForm"
                         control={editForm.control}
                         name="name"
-                        inputProps={{ placeholder: 'Name', type: 'text', required: true }}
+                        inputProps={{
+                          placeholder: "Name",
+                          type: "text",
+                          required: true,
+                        }}
                       ></ControlledInput>
                     ) : (
                       payee.name
@@ -253,7 +273,9 @@ const PayeeTableView = (props: Props) => {
                         form="editForm"
                       ></ControlledSelect>
                     ) : (
-                      payee.categories.map((category) => category.name).join(', ')
+                      payee.categories
+                        .map((category) => category.name)
+                        .join(", ")
                     )}
                   </td>
                   <td className="px-1 py-4 text-right">
@@ -297,7 +319,7 @@ const PayeeTableView = (props: Props) => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default PayeeTableView
+export default PayeeTableView;

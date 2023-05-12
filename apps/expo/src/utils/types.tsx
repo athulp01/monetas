@@ -1,6 +1,8 @@
 import { type DrawerScreenProps } from "@react-navigation/drawer";
 import { type NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { type Account } from "~/components/AccountItem";
+import { type Investment } from "~/components/InvestmentItem";
 import { type Transaction } from "~/components/TransactionItem";
 
 declare global {
@@ -42,3 +44,30 @@ type TransactionsStackParamList = {
 export type TransactionStackScreenProps<
   Screen extends keyof TransactionsStackParamList,
 > = NativeStackScreenProps<TransactionsStackParamList, Screen>;
+
+type InvestmentsStackParamList = {
+  Investments: undefined;
+  InvestmentDetails: { investment: Investment };
+};
+
+export type InvestmentsStackScreenProps<
+  Screen extends keyof InvestmentsStackParamList,
+> = NativeStackScreenProps<InvestmentsStackParamList, Screen>;
+
+type AccountsStackParamList = {
+  Accounts: undefined;
+  AccountDetails: { account: Account };
+};
+
+export type AccountStackScreenProps<
+  Screen extends keyof AccountsStackParamList,
+> = NativeStackScreenProps<AccountsStackParamList, Screen>;
+
+type HomeStackParamList = {
+  Home: undefined;
+  TransactionListHome: undefined;
+  TransactionDetailsHome: { transaction: Transaction };
+};
+
+export type HomeStackScreenProps<Screen extends keyof HomeStackParamList> =
+  NativeStackScreenProps<HomeStackParamList, Screen>;

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 import { type RouterOutputs } from "@monetas/api";
 
@@ -8,12 +8,16 @@ export type Investment =
 
 type Props = {
   investment: Investment;
+  handleItemPress: (investment: Investment) => void;
 };
 
-const InvestmentItem = ({ investment }: Props) => {
+const InvestmentItem = ({ investment, handleItemPress }: Props) => {
   const diff = investment?.currentPrice - investment?.buyPrice;
   return (
-    <View className="mb-0 rounded-sm border-b border-gray-200 bg-white p-2 shadow-sm">
+    <TouchableOpacity
+      onPress={() => handleItemPress(investment)}
+      className="mb-0 rounded-sm border-b border-gray-200 bg-white p-2 shadow-sm"
+    >
       <View className="flex flex-row justify-between">
         <View className="mb-0 flex flex-row items-center justify-start">
           <View className="mr-6 space-y-1 text-left">
@@ -58,7 +62,7 @@ const InvestmentItem = ({ investment }: Props) => {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

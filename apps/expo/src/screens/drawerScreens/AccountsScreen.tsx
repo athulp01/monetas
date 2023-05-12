@@ -3,17 +3,26 @@ import { View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 
 import { api } from "~/utils/api";
-import AccountItem from "~/components/AccountItem";
+import { type AccountStackScreenProps } from "~/utils/types";
+import AccountItem, { type Account } from "~/components/AccountItem";
 
-export const AccountsScreen = () => {
+export const AccountsScreen = ({
+  navigation,
+}: AccountStackScreenProps<"Accounts">) => {
   const accountsQuery = api.account.listAccounts.useQuery();
+
+  const handleAccountPress = (account: Account) => {
+    navigation.push("AccountDetails", { account });
+  };
 
   return (
     <FlashList
       data={accountsQuery.data?.accounts ?? []}
       estimatedItemSize={20}
       ItemSeparatorComponent={() => <View className="h-0" />}
-      renderItem={(p) => <AccountItem account={p.item} />}
+      renderItem={(p) => (
+        <AccountItem handleItemPress={handleAccountPress} account={p.item} />
+      )}
     />
   );
 };

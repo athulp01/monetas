@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { type RouterOutputs } from "@monetas/api";
 
@@ -7,11 +7,15 @@ export type Account = RouterOutputs["account"]["listAccounts"]["accounts"][0];
 
 type Props = {
   account: Account;
+  handleItemPress: (account: Account) => void;
 };
 
 const AccountItem = (props: Props) => {
   return (
-    <View className="mb-0 rounded-sm border-b border-gray-200 bg-white p-2 shadow-sm">
+    <TouchableOpacity
+      onPress={() => props.handleItemPress(props?.account)}
+      className="mb-0 rounded-sm border-b border-gray-200 bg-white p-2 shadow-sm"
+    >
       <View className="flex flex-row justify-between">
         <View className="mb-0 flex flex-row items-center justify-start">
           <Image
@@ -45,7 +49,7 @@ const AccountItem = (props: Props) => {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

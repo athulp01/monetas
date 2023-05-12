@@ -5,18 +5,17 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { type RootDrawerScreenProps } from "~/utils/types";
 import { TransactionDetailsScreen } from "~/screens/TransactionsScreens/TransactionDetailsScreen";
+import { HomeScreen } from "~/screens/drawerScreens/HomeScreen";
 import { TransactionsScreen } from "~/screens/drawerScreens/TransactionsScreen";
 
 const Stack = createNativeStackNavigator();
 
-export const TransactionsStack = ({
-  navigation,
-}: RootDrawerScreenProps<"Transactions">) => {
+export const HomeStack = ({ navigation }: RootDrawerScreenProps<"Home">) => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Transactions"
-        component={TransactionsScreen}
+        name="Home"
+        component={HomeScreen}
         options={{
           headerLeft: () => (
             <MaterialCommunityIcons
@@ -37,7 +36,7 @@ export const TransactionsStack = ({
         }}
       ></Stack.Screen>
       <Stack.Screen
-        name="TransactionDetails"
+        name="TransactionDetailsHome"
         options={{
           headerShown: true,
           headerBackVisible: true,
@@ -45,6 +44,15 @@ export const TransactionsStack = ({
           headerTintColor: "white",
         }}
         component={TransactionDetailsScreen}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="TransactionListHome"
+        options={{
+          headerShown: true,
+          headerBackVisible: true,
+          headerTitle: "Transactions",
+        }}
+        component={TransactionsScreen}
       ></Stack.Screen>
     </Stack.Navigator>
   );

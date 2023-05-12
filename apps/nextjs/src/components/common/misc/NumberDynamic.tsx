@@ -1,15 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import React from 'react'
-import { CurrencyFormatter } from '~/lib/utils'
+import React from "react";
+
+import { CurrencyFormatter } from "~/lib/utils";
 
 type Props = {
-  value: number
-  duration?: number
-  prefix?: string
-  suffix?: string
-}
+  value: number;
+  duration?: number;
+  prefix?: string;
+  suffix?: string;
+};
 
-const NumberDynamic = ({ prefix = '', suffix = '', value, duration = 1000 }: Props) => {
+const NumberDynamic = ({
+  prefix = "",
+  suffix = "",
+  value,
+  duration = 1000,
+}: Props) => {
   // const [newValue, setNewValue] = useState(value)
 
   // const newValueFormatted = newValue
@@ -70,7 +75,7 @@ const NumberDynamic = ({ prefix = '', suffix = '', value, duration = 1000 }: Pro
       {CurrencyFormatter.format(value)}
       {suffix}
     </div>
-  )
-}
+  );
+};
 
-export default NumberDynamic
+export default NumberDynamic;

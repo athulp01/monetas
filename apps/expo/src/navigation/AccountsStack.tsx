@@ -2,21 +2,22 @@ import React from "react";
 import { View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import colors from "tailwindcss/colors";
 
 import { type RootDrawerScreenProps } from "~/utils/types";
-import { TransactionDetailsScreen } from "~/screens/TransactionsScreens/TransactionDetailsScreen";
-import { TransactionsScreen } from "~/screens/drawerScreens/TransactionsScreen";
+import { AccountDetailsScreen } from "~/screens/AccountsScreens/AccountDetailsScreen";
+import { AccountsScreen } from "~/screens/drawerScreens/AccountsScreen";
 
 const Stack = createNativeStackNavigator();
 
-export const TransactionsStack = ({
+export const AccountsStack = ({
   navigation,
-}: RootDrawerScreenProps<"Transactions">) => {
+}: RootDrawerScreenProps<"Accounts">) => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Transactions"
-        component={TransactionsScreen}
+        name="Accounts"
+        component={AccountsScreen}
         options={{
           headerLeft: () => (
             <MaterialCommunityIcons
@@ -37,14 +38,15 @@ export const TransactionsStack = ({
         }}
       ></Stack.Screen>
       <Stack.Screen
-        name="TransactionDetails"
+        name="AccountDetails"
         options={{
           headerShown: true,
           headerBackVisible: true,
           headerTitleStyle: { color: "white" },
           headerTintColor: "white",
+          headerStyle: { backgroundColor: colors.red["400"] },
         }}
-        component={TransactionDetailsScreen}
+        component={AccountDetailsScreen}
       ></Stack.Screen>
     </Stack.Navigator>
   );
