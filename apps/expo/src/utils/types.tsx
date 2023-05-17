@@ -38,7 +38,7 @@ export type RootDrawerScreenProps<Screen extends keyof RootDrawerParamList> =
 
 type TransactionsStackParamList = {
   Transactions: undefined;
-  TransactionDetails: { transaction: Transaction };
+  TransactionDetails: { transaction: Partial<Transaction> };
 };
 
 export type TransactionStackScreenProps<

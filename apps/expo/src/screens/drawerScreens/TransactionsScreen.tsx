@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
 import ActionButton from "react-native-action-button";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +7,8 @@ import { FlashList } from "@shopify/flash-list";
 
 import { api } from "~/utils/api";
 import { type TransactionStackScreenProps } from "~/utils/types";
+import { ConfirmationSheet } from "~/components/ConfirmationSheet";
+import GmailStyleSwipeableRow from "~/components/SwipeableRow";
 import TransactionItem, {
   type Transaction,
 } from "~/components/TransactionItem";
@@ -14,6 +16,8 @@ import TransactionItem, {
 export const TransactionsScreen = ({
   navigation,
 }: TransactionStackScreenProps<"Transactions">) => {
+  const [isDeleteConfirmSheetVisible, setIsDeleteConfirmSheetVisible] =
+    useState(false);
   const date = new Date("2023-04-01T00:00:00.000Z");
   const transactionQuery = api.transaction.listTransactions.useQuery({
     month: date,
@@ -24,6 +28,14 @@ export const TransactionsScreen = ({
   const insets = useSafeAreaInsets();
 
   const handleTransactionPress = (transaction: Transaction) => {
+    navigation.push("TransactionDetails", { transaction });
+  };
+
+  const handleCreateTransactionPress = () => {
+    const transaction: Partial<Transaction> = {
+      type: "DEBIT",
+      timeCreated: new Date(),
+    };
     navigation.push("TransactionDetails", { transaction });
   };
 
@@ -51,14 +63,32 @@ export const TransactionsScreen = ({
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-0" />}
           renderItem={(p) => (
-            <TransactionItem
-              handleItemClicked={handleTransactionPress}
-              transaction={p.item}
-            />
+            <GmailStyleSwipeableRow
+              handleDelete={() => {
+                setIsDeleteConfirmSheetVisible(true);
+                return Promise.resolve();
+              }}
+            >
+              <TransactionItem
+                handleItemClicked={handleTransactionPress}
+                transaction={p.item}
+              />
+            </GmailStyleSwipeableRow>
           )}
         ></FlashList>
       </View>
-      <ActionButton buttonColor="black" offsetY={70}></ActionButton>
+      <ConfirmationSheet
+        isOpen={isDeleteConfirmSheetVisible}
+        onClose={() => setIsDeleteConfirmSheetVisible(false)}
+        title={"Delete Transaction"}
+        message={"Are you sure you want to delete this transaction?"}
+        onConfirm={() => {}}
+      ></ConfirmationSheet>
+      <ActionButton
+        buttonColor="black"
+        offsetY={70}
+        onPress={handleCreateTransactionPress}
+      ></ActionButton>
     </View>
   );
 };
