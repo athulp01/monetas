@@ -67,6 +67,7 @@ model FinancialAccount {
   sourceAccountsUnverified      UnverifiedTransaction[]  @relation("SourceAccountsUnverified")
   transferredAccountsUnverified UnverifiedTransaction[]  @relation("TransferredAccountsUnverified")
   Transaction                   Transaction[]
+  AccountBalanceHistory         AccountBalanceHistory[]
 }
 
 model FinancialAccountProvider {
@@ -82,7 +83,7 @@ model FinancialAccountType {
   account FinancialAccount[]
 }
 
-model BudgetScreen {
+model Budget {
   monthAndYear   DateTime @db.Timestamp
   budgetedAmount Int      @default(0) @db.Integer
   id             String   @unique @default(uuid()) @db.Uuid
@@ -166,6 +167,14 @@ model PayeeAlias {
   id      String @id @default(uuid()) @db.Uuid
   payeeId String @db.Uuid
   payee   Payee  @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model AccountBalanceHistory {
+  balance   Int              @default(0) @db.Integer
+  date      DateTime         @db.Timestamp
+  id        String           @id @default(uuid()) @db.Uuid
+  account   FinancialAccount @relation(fields: [accountId], references: [id])
+  accountId String           @db.Uuid
 }
 
 enum TRANSACTION_TYPE {
