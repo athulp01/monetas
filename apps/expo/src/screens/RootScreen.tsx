@@ -1,6 +1,7 @@
 import * as React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ToastProvider } from "react-native-toast-notifications";
 import { SignedIn, SignedOut } from "@clerk/clerk-expo";
 
 import { TRPCProvider } from "~/utils/api";
@@ -12,7 +13,9 @@ export default function RootScreen() {
       <SignedIn>
         <TRPCProvider>
           <SafeAreaProvider>
-            <RootDrawer />
+            <ToastProvider>
+              <RootDrawer />
+            </ToastProvider>
           </SafeAreaProvider>
         </TRPCProvider>
       </SignedIn>

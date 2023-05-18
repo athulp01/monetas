@@ -13,6 +13,7 @@ interface Props {
   setValue: (value: string) => void;
   setItems?: Dispatch<SetStateAction<{ label: string; value: string }[]>>;
   readonly?: boolean;
+  readonlyValue?: string;
 }
 
 export const DropDown = (props: Props) => {
@@ -21,7 +22,8 @@ export const DropDown = (props: Props) => {
   if (props.readonly) {
     return (
       <Text className={"text-base"}>
-        {props?.items?.find((item) => item.value == props?.value)?.label}
+        {props.readonlyValue ??
+          props?.items?.find((item) => item.value == props?.value)?.label}
       </Text>
     );
   }
