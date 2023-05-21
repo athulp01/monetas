@@ -29,6 +29,7 @@ const t = initTRPC.context<Context>().create({
 export const createTRPCRouter = t.router;
 
 const isAuthed = t.middleware(({ next, ctx }) => {
+  console.log("isAuthed", JSON.stringify(ctx.auth));
   if (!ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
   }
