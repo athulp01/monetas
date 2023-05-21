@@ -1,4 +1,24 @@
-[
+import * as fs from "fs";
+import { Configuration, OpenAIApi } from "openai";
+
+const csv = require("csv-parser");
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+const test = async (description) => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: `
+        You are a intelligent machine who is capable of categorising bank transactions. There are pre defined categories each having an id and a name in json format.
+   [
   {
     "name": "Salary",
     "icon": "briefcase",
@@ -36,24 +56,6 @@
     "type": "CREDIT"
   },
   {
-    "name": "Transfer",
-    "icon": "",
-    "id": "773a94b7-b3c9-474e-99dc-a90dffcc4ff5",
-    "type": "TRANSFER"
-  },
-  {
-    "name": "Credit Card Bill",
-    "icon": "",
-    "id": "1f3942b6-3dec-43f8-8905-32a934aca65f",
-    "type": "TRANSFER"
-  },
-  {
-    "name": "EMI",
-    "icon": "",
-    "id": "40a49ec6-c468-4ec6-a289-fadd30aa5e4c",
-    "type": "TRANSFER"
-  },
-  {
     "name": "Vacation",
     "icon": "beach",
     "id": "91c18e01-ddf5-487e-9027-0e06fb71b635",
@@ -84,7 +86,7 @@
     "type": "DEBIT"
   },
   {
-    "name": "Food Delivery",
+    "name": "Food",
     "icon": "food-fork-drink",
     "id": "b0226a05-c25f-4e93-bd31-983357e3256a",
     "type": "DEBIT"
@@ -202,17 +204,77 @@
     "icon": "receipt-text-outline",
     "id": "bd0193cc-b182-42e4-8ca1-064828fc3d99",
     "type": "DEBIT"
-  },
-  {
-    "name": "Subscription",
-    "icon": "receipt-text-outline",
-    "id": "1cd74567-759d-44b3-b0b1-eeb550e79c2c",
-    "type": "DEBIT"
-  },
-  {
-    "name": "Restaurant",
-    "icon": "receipt-text-outline",
-    "id": "05c1c4e0-d7c0-4fac-8ea6-dedd5316fc88",
-    "type": "DEBIT"
   }
 ]
+You should now only reply with category name and id of the transaction in json format. Category should not be transfer`,
+      },
+      {
+        role: "user",
+        content: description,
+      },
+    ],
+  });
+  // @ts-ignore
+  console.log(completion?.data?.choices[0]?.message?.content);
+  try {
+    const out = JSON.parse(completion?.data?.choices[0]?.message?.content);
+    return out?.id;
+  } catch (e) {
+    return null;
+  }
+};
+
+function parseDate(dateString) {
+  const parts = dateString.split("/");
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // Month is zero-based
+  const year = 2000 + parseInt(parts[2], 10); // Assuming year is between 2000-2099
+  return new Date(year, month, day);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const results = [];
+const readCSV = async () => {
+  fs.createReadStream("src/data/50100430588509_1684402797274.csv")
+    .pipe(csv())
+    .on("data", async (data) => {
+      const debitAmount = parseInt(data["Debit Amount"]?.toString()?.trim());
+      const creditAmount = parseInt(data["Credit Amount"]?.toString()?.trim());
+
+      const type = debitAmount > 0 ? "DEBIT" : "CREDIT";
+      const trans = {
+        timeCreated: parseDate(data[" Date"].toString().trim()).toISOString(),
+        amount: debitAmount > 0 ? debitAmount : creditAmount,
+        description: data["Narration"].toString().trim(),
+        type: type,
+        closingBalance: parseInt(data["Closing Balance"].toString().trim()),
+        category: "",
+      };
+      results.push(trans);
+    })
+    .on("end", () => {
+      processAPI();
+    });
+};
+
+const processAPI = async () => {
+  for (const trans of results) {
+    console.log(`Processing ${trans.description}`);
+    trans.category =
+      (await test(trans.description)) ?? "87aa95e5-4627-4784-9295-7dba27cf52b1";
+    console.log(trans);
+    await sleep(30000);
+  }
+  const json = JSON.stringify(results, null, 3);
+  fs.writeFile("file.json", json, "utf8", (err) => {
+    if (err) {
+      console.error("Error writing JSON file:", err);
+    } else {
+      console.log("CSV file successfully converted to JSON.");
+    }
+  });
+};
+readCSV();

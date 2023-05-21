@@ -1,20 +1,19 @@
-import { prisma } from "@monetas/app/src/server/db";
 import {
+  TRANSACTION_TYPE,
   type Prisma,
   type PrismaClient,
-  TRANSACTION_TYPE,
 } from "@prisma/client";
-import * as CategoriesData from "./categories.json";
-import * as ProvidersData from "./providers.json";
-import * as TypesData from "./types.json";
-import * as PayeeData from "./payees.json";
-import * as AccountsData from "./accounts.json";
 import { v4 as uuidv4 } from "uuid";
+
+import { prisma } from "../index";
+import * as AccountsData from "./accounts.json";
+import * as CategoriesData from "./categories.json";
+import * as PayeeData from "./payees.json";
 
 const createRandomTransactionBetweenDates = (
   count: number,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ) => {
   const transactions: Prisma.TransactionCreateManyInput[] = [];
   for (let i = 0; i < count; i++) {
@@ -24,7 +23,7 @@ const createRandomTransactionBetweenDates = (
       amount: Math.floor(Math.random() * 10000),
       timeCreated: new Date(
         startDate.getTime() +
-          Math.random() * (endDate.getTime() - startDate.getTime())
+          Math.random() * (endDate.getTime() - startDate.getTime()),
       ),
       categoryId:
         CategoriesData[Math.floor(Math.random() * CategoriesData.length)].id,
@@ -74,31 +73,32 @@ async function main() {
     });
   });
   await prisma.category.createMany({ data: categories, skipDuplicates: true });
+  await prisma.category.updateMany({ data: categories });
 
-  const types: Prisma.FinancialAccountTypeCreateManyInput[] = [];
-  TypesData.forEach((type) => {
-    types.push({
-      id: type.id,
-      name: type.name,
-    });
-  });
-  await prisma.financialAccountType.createMany({
-    data: types,
-    skipDuplicates: true,
-  });
-
-  const providers: Prisma.FinancialAccountProviderCreateManyInput[] = [];
-  ProvidersData.forEach((provider) => {
-    providers.push({
-      id: provider.id,
-      name: provider.name,
-      icon: provider.icon,
-    });
-  });
-  await prisma.financialAccountProvider.createMany({
-    data: providers,
-    skipDuplicates: true,
-  });
+  // const types: Prisma.FinancialAccountTypeCreateManyInput[] = [];
+  // TypesData.forEach((type) => {
+  //   types.push({
+  //     id: type.id,
+  //     name: type.name,
+  //   });
+  // });
+  // await prisma.financialAccountType.createMany({
+  //   data: types,
+  //   skipDuplicates: true,
+  // });
+  //
+  // const providers: Prisma.FinancialAccountProviderCreateManyInput[] = [];
+  // ProvidersData.forEach((provider) => {
+  //   providers.push({
+  //     id: provider.id,
+  //     name: provider.name,
+  //     icon: provider.icon,
+  //   });
+  // });
+  // await prisma.financialAccountProvider.createMany({
+  //   data: providers,
+  //   skipDuplicates: true,
+  // });
 
   if (process.env.NODE_ENV !== "production") {
     // const payees: Prisma.PayeeCreateManyInput[] = []

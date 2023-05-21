@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+
 import {
   addAccount,
   deleteAccount,
   getAccountProviders,
-  getAccounts,
   getAccountTypes,
-  updateAccount
+  getAccounts,
+  logAccountBalance,
+  updateAccount,
 } from "../repository/account";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const accountRouter = createTRPCRouter({
   listAccounts: publicProcedure.query(async ({ ctx }) => {
@@ -32,7 +34,7 @@ export const accountRouter = createTRPCRouter({
         accountTypeId: z.string().uuid(),
         accountProviderId: z.string().uuid(),
         accountNumber: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return await addAccount(
@@ -43,7 +45,7 @@ export const accountRouter = createTRPCRouter({
           accountProvider: { connect: { id: input.accountProviderId } },
           accountNumber: input.accountNumber,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   deleteAccount: protectedProcedure
@@ -60,7 +62,7 @@ export const accountRouter = createTRPCRouter({
         accountTypeId: z.string().uuid().optional(),
         accountProviderId: z.string().uuid().optional(),
         accountNumber: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return await updateAccount(
@@ -72,7 +74,16 @@ export const accountRouter = createTRPCRouter({
           accountProvider: { connect: { id: input?.accountProviderId } },
           accountNumber: input?.accountNumber,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
+  logAccountBalance: protectedProcedure.mutation(async ({ input, ctx }) => {
+    const accounts = await getAccounts(ctx.prisma);
+    const payload = accounts.map((account) => ({
+      accountId: account.id,
+      balance: account.balance,
+      date: new Date(),
+    }));
+    return await logAccountBalance(payload, ctx.prisma);
+  }),
 });
