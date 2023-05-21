@@ -14,7 +14,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 export const accountRouter = createTRPCRouter({
   listAccounts: publicProcedure.query(async ({ ctx }) => {
     const accounts = await getAccounts(ctx.prisma);
-    const totalCount = await ctx.prisma.account.count();
+    const totalCount = await ctx.prisma.financialAccount.count();
     return {
       totalCount,
       accounts,
