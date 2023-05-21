@@ -12,9 +12,6 @@ const server = z.object({
       ? z.string().min(1)
       : z.string().min(1).optional(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
-  // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
-  GOOGLE_ID: z.string(),
-  GOOGLE_SECRET: z.string(),
   TELEGRAM_API_KEY: z.string(),
   TELEGRAM_CHAT_ID: z.string(),
   TELEGRAM_SECRET_TOKEN: z.string(),
@@ -41,8 +38,6 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  GOOGLE_ID: process.env.GOOGLE_ID,
-  GOOGLE_SECRET: process.env.GOOGLE_SECRET,
   TELEGRAM_API_KEY: process.env.TELEGRAM_API_KEY,
   TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
   TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
