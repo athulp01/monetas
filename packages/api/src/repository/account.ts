@@ -3,13 +3,14 @@ import { type Prisma, type PrismaClient } from "@prisma/client";
 export const getAccounts = (client: PrismaClient) =>
   client.financialAccount.findMany({
     include: { accountType: true, accountProvider: true },
+    orderBy: { name: "asc" },
   });
 
 export const getAccountTypes = (client: PrismaClient) =>
-  client.financialAccountType.findMany();
+  client.financialAccountType.findMany({ orderBy: { name: "asc" } });
 
 export const getAccountProviders = (client: PrismaClient) =>
-  client.financialAccountProvider.findMany();
+  client.financialAccountProvider.findMany({ orderBy: { name: "asc" } });
 
 export const addAccount = (
   account: Prisma.FinancialAccountCreateInput,
@@ -50,4 +51,15 @@ export const logAccountBalance = (
   client: PrismaClient,
 ) => {
   return client.accountBalanceHistory.createMany({ data: balances });
+};
+
+export const getAccountBalanceHistory = (
+  start: Date,
+  end: Date,
+  client: PrismaClient,
+) => {
+  return client.accountBalanceHistory.findMany({
+    where: { date: { gte: start, lte: end } },
+    orderBy: { date: "asc" },
+  });
 };

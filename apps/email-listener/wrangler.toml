@@ -3,7 +3,7 @@ main = "index.ts"
 compatibility_date = "2023-02-16"
 
 [vars]
-NEW_UNVERIFIED_TRANSACTION_WEBHOOK_URL = "http://monetas-app.vercel.app/api/transaction/unverified"
+NEW_UNVERIFIED_TRANSACTION_WEBHOOK_URL = "http://monetas.athulp.in.net/api/transaction/unverified"
 FORWARD_EMAIL = "athul929@gmail.com"
 
 [env.dev]

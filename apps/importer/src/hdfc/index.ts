@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import { Configuration, OpenAIApi } from "openai";
 
+import { Prisma, prisma } from "@monetas/db";
+
 const csv = require("csv-parser");
 
 const configuration = new Configuration({
@@ -243,20 +245,28 @@ const readCSV = async () => {
     .on("data", async (data) => {
       const debitAmount = parseInt(data["Debit Amount"]?.toString()?.trim());
       const creditAmount = parseInt(data["Credit Amount"]?.toString()?.trim());
+      console.log(data["Closing Balance"]?.toString()?.trim());
+      const balance = parseInt(data["Closing Balance"]?.toString()?.trim());
 
       const type = debitAmount > 0 ? "DEBIT" : "CREDIT";
-      const trans = {
+      const trans: Prisma.TransactionCreateInput = {
         timeCreated: parseDate(data[" Date"].toString().trim()).toISOString(),
         amount: debitAmount > 0 ? debitAmount : creditAmount,
-        description: data["Narration"].toString().trim(),
         type: type,
-        closingBalance: parseInt(data["Closing Balance"].toString().trim()),
-        category: "",
+        category: { connect: { id: "87aa95e5-4627-4784-9295-7dba27cf52b1" } },
+        sourceAccount: {
+          connect: { id: "ace6e250-5314-4dcf-9cbd-d88a2cbd0d76" },
+        },
       };
-      results.push(trans);
-    })
-    .on("end", () => {
-      processAPI();
+      const log: Prisma.AccountBalanceHistoryCreateInput = {
+        date: parseDate(data[" Date"].toString().trim()).toISOString(),
+        balance: balance,
+        account: {
+          connect: { id: "ace6e250-5314-4dcf-9cbd-d88a2cbd0d76" },
+        },
+      };
+      await prisma.accountBalanceHistory.create({ data: log });
+      console.log(`Added ${trans.timeCreated}`);
     });
 };
 

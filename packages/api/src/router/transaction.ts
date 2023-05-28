@@ -1,22 +1,21 @@
-import { z } from "zod";
-
-
 import {
+  TRANSACTION_TYPE,
   type Prisma,
   type PrismaClient,
-  TRANSACTION_TYPE,
 } from "@prisma/client";
-import moment from "moment";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { z } from "zod";
+
+import { updateAccount } from "../repository/account";
+import { getBudgetByCategoryId, updateBudgetSpent } from "../repository/budget";
 import {
   addTransaction,
   deleteTransaction,
   getTransaction,
   getTransactions,
-  getTransactionsCount, updateTransaction
+  getTransactionsCount,
+  updateTransaction,
 } from "../repository/transactions";
-import { updateAccount } from "../repository/account";
-import { getBudgetByCategoryId, updateBudgetSpent } from "../repository/budget";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const transactionRouter = createTRPCRouter({
   listTransactions: protectedProcedure
@@ -25,14 +24,14 @@ export const transactionRouter = createTRPCRouter({
         page: z.number().min(0),
         perPage: z.number().min(1).default(10),
         month: z.date(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const transactionList = await getTransactions(
         input.page,
         input.perPage,
         input.month,
-        ctx.prisma
+        ctx.prisma,
       );
       const totalCount = await getTransactionsCount(input.month, ctx.prisma);
       return {
@@ -50,7 +49,8 @@ export const transactionRouter = createTRPCRouter({
         transferredAccountId: z.string().uuid().optional(),
         categoryId: z.string().uuid().optional(),
         timeCreated: z.date().optional(),
-      })
+        tags: z.array(z.string()).optional(),
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const payload: Prisma.TransactionCreateInput = {
@@ -63,36 +63,44 @@ export const transactionRouter = createTRPCRouter({
           : undefined,
         category: { connect: { id: input.categoryId } },
         timeCreated: input.timeCreated,
+        tags: {
+          connectOrCreate: input.tags.map((tag) => ({
+            where: { name: tag },
+            create: { name: tag },
+          })),
+        },
       };
       switch (input.type) {
         case TRANSACTION_TYPE.CREDIT:
-          return await ctx.prisma.$transaction(async (tx ) => {
+          return await ctx.prisma.$transaction(async (tx) => {
             await addTransaction(payload, tx as PrismaClient);
             await updateAccount(
               input.sourceAccountId,
               { balance: { increment: input.amount } },
-              tx as PrismaClient
+              tx as PrismaClient,
             );
           });
         case TRANSACTION_TYPE.DEBIT:
           return await ctx.prisma.$transaction(async (tx) => {
-            const transaction = await addTransaction(payload, tx as PrismaClient)
+            const transaction = await addTransaction(
+              payload,
+              tx as PrismaClient,
+            );
             await updateAccount(
               input.sourceAccountId,
               { balance: { decrement: input.amount } },
-              tx as PrismaClient
+              tx as PrismaClient,
             );
             const budget = await getBudgetByCategoryId(
               transaction.timeCreated,
               transaction.categoryId,
-              tx as PrismaClient
+              tx as PrismaClient,
             );
             if (budget) {
               await updateBudgetSpent(
-                input.categoryId,
-                moment(transaction.timeCreated).startOf("month").toDate(),
+                budget.id,
                 { increment: transaction.amount },
-                tx as PrismaClient
+                tx as PrismaClient,
               );
             }
           });
@@ -102,12 +110,12 @@ export const transactionRouter = createTRPCRouter({
             updateAccount(
               input.sourceAccountId,
               { balance: { decrement: input.amount } },
-              ctx.prisma
+              ctx.prisma,
             ),
             updateAccount(
               input.transferredAccountId,
               { balance: { increment: input.amount } },
-              ctx.prisma
+              ctx.prisma,
             ),
           ]);
       }
@@ -122,26 +130,25 @@ export const transactionRouter = createTRPCRouter({
             await updateAccount(
               deletedTransacion.sourceAccountId,
               { balance: { decrement: deletedTransacion.amount } },
-              tx
+              tx,
             );
             break;
           case TRANSACTION_TYPE.DEBIT:
             await updateAccount(
               deletedTransacion.sourceAccountId,
               { balance: { increment: deletedTransacion.amount } },
-              tx
+              tx,
             );
             const budget = await getBudgetByCategoryId(
               deletedTransacion.timeCreated,
               deletedTransacion.categoryId,
-              tx
+              tx,
             );
             if (budget) {
               await updateBudgetSpent(
-                deletedTransacion.categoryId,
-                moment(deletedTransacion.timeCreated).startOf("month").toDate(),
+                budget.id,
                 { decrement: deletedTransacion.amount },
-                tx
+                tx,
               );
             }
             break;
@@ -149,12 +156,12 @@ export const transactionRouter = createTRPCRouter({
             await updateAccount(
               deletedTransacion.sourceAccountId,
               { balance: { increment: deletedTransacion.amount } },
-              tx
+              tx,
             );
             await updateAccount(
               deletedTransacion.transferredAccountId,
               { balance: { decrement: deletedTransacion.amount } },
-              tx
+              tx,
             );
         }
         return deletedTransacion;
@@ -171,49 +178,56 @@ export const transactionRouter = createTRPCRouter({
         transferredAccountId: z.string().uuid().optional(),
         categoryId: z.string().uuid().optional(),
         timeCreated: z.date().optional(),
-      })
+        tags: z.array(z.string()).optional(),
+      }),
     )
     .mutation(async ({ input, ctx }) => {
-      const payload: Prisma.TransactionUpdateInput = {
-        amount: input?.amount,
-        type: input?.type,
-        sourceAccount: { connect: { id: input?.sourceAccountId } },
-        payee: input.payeeId
-          ? { connect: { id: input?.payeeId } }
-          : { disconnect: true },
-        transferredAccount: input?.transferredAccountId
-          ? { connect: { id: input?.transferredAccountId } }
-          : undefined,
-        category: { connect: { id: input?.categoryId } },
-        timeCreated: input?.timeCreated,
-      };
       await ctx.prisma.$transaction(async (tx: PrismaClient) => {
+        await tx.transactionTags.createMany({
+          data: input.tags.map((tag) => ({ name: tag })),
+          skipDuplicates: true,
+        });
+        const payload: Prisma.TransactionUpdateInput = {
+          amount: input?.amount,
+          type: input?.type,
+          sourceAccount: { connect: { id: input?.sourceAccountId } },
+          payee: input.payeeId
+            ? { connect: { id: input?.payeeId } }
+            : { disconnect: true },
+          transferredAccount: input?.transferredAccountId
+            ? { connect: { id: input?.transferredAccountId } }
+            : undefined,
+          category: { connect: { id: input?.categoryId } },
+          timeCreated: input?.timeCreated,
+          tags: {
+            set: input.tags.map((tag) => ({ name: tag })),
+          },
+        };
         const oldTransaction = await getTransaction(input.id, tx);
         const budget = await getBudgetByCategoryId(
           oldTransaction.timeCreated,
           oldTransaction.categoryId,
-          tx
+          tx,
         );
         switch (oldTransaction.type) {
           case TRANSACTION_TYPE.CREDIT:
             await updateAccount(
               oldTransaction.sourceAccountId,
               { balance: { decrement: oldTransaction.amount } },
-              tx
+              tx,
             );
             break;
           case TRANSACTION_TYPE.DEBIT:
             await updateAccount(
               oldTransaction.sourceAccountId,
               { balance: { increment: oldTransaction.amount } },
-              tx
+              tx,
             );
             if (budget) {
               await updateBudgetSpent(
-                oldTransaction.categoryId,
-                moment(oldTransaction.timeCreated).startOf("month").toDate(),
+                budget.id,
                 { decrement: oldTransaction.amount },
-                tx
+                tx,
               );
             }
             break;
@@ -221,19 +235,19 @@ export const transactionRouter = createTRPCRouter({
             await updateAccount(
               oldTransaction.sourceAccountId,
               { balance: { increment: oldTransaction.amount } },
-              tx
+              tx,
             );
             await updateAccount(
               oldTransaction.transferredAccountId,
               { balance: { decrement: oldTransaction.amount } },
-              tx
+              tx,
             );
             break;
         }
         const updatedTransaction = await updateTransaction(
           input.id,
           payload,
-          ctx.prisma
+          tx,
         );
 
         switch (updatedTransaction.type) {
@@ -241,23 +255,20 @@ export const transactionRouter = createTRPCRouter({
             await updateAccount(
               updatedTransaction.sourceAccountId,
               { balance: { increment: updatedTransaction.amount } },
-              tx
+              tx,
             );
             break;
           case TRANSACTION_TYPE.DEBIT:
             await updateAccount(
               updatedTransaction.sourceAccountId,
               { balance: { decrement: updatedTransaction.amount } },
-              tx
+              tx,
             );
             if (budget) {
               await updateBudgetSpent(
-                updatedTransaction.categoryId,
-                moment(updatedTransaction.timeCreated)
-                  .startOf("month")
-                  .toDate(),
+                budget.id,
                 { increment: updatedTransaction.amount },
-                tx
+                tx,
               );
             }
             break;
@@ -265,12 +276,12 @@ export const transactionRouter = createTRPCRouter({
             await updateAccount(
               updatedTransaction.sourceAccountId,
               { balance: { decrement: updatedTransaction.amount } },
-              tx
+              tx,
             );
             await updateAccount(
               updatedTransaction.transferredAccountId,
               { balance: { increment: updatedTransaction.amount } },
-              tx
+              tx,
             );
             break;
         }
@@ -278,4 +289,7 @@ export const transactionRouter = createTRPCRouter({
         return updatedTransaction;
       });
     }),
+  getTags: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.transactionTags.findMany();
+  }),
 });

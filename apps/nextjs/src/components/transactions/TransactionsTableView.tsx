@@ -1,118 +1,139 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from '@mdi/js'
-import { useState } from 'react'
-import BaseButton from '../common/buttons/BaseButton'
-import BaseButtons from '../common/buttons/BaseButtons'
-import 'flowbite'
-import TableLoading from '../common/loading/TableLoading'
-import NumberDynamic from '../common/misc/NumberDynamic'
-import { ITEMS_PER_PAGE } from '../../config/site'
-import { DateFormater } from '../../lib/utils'
-import Datetime from 'react-datetime'
-import 'react-datetime/css/react-datetime.css'
-import CardBoxModal, { type DialogProps } from '../common/cards/CardBoxModal'
-import moment from 'moment'
-import TransactionCard from './TransactionCard'
-import { ControlledDateTime } from '../forms/ControlledDateTime'
-import { ControlledSelect } from '../forms/ControlledSelect'
-import { useTable } from '../../hooks/useTable'
-import { api, type RouterInputs, type RouterOutputs } from '~/utils/api'
-import { toast } from 'react-toastify'
-import { ControlledInputMoney } from '../forms/ControlledInputMoney'
-import { TableHeader } from '../common/table/TableHeader'
-import { TransactionTypeOptions } from '~/utils/constants'
-import ReactPaginate from 'react-paginate'
-import { TRANSACTION_TYPE } from '@prisma/client'
-import Sheet from 'react-modal-sheet'
 
-export type TransactionsList = RouterOutputs['transaction']['listTransactions']['transactions']
-export type TransactionCreate = RouterInputs['transaction']['addTransaction']
-export type TransactionUpdate = RouterInputs['transaction']['updateTransaction']
+import { useEffect, useState } from "react";
+import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+
+import BaseButton from "../common/buttons/BaseButton";
+import BaseButtons from "../common/buttons/BaseButtons";
+import "flowbite";
+import Datetime from "react-datetime";
+
+import { ITEMS_PER_PAGE } from "../../config/site";
+import { DateFormater } from "../../lib/utils";
+import TableLoading from "../common/loading/TableLoading";
+import NumberDynamic from "../common/misc/NumberDynamic";
+import "react-datetime/css/react-datetime.css";
+import { TRANSACTION_TYPE } from "@prisma/client";
+import moment from "moment";
+import Sheet from "react-modal-sheet";
+import ReactPaginate from "react-paginate";
+import { toast } from "react-toastify";
+
+import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { TransactionTypeOptions } from "~/utils/constants";
+import { useTable } from "../../hooks/useTable";
+import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import { TableHeader } from "../common/table/TableHeader";
+import { ControlledDateTime } from "../forms/ControlledDateTime";
+import { ControlledInputMoney } from "../forms/ControlledInputMoney";
+import { ControlledSelect } from "../forms/ControlledSelect";
+import TransactionCard from "./TransactionCard";
+import "@yaireo/tagify/dist/tagify.css";
+import Tags from "@yaireo/tagify/dist/react.tagify";
+import { Controller } from "react-hook-form";
+
+// React-wrapper file
+
+// Tagify CSS
+
+export type TransactionsList =
+  RouterOutputs["transaction"]["listTransactions"]["transactions"];
+export type TransactionCreate = RouterInputs["transaction"]["addTransaction"];
+export type TransactionUpdate =
+  RouterInputs["transaction"]["updateTransaction"];
 
 interface Props {
-  isCreateMode: boolean
-  handleCreateModeCancel: () => void
+  isCreateMode: boolean;
+  handleCreateModeCancel: () => void;
 }
 
 const TransactionsTableView = (props: Props) => {
-  const [isInEditMode, setIsInEditMode, createForm, editForm] = useTable<TransactionsList[0]>()
-  const [currentPage, setCurrentPage] = useState(0)
-  const [selectedMonth, setSelectedMonth] = useState(moment())
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isInEditMode, setIsInEditMode, createForm, editForm] =
+    useTable<TransactionsList[0]>();
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedMonth, setSelectedMonth] = useState(moment());
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogProps, setDialogProps] =
-    useState<Pick<DialogProps, 'title' | 'buttonColor' | 'onConfirm' | 'message'>>()
-  const [hack, setHack] = useState(false)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+    useState<
+      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
+    >();
+  const [hack, setHack] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const transactionsQuery = api.transaction.listTransactions.useQuery({
     page: currentPage,
     perPage: ITEMS_PER_PAGE,
     month: selectedMonth.toDate(),
-  })
-  const totalCount = transactionsQuery.data?.totalCount || 0
-  const numPages = Math.floor(totalCount / ITEMS_PER_PAGE) + 1
+  });
+  const totalCount = transactionsQuery.data?.totalCount || 0;
+  const numPages = Math.floor(totalCount / ITEMS_PER_PAGE) + 1;
 
-  const accountsQuery = api.account.listAccounts.useQuery()
+  const accountsQuery = api.account.listAccounts.useQuery();
   const categoriesQuery = api.category.listCategories.useQuery({
-    type: isInEditMode !== -1 ? editForm.watch('type') : createForm.watch('type'),
-  })
+    type:
+      isInEditMode !== -1 ? editForm.watch("type") : createForm.watch("type"),
+  });
   const payeesQuery = api.payee.listPayees.useQuery({
     categoryId:
-      isInEditMode !== -1 ? editForm.watch('category')?.id : createForm.watch('category')?.id,
-  })
+      isInEditMode !== -1
+        ? editForm.watch("category")?.id
+        : createForm.watch("category")?.id,
+  });
 
   const handleCardEdit = (index: number) => {
-    setIsInEditMode(index)
-    editForm.reset(transactionsQuery.data.transactions[index])
-    setIsSheetOpen(true)
-  }
+    setIsInEditMode(index);
+    editForm.reset(transactionsQuery.data.transactions[index]);
+    setIsSheetOpen(true);
+  };
   const addTransactionMutation = api.transaction.addTransaction.useMutation({
     onSuccess: async () => {
-      createForm.reset()
-      props?.handleCreateModeCancel()
-      toast.success('Transaction created successfully')
-      await transactionsQuery.refetch()
+      createForm.reset();
+      props?.handleCreateModeCancel();
+      toast.success("Transaction created successfully");
+      await transactionsQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error creating transaction')
-      console.log(err)
+      toast.error("Error creating transaction");
+      console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     },
-  })
+  });
 
-  const updateTransactionMutation = api.transaction.updateTransaction.useMutation({
-    onSuccess: async () => {
-      editForm.reset()
-      toast.success('Transaction updated successfully')
-      await transactionsQuery.refetch()
-    },
-    onError: (err) => {
-      toast.error('Error updating transaction')
-      console.log(err)
-    },
-    onSettled: () => {
-      setIsInEditMode(-1)
-      setIsDialogOpen(false)
-    },
-  })
-  const deleteTransactionMutation = api.transaction.deleteTransaction.useMutation({
-    onSuccess: async () => {
-      toast.success('Transaction deleted successfully')
-      await transactionsQuery.refetch()
-    },
-    onError: (err) => {
-      toast.error('Error deleting transaction')
-      console.log(err)
-    },
-    onSettled: () => {
-      setIsDialogOpen(false)
-    },
-  })
+  const updateTransactionMutation =
+    api.transaction.updateTransaction.useMutation({
+      onSuccess: async () => {
+        editForm.reset();
+        toast.success("Transaction updated successfully");
+        await transactionsQuery.refetch();
+      },
+      onError: (err) => {
+        toast.error("Error updating transaction");
+        console.log(err);
+      },
+      onSettled: () => {
+        setIsInEditMode(-1);
+        setIsDialogOpen(false);
+      },
+    });
+  const deleteTransactionMutation =
+    api.transaction.deleteTransaction.useMutation({
+      onSuccess: async () => {
+        toast.success("Transaction deleted successfully");
+        await transactionsQuery.refetch();
+      },
+      onError: (err) => {
+        toast.error("Error deleting transaction");
+        console.log(err);
+      },
+      onSettled: () => {
+        setIsDialogOpen(false);
+      },
+    });
 
   const onCreateFormSubmit = (data: TransactionsList[0]): void => {
-    console.log(data)
+    console.log(data);
     const payload: TransactionCreate = {
       amount: +data.amount,
       type: data.type,
@@ -121,27 +142,27 @@ const TransactionsTableView = (props: Props) => {
       sourceAccountId: data.sourceAccount?.id,
       transferredAccountId: data.transferredAccount?.id,
       timeCreated: new Date(data.timeCreated),
-    }
+      tags: data.tags.map((tag) => tag.name),
+    };
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to create this transaction?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to create this transaction?",
       onConfirm: () => {
-        addTransactionMutation.mutate(payload)
+        addTransactionMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const onEditFormSubmit = (data: TransactionsList[0]) => {
     if (hack) {
-      setHack(false)
-      return
+      setHack(false);
+      return;
     }
     if (isSheetOpen) {
-      setIsSheetOpen(false)
+      setIsSheetOpen(false);
     }
-    console.log(`Data: ${JSON.stringify(data)}`)
     const payload: TransactionUpdate = {
       id: transactionsQuery.data.transactions[isInEditMode].id,
       type: data.type,
@@ -151,38 +172,44 @@ const TransactionsTableView = (props: Props) => {
       sourceAccountId: data.sourceAccount?.id,
       transferredAccountId: data.transferredAccount?.id,
       timeCreated: new Date(data.timeCreated),
-    }
+      tags: data.tags.map((tag) => tag.name),
+    };
+    console.log(`Data: ${JSON.stringify(payload)}`);
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to edit this transaction?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to edit this transaction?",
       onConfirm: () => {
-        updateTransactionMutation.mutate(payload)
+        updateTransactionMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const handleEdit = (i: number) => {
-    editForm.reset(transactionsQuery.data.transactions[i])
-    setIsInEditMode(i)
-    setHack(true)
-  }
+    editForm.reset(transactionsQuery.data.transactions[i]);
+    setIsInEditMode(i);
+    setHack(true);
+  };
 
   const handleDelete = (id: string) => {
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'danger',
-      message: 'Do you want to delete this transaction?',
+      title: "Confirmation",
+      buttonColor: "danger",
+      message: "Do you want to delete this transaction?",
       onConfirm: () => {
-        deleteTransactionMutation.mutate(id)
+        deleteTransactionMutation.mutate(id);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedMonth]);
 
   if (transactionsQuery.isLoading) {
-    return <TableLoading></TableLoading>
+    return <TableLoading></TableLoading>;
   }
 
   return (
@@ -194,8 +221,16 @@ const TransactionsTableView = (props: Props) => {
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
       <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
-        <form id="createForm" hidden onSubmit={createForm.handleSubmit(onCreateFormSubmit)}></form>
-        <form id="editForm" hidden onSubmit={editForm.handleSubmit(onEditFormSubmit)}></form>
+        <form
+          id="createForm"
+          hidden
+          onSubmit={createForm.handleSubmit(onCreateFormSubmit)}
+        ></form>
+        <form
+          id="editForm"
+          hidden
+          onSubmit={editForm.handleSubmit(onEditFormSubmit)}
+        ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
           <div className="relative ml-6">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -223,15 +258,17 @@ const TransactionsTableView = (props: Props) => {
           <div className="ml-6 mt-4 sm:mr-6 sm:mt-0">
             <Datetime
               timeFormat={false}
-              onChange={(value: moment.Moment | string) => setSelectedMonth(moment(value))}
+              onChange={(value: moment.Moment | string) =>
+                setSelectedMonth(moment(value))
+              }
               value={selectedMonth}
               dateFormat="MMMM, YYYY"
               className="w-40"
               inputProps={{
-                form: 'createForm',
-                placeholder: 'Select date',
+                form: "createForm",
+                placeholder: "Select date",
                 className:
-                  'block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
+                  "block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
               }}
             />
           </div>
@@ -239,7 +276,7 @@ const TransactionsTableView = (props: Props) => {
 
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <div className="block md:hidden">
-            {transactionsQuery?.data.transactions?.map((transaction, i) => (
+            {transactionsQuery?.data?.transactions?.map((transaction, i) => (
               <TransactionCard
                 key={transaction?.id}
                 transaction={transaction}
@@ -257,6 +294,7 @@ const TransactionsTableView = (props: Props) => {
                 <TableHeader title="Payee" isSortable></TableHeader>
                 <TableHeader title="Date"></TableHeader>
                 <TableHeader title="Amount"></TableHeader>
+                <TableHeader title="Tags"></TableHeader>
                 <TableHeader></TableHeader>
               </tr>
             </thead>
@@ -284,28 +322,30 @@ const TransactionsTableView = (props: Props) => {
                     <ControlledSelect
                       control={createForm.control}
                       form="createForm"
-                      isDisabled={createForm.watch('type') == null}
+                      isDisabled={createForm.watch("type") == null}
                       isLoading={categoriesQuery.isLoading}
                       name="category"
                       options={categoriesQuery?.data?.categories}
                     ></ControlledSelect>
                   </td>
                   <td className="px-1 py-4">
-                    {createForm.watch('type') === TRANSACTION_TYPE.TRANSFER && (
+                    {createForm.watch("type") === TRANSACTION_TYPE.TRANSFER && (
                       <ControlledSelect
                         control={createForm.control}
                         form="createForm"
                         name="transferredAccount"
                         options={accountsQuery?.data?.accounts?.filter(
-                          (account) => account.id !== createForm.watch('sourceAccount')?.id
+                          (account) =>
+                            account.id !==
+                            createForm.watch("sourceAccount")?.id,
                         )}
                       ></ControlledSelect>
                     )}
-                    {createForm.watch('type') !== TRANSACTION_TYPE.TRANSFER && (
+                    {createForm.watch("type") !== TRANSACTION_TYPE.TRANSFER && (
                       <ControlledSelect
                         isLoading={payeesQuery.isLoading}
                         control={createForm.control}
-                        isDisabled={createForm.watch('type') == null}
+                        isDisabled={createForm.watch("type") == null}
                         rules={{ required: false }}
                         form="createForm"
                         name="payee"
@@ -329,10 +369,33 @@ const TransactionsTableView = (props: Props) => {
                       name="amount"
                       form="createForm"
                       inputProps={{
-                        placeholder: 'Amount',
+                        placeholder: "Amount",
                         required: true,
                       }}
                     />
+                  </td>
+                  <td className="px-1 py-4">
+                    <Controller
+                      control={createForm.control}
+                      name={"tags"}
+                      rules={{ required: false }}
+                      render={({ field }) => (
+                        <Tags
+                          onChange={(e) => {
+                            field.onChange(
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                              e.detail.tagify
+                                .getCleanValue()
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+                                .map((tag) => ({ name: tag.value })),
+                            );
+                          }}
+                          value={field.value?.map((tag) => ({
+                            value: tag.name,
+                          }))}
+                        />
+                      )}
+                    ></Controller>
                   </td>
                   <td className="px-1 py-4 text-right">
                     <BaseButtons type="justify-start lg:justify-end" noWrap>
@@ -349,8 +412,8 @@ const TransactionsTableView = (props: Props) => {
                         icon={mdiCancel}
                         small
                         onClick={() => {
-                          createForm.reset()
-                          props?.handleCreateModeCancel()
+                          createForm.reset();
+                          props?.handleCreateModeCancel();
                         }}
                       ></BaseButton>
                     </BaseButtons>
@@ -387,7 +450,8 @@ const TransactionsTableView = (props: Props) => {
                         options={TransactionTypeOptions}
                       ></ControlledSelect>
                     ) : (
-                      transaction.type.charAt(0) + transaction.type.substring(1).toLowerCase()
+                      transaction.type.charAt(0) +
+                      transaction.type.substring(1).toLowerCase()
                     )}
                   </td>
                   <td className="px-1 py-4">
@@ -395,7 +459,7 @@ const TransactionsTableView = (props: Props) => {
                       <ControlledSelect
                         control={editForm.control}
                         isLoading={categoriesQuery.isLoading}
-                        isDisabled={editForm.watch('type') == null}
+                        isDisabled={editForm.watch("type") == null}
                         form="editForm"
                         name="category"
                         options={categoriesQuery?.data?.categories}
@@ -406,13 +470,13 @@ const TransactionsTableView = (props: Props) => {
                   </td>
                   <td className="px-1 py-4">
                     {isInEditMode === i ? (
-                      editForm.watch('type') !== TRANSACTION_TYPE.TRANSFER ? (
+                      editForm.watch("type") !== TRANSACTION_TYPE.TRANSFER ? (
                         <ControlledSelect
                           control={editForm.control}
                           form="editForm"
                           isClearable={true}
                           isLoading={payeesQuery.isLoading}
-                          isDisabled={editForm.watch('type') == null}
+                          isDisabled={editForm.watch("type") == null}
                           name="payee"
                           rules={{ required: false }}
                           options={payeesQuery?.data?.payees}
@@ -421,14 +485,16 @@ const TransactionsTableView = (props: Props) => {
                         <ControlledSelect
                           control={editForm.control}
                           form="editForm"
-                          isDisabled={editForm.watch('type') == null}
+                          isDisabled={editForm.watch("type") == null}
                           name="transferredAccount"
                           options={accountsQuery?.data.accounts.filter(
-                            (account) => account.id !== editForm.watch('sourceAccount')?.id
+                            (account) =>
+                              account.id !==
+                              editForm.watch("sourceAccount")?.id,
                           )}
                         ></ControlledSelect>
                       )
-                    ) : transaction.type === 'TRANSFER' ? (
+                    ) : transaction.type === "TRANSFER" ? (
                       transaction?.transferredAccount?.name
                     ) : (
                       transaction.payee?.name
@@ -454,31 +520,67 @@ const TransactionsTableView = (props: Props) => {
                         name="amount"
                         form="editForm"
                         inputProps={{
-                          placeholder: 'Amount',
+                          placeholder: "Amount",
                           required: true,
                         }}
                       />
                     ) : (
                       <span
                         className={
-                          transaction?.type === 'DEBIT'
-                            ? 'font-semibold text-red-600'
-                            : transaction?.type === 'CREDIT'
-                            ? 'font-semibold text-green-500'
-                            : 'font-semibold text-blue-500'
+                          transaction?.type === "DEBIT"
+                            ? "font-semibold text-red-600"
+                            : transaction?.type === "CREDIT"
+                            ? "font-semibold text-green-500"
+                            : "font-semibold text-blue-500"
                         }
                       >
                         <NumberDynamic
                           value={transaction?.amount}
                           prefix={`${
-                            transaction?.type === 'DEBIT'
-                              ? '-'
-                              : transaction?.type === 'CREDIT'
-                              ? '+'
-                              : '  '
+                            transaction?.type === "DEBIT"
+                              ? "-"
+                              : transaction?.type === "CREDIT"
+                              ? "+"
+                              : "  "
                           } ₹`}
                         ></NumberDynamic>
                       </span>
+                    )}
+                  </td>
+                  <td className="px-1 py-4">
+                    {isInEditMode === i ? (
+                      <Controller
+                        control={editForm.control}
+                        name={"tags"}
+                        rules={{ required: false }}
+                        render={({ field }) => (
+                          <Tags
+                            onChange={(e) => {
+                              field.onChange(
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                                e.detail.tagify
+                                  .getCleanValue()
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+                                  .map((tag) => ({ name: tag.value })),
+                              );
+                            }}
+                            value={field.value?.map((tag) => ({
+                              value: tag.name,
+                            }))}
+                          />
+                        )}
+                      ></Controller>
+                    ) : (
+                      transaction?.tags.map((tag) => (
+                        <span
+                          className={
+                            "mr-2 rounded-lg border-0 bg-gray-300 p-1 pl-2 pr-2 text-black"
+                          }
+                          key={tag.id}
+                        >
+                          {tag.name}
+                        </span>
+                      ))
                     )}
                   </td>
                   <td className="px-1 py-4 text-right">
@@ -527,21 +629,28 @@ const TransactionsTableView = (props: Props) => {
             </tbody>
           </table>
 
-          <nav className="flex items-end justify-between p-4" aria-label="Table navigation">
+          <nav
+            className="flex items-end justify-between p-4"
+            aria-label="Table navigation"
+          >
             <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-              Showing{' '}
+              Showing{" "}
               <span className="font-semibold text-gray-900 dark:text-white">
                 {currentPage * ITEMS_PER_PAGE + 1}-
-                {currentPage * ITEMS_PER_PAGE + transactionsQuery?.data.transactions?.length}
-              </span>{' '}
-              of <span className="font-semibold text-gray-900 dark:text-white">{totalCount}</span>
+                {currentPage * ITEMS_PER_PAGE +
+                  transactionsQuery?.data.transactions?.length}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {totalCount}
+              </span>
             </span>
             <ReactPaginate
               breakLabel="..."
               nextLabel={
                 <svg
                   className="w-5"
-                  style={{ height: '1.14rem' }}
+                  style={{ height: "1.14rem" }}
                   aria-hidden="true"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -555,7 +664,7 @@ const TransactionsTableView = (props: Props) => {
                 </svg>
               }
               onPageChange={(event) => {
-                setCurrentPage(event.selected)
+                setCurrentPage(event.selected);
               }}
               pageRangeDisplayed={5}
               forcePage={currentPage}
@@ -563,7 +672,7 @@ const TransactionsTableView = (props: Props) => {
               previousLabel={
                 <svg
                   className="h-5 w-5"
-                  style={{ height: '1.14rem' }}
+                  style={{ height: "1.14rem" }}
                   aria-hidden="true"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -577,34 +686,38 @@ const TransactionsTableView = (props: Props) => {
                 </svg>
               }
               containerClassName={
-                'inline-flex items-center -space-x-px text-gray-500  bg-white border-gray-300'
+                "inline-flex items-center -space-x-px text-gray-500  bg-white border-gray-300"
               }
               pageLinkClassName={
-                'px-3 py-2 leading-tight border hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                "px-3 py-2 leading-tight border hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               }
               breakLinkClassName={
-                'px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               }
               previousLinkClassName={
-                'block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               }
               nextLinkClassName={
-                'block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               }
               activeLinkClassName={
-                'z-10 px-3 py-2 leading-tight text-blue-600 border bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
+                "z-10 px-3 py-2 leading-tight text-blue-600 border bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
               }
               renderOnZeroPageCount={null}
             />
           </nav>
         </div>
       </div>
-      <Sheet snapPoints={[0.5]} isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
+      <Sheet
+        snapPoints={[0.5]}
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+      >
         <Sheet.Container>
           <Sheet.Header />
           <Sheet.Content>
-            <div className={'p-2'}>
-              <div className={'mb-2 grid grid-cols-2 gap-1'}>
+            <div className={"p-2"}>
+              <div className={"mb-2 grid grid-cols-2 gap-1"}>
                 <div className="mb-4">
                   <label
                     className="mb-2 block text-sm font-medium text-gray-900
@@ -648,7 +761,7 @@ const TransactionsTableView = (props: Props) => {
                     control={editForm.control}
                     isLoading={categoriesQuery.isLoading}
                     portal={null}
-                    isDisabled={editForm.watch('type') == null}
+                    isDisabled={editForm.watch("type") == null}
                     form="editForm"
                     name="category"
                     options={categoriesQuery?.data?.categories}
@@ -661,14 +774,14 @@ const TransactionsTableView = (props: Props) => {
                   >
                     Payee
                   </label>
-                  {editForm.watch('type') !== TRANSACTION_TYPE.TRANSFER ? (
+                  {editForm.watch("type") !== TRANSACTION_TYPE.TRANSFER ? (
                     <ControlledSelect
                       control={editForm.control}
                       form="editForm"
                       isClearable={true}
                       portal={null}
                       isLoading={payeesQuery.isLoading}
-                      isDisabled={editForm.watch('type') == null}
+                      isDisabled={editForm.watch("type") == null}
                       name="payee"
                       rules={{ required: false }}
                       options={payeesQuery?.data?.payees}
@@ -677,11 +790,12 @@ const TransactionsTableView = (props: Props) => {
                     <ControlledSelect
                       control={editForm.control}
                       form="editForm"
-                      isDisabled={editForm.watch('type') == null}
+                      isDisabled={editForm.watch("type") == null}
                       name="transferredAccount"
                       portal={null}
                       options={accountsQuery?.data.accounts.filter(
-                        (account) => account.id !== editForm.watch('sourceAccount')?.id
+                        (account) =>
+                          account.id !== editForm.watch("sourceAccount")?.id,
                       )}
                     ></ControlledSelect>
                   )}
@@ -694,7 +808,7 @@ const TransactionsTableView = (props: Props) => {
                     Date
                   </label>
                   <ControlledDateTime
-                    inputClassName={'w-full'}
+                    inputClassName={"w-full"}
                     control={editForm.control}
                     name="timeCreated"
                     form="editForm"
@@ -713,22 +827,22 @@ const TransactionsTableView = (props: Props) => {
                     form="editForm"
                     className="w-full"
                     inputProps={{
-                      placeholder: 'Amount',
+                      placeholder: "Amount",
                       required: true,
                     }}
                   />
                 </div>
               </div>
               <BaseButton
-                className={'mr-3'}
-                color={'success'}
-                label={'Save'}
-                type={'submit'}
-                form={'editForm'}
+                className={"mr-3"}
+                color={"success"}
+                label={"Save"}
+                type={"submit"}
+                form={"editForm"}
               ></BaseButton>
               <BaseButton
-                label={'Cancel'}
-                color={'danger'}
+                label={"Cancel"}
+                color={"danger"}
                 onClick={() => setIsSheetOpen(false)}
               ></BaseButton>
             </div>
@@ -738,7 +852,7 @@ const TransactionsTableView = (props: Props) => {
         <Sheet.Backdrop />
       </Sheet>
     </>
-  )
-}
+  );
+};
 
-export default TransactionsTableView
+export default TransactionsTableView;

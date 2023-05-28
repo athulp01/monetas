@@ -3,12 +3,15 @@ import {
   type Prisma,
   type PrismaClient,
 } from "@prisma/client";
+import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 
-import { prisma } from "../index";
+import { forUser, prisma as originalPrisma } from "../index";
 import * as AccountsData from "./accounts.json";
 import * as CategoriesData from "./categories.json";
 import * as PayeeData from "./payees.json";
+import * as ProvidersData from "./providers.json";
+import * as TypesData from "./types.json";
 
 const createRandomTransactionBetweenDates = (
   count: number,
@@ -64,6 +67,10 @@ const createRandomPayees = async (count: number, client: PrismaClient) => {
 };
 
 async function main() {
+  const prisma = originalPrisma.$extends(
+    forUser("user_2PWFBOkCpkZcoDaByZOZma39nra"),
+  );
+  prisma.$executeRaw`SELECT set_config('app.user_id', ${"user_2PWFBOkCpkZcoDaByZOZma39nra"}, TRUE)`;
   const categories: Prisma.CategoryCreateManyInput[] = [];
   CategoriesData.forEach((category) => {
     categories.push({
@@ -73,74 +80,69 @@ async function main() {
     });
   });
   await prisma.category.createMany({ data: categories, skipDuplicates: true });
-  await prisma.category.updateMany({ data: categories });
+  // await prisma.category.updateMany({ data: categories });
 
-  // const types: Prisma.FinancialAccountTypeCreateManyInput[] = [];
-  // TypesData.forEach((type) => {
-  //   types.push({
-  //     id: type.id,
-  //     name: type.name,
-  //   });
-  // });
-  // await prisma.financialAccountType.createMany({
-  //   data: types,
-  //   skipDuplicates: true,
-  // });
-  //
-  // const providers: Prisma.FinancialAccountProviderCreateManyInput[] = [];
-  // ProvidersData.forEach((provider) => {
-  //   providers.push({
-  //     id: provider.id,
-  //     name: provider.name,
-  //     icon: provider.icon,
-  //   });
-  // });
-  // await prisma.financialAccountProvider.createMany({
-  //   data: providers,
-  //   skipDuplicates: true,
-  // });
+  const types: Prisma.FinancialAccountTypeCreateManyInput[] = [];
+  TypesData.forEach((type) => {
+    types.push({
+      id: type.id,
+      name: type.name,
+    });
+  });
+  await prisma.financialAccountType.createMany({
+    data: types,
+    skipDuplicates: true,
+  });
+
+  const providers: Prisma.FinancialAccountProviderCreateManyInput[] = [];
+  ProvidersData.forEach((provider) => {
+    providers.push({
+      id: provider.id,
+      name: provider.name,
+      icon: provider.icon,
+    });
+  });
+  await prisma.financialAccountProvider.createMany({
+    data: providers,
+    skipDuplicates: true,
+  });
 
   if (process.env.NODE_ENV !== "production") {
-    // const payees: Prisma.PayeeCreateManyInput[] = []
-    // PayeeData.forEach((payee) => {
-    //   payees.push({
-    //     id: payee.id,
-    //     name: payee.name,
-    //     icon: payee.icon,
-    //   })
-    // })
-    // await prisma.payee.createMany({ data: payees, skipDuplicates: true })
-    //
-    // const accounts: Prisma.FinancialAccountCreateManyInput[] = []
-    // AccountsData.forEach((account) => {
-    //   accounts.push({
-    //     id: account.id,
-    //     name: account.name,
-    //     balance: account.balance,
-    //     accountTypeId: account.accountTypeId,
-    //     accountProviderId: account.accountProviderId,
-    //     accountNumber: account.accountNumber,
-    //   })
-    // })
-    // await prisma.financialAccount.createMany({ data: accounts, skipDuplicates: true })
-    //
-    // await prisma.transaction.createMany({
-    //   data: createRandomTransactionBetweenDates(
-    //     1000,
-    //     moment().startOf('year').toDate(),
-    //     moment().endOf('year').toDate()
-    //   ),
-    //   skipDuplicates: true,
-    // })
+    await createRandomPayees(10, prisma as PrismaClient);
+
+    const accounts: Prisma.FinancialAccountCreateManyInput[] = [];
+    AccountsData.forEach((account) => {
+      accounts.push({
+        id: account.id,
+        name: account.name,
+        balance: account.balance,
+        accountTypeId: account.accountTypeId,
+        accountProviderId: account.accountProviderId,
+        accountNumber: account.accountNumber,
+      });
+    });
+    await prisma.financialAccount.createMany({
+      data: accounts,
+      skipDuplicates: true,
+    });
+
+    await prisma.transaction.createMany({
+      data: createRandomTransactionBetweenDates(
+        1000,
+        moment().startOf("year").toDate(),
+        moment().endOf("year").toDate(),
+      ),
+      skipDuplicates: true,
+    });
   }
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await originalPrisma.$disconnect();
   })
   .catch(async (e) => {
     console.error(e);
-    await prisma.$disconnect();
+    await originalPrisma.$disconnect();
     process.exit(1);
   });

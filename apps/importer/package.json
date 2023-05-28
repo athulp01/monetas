@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/hdfc/index.ts",
   "devDependencies": {
+    "@monetas/db": "^0.1.0",
     "openai": "^3.2.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2"

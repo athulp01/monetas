@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   addAccount,
   deleteAccount,
+  getAccountBalanceHistory,
   getAccountProviders,
   getAccountTypes,
   getAccounts,
@@ -86,4 +87,13 @@ export const accountRouter = createTRPCRouter({
     }));
     return await logAccountBalance(payload, ctx.prisma);
   }),
+  getAccountBalanceHistory: protectedProcedure
+    .input(z.object({ rangeStart: z.date(), rangeEnd: z.date() }))
+    .query(async ({ input, ctx }) => {
+      return await getAccountBalanceHistory(
+        input.rangeStart,
+        input.rangeEnd,
+        ctx.prisma,
+      );
+    }),
 });

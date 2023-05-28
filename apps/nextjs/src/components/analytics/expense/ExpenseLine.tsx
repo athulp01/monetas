@@ -1,23 +1,24 @@
 // install (please make sure versions match peerDependencies)
 // yarn add @nivo/core @nivo/line
-import { ResponsiveLine } from '@nivo/line'
-import { api } from '~/utils/api'
-import moment from 'moment'
-import { CurrencyFormatter } from '~/lib/utils'
-import { Bars } from 'react-loader-spinner'
+import { ResponsiveLine } from "@nivo/line";
+import moment from "moment";
+import { Bars } from "react-loader-spinner";
+
+import { api } from "~/utils/api";
+import { CurrencyFormatter } from "~/lib/utils";
 
 interface Props {
-  rangeStart: moment.Moment
-  rangeEnd: moment.Moment
+  rangeStart: moment.Moment;
+  rangeEnd: moment.Moment;
 }
 
 export const ExpenseLine = ({ rangeStart, rangeEnd }: Props) => {
-  const precision = rangeEnd.diff(rangeStart, 'days') > 30 ? 'month' : 'day'
+  const precision = rangeEnd.diff(rangeStart, "days") > 60 ? "month" : "day";
   const expensePerDayReport = api.reports.getNetExpensePerDay.useQuery({
     rangeStart: rangeStart.toDate(),
     rangeEnd: rangeEnd.toDate(),
     precision: precision,
-  })
+  });
 
   if (expensePerDayReport.isLoading)
     return (
@@ -29,47 +30,49 @@ export const ExpenseLine = ({ rangeStart, rangeEnd }: Props) => {
         wrapperStyle={{}}
         wrapperClass=""
       />
-    )
+    );
 
   const chartData = [
     {
-      id: 'japan',
+      id: "japan",
       data:
         expensePerDayReport.data?.map((x) => ({
-          x: moment(x.timeCreated).format('YYYY-MM-DD'),
+          x: moment(x.timeCreated).format("YYYY-MM-DD"),
           y: Number(x.sum),
         })) ?? [],
     },
-  ]
-  console.log(chartData)
+  ];
 
   return (
     <ResponsiveLine
       data={chartData}
-      curve={'natural'}
       margin={{ top: 50, right: 50, bottom: 50, left: 60 }}
       xScale={{
-        type: 'time',
-        format: '%Y-%m-%d',
+        type: "time",
+        format: "%Y-%m-%d",
         useUTC: false,
-        precision: 'day',
+        precision: precision,
       }}
       xFormat="time:%Y-%m-%d"
       yScale={{
-        type: 'linear',
+        type: "linear",
         min: 0,
         stacked: false,
       }}
-      enablePoints={true}
+      enablePoints={false}
       yFormat={(value: number) => CurrencyFormatter.format(value)}
       axisTop={null}
       axisRight={null}
       axisBottom={{
-        format: '%b %d',
-        tickValues: `every 2 ${precision}`,
+        format: "%b %d",
+        tickValues: `${
+          precision === "month"
+            ? `every 1 ${precision}`
+            : `every 4 ${precision}`
+        }`,
       }}
       lineWidth={1}
-      colors={{ scheme: 'set1' }}
+      colors={{ scheme: "set1" }}
       axisLeft={{
         tickSize: 5,
         tickPadding: 5,
@@ -81,5 +84,5 @@ export const ExpenseLine = ({ rangeStart, rangeEnd }: Props) => {
       enableArea={true}
       useMesh={true}
     />
-  )
-}
+  );
+};

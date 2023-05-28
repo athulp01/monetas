@@ -1,12 +1,12 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "clientExtensions"]
 }
 
 datasource db {
-  provider  = "postgres"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model FinancialAccount {
@@ -24,6 +24,10 @@ model FinancialAccount {
   transferredAccountsUnverified UnverifiedTransaction[]  @relation("TransferredAccountsUnverified")
   Transaction                   Transaction[]
   AccountBalanceHistory         AccountBalanceHistory[]
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@unique([userId, name])
+  @@index([name])
 }
 
 model FinancialAccountProvider {
@@ -31,23 +35,29 @@ model FinancialAccountProvider {
   icon    String?
   id      String             @id @default(uuid()) @db.Uuid
   account FinancialAccount[]
+
+  @@index([name])
 }
 
 model FinancialAccountType {
   name    String             @unique
   id      String             @id @default(uuid()) @db.Uuid
   account FinancialAccount[]
+
+  @@index([name])
 }
 
 model Budget {
   monthAndYear   DateTime @db.Timestamp
   budgetedAmount Int      @default(0) @db.Integer
-  id             String   @unique @default(uuid()) @db.Uuid
+  id             String   @id @default(uuid()) @db.Uuid
   categoryId     String   @db.Uuid
   spent          Int      @default(0) @db.Integer
   category       Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
-  @@id([monthAndYear, categoryId])
+  @@unique([monthAndYear, categoryId, userId])
+  @@index([monthAndYear,categoryId])
 }
 
 model Category {
@@ -62,7 +72,7 @@ model Category {
 }
 
 model Payee {
-  name                  String                  @unique
+  name                  String
   icon                  String?
   notes                 String?
   id                    String                  @id @default(uuid()) @db.Uuid
@@ -70,6 +80,9 @@ model Payee {
   unverifiedTransaction UnverifiedTransaction[]
   PayeeAlias            PayeeAlias[]
   categories            Category[]
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@unique([name, userId])
 }
 
 model Transaction {
@@ -88,14 +101,19 @@ model Transaction {
   transferredAccount   FinancialAccount? @relation("TransferredAccounts", fields: [transferredAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   FinancialAccount     FinancialAccount? @relation(fields: [financialAccountId], references: [id])
   financialAccountId   String?           @db.Uuid
-  TransactionTags      TransactionTags[]
+  tags                 TransactionTags[]
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@index([timeCreated])
 }
 
 model TransactionTags {
-  id            String      @id @default(uuid()) @db.Uuid
-  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  transactionId String      @db.Uuid
-  name          String
+  id           String        @id @default(uuid()) @db.Uuid
+  transactions Transaction[]
+  name         String        @unique
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@unique([name, userId])
 }
 
 model UnverifiedTransaction {
@@ -113,6 +131,9 @@ model UnverifiedTransaction {
   category             Category?         @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payee                Payee?            @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transferredAccount   FinancialAccount? @relation("TransferredAccountsUnverified", fields: [transferredAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@index([timeCreated])
 }
 
 model Investment {
@@ -124,6 +145,9 @@ model Investment {
   buyPrice     Int             @default(0) @db.Integer
   buyDate      DateTime
   currentPrice Int             @default(0) @db.Integer
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+
+  @@unique([symbol, userId])
 }
 
 model PayeeAlias {
@@ -139,6 +163,7 @@ model AccountBalanceHistory {
   id        String           @id @default(uuid()) @db.Uuid
   account   FinancialAccount @relation(fields: [accountId], references: [id])
   accountId String           @db.Uuid
+  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
 }
 
 enum TRANSACTION_TYPE {
