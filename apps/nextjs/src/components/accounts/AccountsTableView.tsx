@@ -1,90 +1,99 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from '@mdi/js'
-import { useState } from 'react'
-import BaseButton from '../common/buttons/BaseButton'
-import BaseButtons from '../common/buttons/BaseButtons'
-import 'flowbite'
-import TableLoading from '../common/loading/TableLoading'
-import NumberDynamic from '../common/misc/NumberDynamic'
-import 'react-datetime/css/react-datetime.css'
-import CardBoxModal, { type DialogProps } from '../common/cards/CardBoxModal'
-import Image from 'next/image'
-import { ControlledInput } from '../forms/ControlledInput'
-import { ControlledSelect } from '../forms/ControlledSelect'
-import { api, type RouterInputs, type RouterOutputs } from '~/utils/api'
-import { useTable } from '~/hooks/useTable'
-import { toast } from 'react-toastify'
-import { TableHeader } from '../common/table/TableHeader'
-import { ControlledInputMoney } from '../forms/ControlledInputMoney'
 
-export type AccountList = RouterOutputs['account']['listAccounts']['accounts']
-export type AccountCreate = RouterInputs['account']['addAccount']
-export type AccountUpdate = RouterInputs['account']['updateAccount']
+import { useState } from "react";
+import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 
-export type ProviderList = RouterOutputs['account']['listAccountProviders']
-export type TypeList = RouterOutputs['account']['listAccountTypes']
+import BaseButton from "../common/buttons/BaseButton";
+import BaseButtons from "../common/buttons/BaseButtons";
+import "flowbite";
+import TableLoading from "../common/loading/TableLoading";
+import NumberDynamic from "../common/misc/NumberDynamic";
+import "react-datetime/css/react-datetime.css";
+import Image from "next/image";
+import { toast } from "react-toastify";
+
+import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { useTable } from "~/hooks/useTable";
+import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import { TableHeader } from "../common/table/TableHeader";
+import { ControlledInput } from "../forms/ControlledInput";
+import { ControlledInputMoney } from "../forms/ControlledInputMoney";
+import { ControlledSelect } from "../forms/ControlledSelect";
+
+export type AccountList = RouterOutputs["account"]["listAccounts"]["accounts"];
+export type AccountCreate = RouterInputs["account"]["addAccount"];
+export type AccountUpdate = RouterInputs["account"]["updateAccount"];
+
+export type ProviderList = RouterOutputs["account"]["listAccountProviders"];
+export type TypeList = RouterOutputs["account"]["listAccountTypes"];
 
 interface Props {
-  isCreateMode: boolean
-  handleCreateModeCancel: () => void
+  isCreateMode: boolean;
+  handleCreateModeCancel: () => void;
 }
 
 const AccountsTableView = (props: Props) => {
-  const [isInEditMode, setIsInEditMode, createForm, editForm] = useTable<AccountList[0]>()
+  const [isInEditMode, setIsInEditMode, createForm, editForm] =
+    useTable<AccountList[0]>();
 
-  const providersQuery = api.account.listAccountProviders.useQuery()
-  const typesQuery = api.account.listAccountTypes.useQuery()
-  const accountsQuery = api.account.listAccounts.useQuery()
+  const providersQuery = api.account.listAccountProviders.useQuery();
+  const typesQuery = api.account.listAccountTypes.useQuery();
+  const accountsQuery = api.account.listAccounts.useQuery();
 
   const accountCreateMutation = api.account.addAccount.useMutation({
     onSuccess: async () => {
-      createForm.reset()
-      props?.handleCreateModeCancel()
-      toast.success('Account created successfully')
-      await accountsQuery.refetch()
+      createForm.reset();
+      props?.handleCreateModeCancel();
+      toast.success("Account created successfully");
+      await accountsQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error creating account')
-      console.log(err)
+      toast.error("Error creating account");
+      console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     },
-  })
+  });
   const accountUpdateMutation = api.account.updateAccount.useMutation({
     onSuccess: async () => {
-      editForm.reset()
-      toast.success('Account updated successfully')
-      await accountsQuery.refetch()
+      editForm.reset();
+      toast.success("Account updated successfully");
+      await accountsQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error updating transaction')
-      console.log(err)
+      toast.error("Error updating transaction");
+      console.log(err);
     },
     onSettled: () => {
-      setIsInEditMode(-1)
-      setIsDialogOpen(false)
+      setIsInEditMode(-1);
+      setIsDialogOpen(false);
     },
-  })
+  });
   const accountDeleteMutation = api.account.deleteAccount.useMutation({
     onSuccess: async () => {
-      toast.success('Account deleted successfully')
-      await accountsQuery.refetch()
+      toast.success("Account deleted successfully");
+      await accountsQuery.refetch();
     },
     onError: (err) => {
-      toast.error('Error deleting account')
-      console.log(err)
+      toast.error("Error deleting account");
+      console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     },
-  })
+  });
 
-  const watchProvider = editForm.watch('accountProvider')
+  const watchProvider = editForm.watch("accountProvider");
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogProps, setDialogProps] =
-    useState<Pick<DialogProps, 'title' | 'buttonColor' | 'onConfirm' | 'message' | 'warning'>>(null)
+    useState<
+      Pick<
+        DialogProps,
+        "title" | "buttonColor" | "onConfirm" | "message" | "warning"
+      >
+    >(null);
 
   const onCreateFormSubmit = (account: AccountList[0]) => {
     const payload: AccountCreate = {
@@ -93,17 +102,17 @@ const AccountsTableView = (props: Props) => {
       accountTypeId: account.accountType.id,
       accountProviderId: account.accountProvider.id,
       accountNumber: account.accountNumber,
-    }
+    };
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to create this account?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to create this account?",
       onConfirm: () => {
-        accountCreateMutation.mutate(payload)
+        accountCreateMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const onEditFormSubmit = (account: AccountList[0]) => {
     const payload: AccountUpdate = {
@@ -113,38 +122,39 @@ const AccountsTableView = (props: Props) => {
       accountTypeId: account.accountType.id,
       accountProviderId: account.accountProvider.id,
       accountNumber: account.accountNumber,
-    }
+    };
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'success',
-      message: 'Do you want to edit this account?',
+      title: "Confirmation",
+      buttonColor: "success",
+      message: "Do you want to edit this account?",
       onConfirm: () => {
-        accountUpdateMutation.mutate(payload)
+        accountUpdateMutation.mutate(payload);
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const handleEdit = (i: number) => {
-    setIsInEditMode(i)
-    editForm.reset(accountsQuery.data.accounts[i])
-  }
+    setIsInEditMode(i);
+    editForm.reset(accountsQuery.data.accounts[i]);
+  };
 
   const handleDelete = (id: string) => {
     setDialogProps({
-      title: 'Confirmation',
-      buttonColor: 'danger',
-      message: 'Do you want to delete this account?',
-      warning: 'This action would delete all transactions associated with this account',
+      title: "Confirmation",
+      buttonColor: "danger",
+      message: "Do you want to delete this account?",
+      warning:
+        "This action would delete all transactions associated with this account",
       onConfirm: () => {
-        accountDeleteMutation.mutate({ id })
+        accountDeleteMutation.mutate({ id });
       },
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   if (accountsQuery.isLoading) {
-    return <TableLoading></TableLoading>
+    return <TableLoading></TableLoading>;
   }
 
   return (
@@ -156,8 +166,16 @@ const AccountsTableView = (props: Props) => {
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
       <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
-        <form id="createForm" hidden onSubmit={createForm.handleSubmit(onCreateFormSubmit)}></form>
-        <form id="editForm" hidden onSubmit={editForm.handleSubmit(onEditFormSubmit)}></form>
+        <form
+          id="createForm"
+          hidden
+          onSubmit={createForm.handleSubmit(onCreateFormSubmit)}
+        ></form>
+        <form
+          id="editForm"
+          hidden
+          onSubmit={editForm.handleSubmit(onEditFormSubmit)}
+        ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
           <div className="relative ml-6">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -184,7 +202,7 @@ const AccountsTableView = (props: Props) => {
           </div>
         </div>
 
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
           <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
             <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -202,7 +220,12 @@ const AccountsTableView = (props: Props) => {
                 <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
                   <td className="px-1 py-4">
                     {watchProvider?.icon && (
-                      <Image alt="logo" width={40} height={40} src={watchProvider?.icon}></Image>
+                      <Image
+                        alt="logo"
+                        width={40}
+                        height={40}
+                        src={watchProvider?.icon}
+                      ></Image>
                     )}
                   </td>
                   <td scope="row" className="px-1 py-4">
@@ -211,7 +234,7 @@ const AccountsTableView = (props: Props) => {
                       name="name"
                       form="createForm"
                       inputProps={{
-                        placeholder: 'Name',
+                        placeholder: "Name",
                         required: true,
                       }}
                     />
@@ -222,9 +245,9 @@ const AccountsTableView = (props: Props) => {
                       name="accountNumber"
                       form="createForm"
                       inputProps={{
-                        className: 'w-24',
-                        width: '4',
-                        placeholder: 'Last 4 digits',
+                        className: "w-24",
+                        width: "4",
+                        placeholder: "Last 4 digits",
                         required: true,
                       }}
                     />
@@ -252,7 +275,7 @@ const AccountsTableView = (props: Props) => {
                       </span>
                       <input
                         form="createForm"
-                        {...createForm.register('balance', { required: true })}
+                        {...createForm.register("balance", { required: true })}
                         placeholder="Balance"
                         type="number"
                         className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
@@ -300,7 +323,7 @@ const AccountsTableView = (props: Props) => {
                         name="name"
                         form="createForm"
                         inputProps={{
-                          placeholder: 'Name',
+                          placeholder: "Name",
                           required: true,
                         }}
                       />
@@ -315,9 +338,9 @@ const AccountsTableView = (props: Props) => {
                         name="accountNumber"
                         form="editForm"
                         inputProps={{
-                          className: 'w-24',
-                          width: '4',
-                          placeholder: 'Last 4 digits',
+                          className: "w-24",
+                          width: "4",
+                          placeholder: "Last 4 digits",
                           required: true,
                         }}
                       />
@@ -356,7 +379,7 @@ const AccountsTableView = (props: Props) => {
                         control={editForm.control}
                         name="balance"
                         inputProps={{
-                          placeholder: 'Balance',
+                          placeholder: "Balance",
                           required: true,
                         }}
                       />
@@ -364,13 +387,13 @@ const AccountsTableView = (props: Props) => {
                       <span
                         className={
                           account?.balance < 0
-                            ? 'font-semibold text-red-600'
-                            : 'font-semibold text-green-500'
+                            ? "font-semibold text-red-600"
+                            : "font-semibold text-green-500"
                         }
                       >
                         <NumberDynamic
                           value={Math.abs(account?.balance)}
-                          prefix={`${account?.balance < 0 ? '-' : '+'} ₹`}
+                          prefix={`${account?.balance < 0 ? "-" : "+"} ₹`}
                         ></NumberDynamic>
                       </span>
                     )}
@@ -416,7 +439,7 @@ const AccountsTableView = (props: Props) => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AccountsTableView
+export default AccountsTableView;

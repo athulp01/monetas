@@ -1,58 +1,63 @@
-import React, { useEffect, useState } from 'react'
-import type { AppType } from 'next/app'
-import Head from 'next/head'
-import { store } from '../stores/store'
-import { Provider } from 'react-redux'
-import '../css/main.css'
-import { Router, useRouter } from 'next/router'
-import { Bars } from 'react-loader-spinner'
-import SectionFullScreen from '../components/common/sections/SectionFullScreen'
-import 'flowbite'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { api } from '../utils/api'
-import LayoutAuthenticated from '~/components/layout'
-import { Analytics } from '@vercel/analytics/react'
+import React, { useEffect, useState } from "react";
+import type { AppType } from "next/app";
+import Head from "next/head";
+import { Provider } from "react-redux";
+
+import { store } from "../stores/store";
+import "../css/main.css";
+import { Router, useRouter } from "next/router";
+import { Bars } from "react-loader-spinner";
+
+import SectionFullScreen from "../components/common/sections/SectionFullScreen";
+import "flowbite";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import {
   ClerkProvider,
+  RedirectToSignIn,
   SignedIn,
   SignedOut,
-  RedirectToSignIn,
 } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 
-const publicPages = ["/sign-in/[[...index]]", "/sign-up/[[...index]]", "telegram"];
+import LayoutAuthenticated from "~/components/layout";
+import { api } from "../utils/api";
 
-const MyApp: AppType = ({
-  Component,
-  pageProps,
-}) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+const publicPages = [
+  "/sign-in/[[...index]]",
+  "/sign-up/[[...index]]",
+  "telegram",
+];
+
+const MyApp: AppType = ({ Component, pageProps }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Check if the current route matches a public page
-  const isPublicPage = publicPages.includes(router.pathname)
+  const isPublicPage = publicPages.includes(router.pathname);
 
   useEffect(() => {
-    Router.events.on('routeChangeStart', () => {
-      setIsLoading(true)
-    })
-    Router.events.on('routeChangeComplete', () => {
-      setIsLoading(false)
-    })
-    Router.events.on('routeChangeError', () => {
-      setIsLoading(false)
-    })
-  }, [])
+    Router.events.on("routeChangeStart", () => {
+      setIsLoading(true);
+    });
+    Router.events.on("routeChangeComplete", () => {
+      setIsLoading(false);
+    });
+    Router.events.on("routeChangeError", () => {
+      setIsLoading(false);
+    });
+  }, []);
 
-  const title = `Monetas`
-  const description = 'Personal finance manager'
-  const url = 'https://monetas-app.vercel.app'
-  const image = `https://static.justboil.me/templates/one/repo-tailwind-react.png`
-  const imageWidth = '1920'
-  const imageHeight = '960'
+  const title = `Monetas`;
+  const description = "Personal finance manager";
+  const url = "https://monetas-app.vercel.app";
+  const image = `https://static.justboil.me/templates/one/repo-tailwind-react.png`;
+  const imageWidth = "1920";
+  const imageHeight = "960";
 
   return (
-      <ClerkProvider {...pageProps}>
+    <ClerkProvider {...pageProps}>
       <Provider store={store}>
         <>
           <Head>
@@ -72,7 +77,7 @@ const MyApp: AppType = ({
             <meta property="twitter:image:width" content={imageWidth} />
             <meta property="twitter:image:height" content={imageHeight} />
           </Head>
-          {isLoading  && (
+          {isLoading && (
             <SectionFullScreen>
               <Bars
                 height="80"
@@ -91,7 +96,7 @@ const MyApp: AppType = ({
             <>
               <SignedIn>
                 <LayoutAuthenticated>
-                <Component {...pageProps} />
+                  <Component {...pageProps} />
                 </LayoutAuthenticated>
               </SignedIn>
               <SignedOut>
@@ -100,11 +105,12 @@ const MyApp: AppType = ({
             </>
           )}
           <ToastContainer position="top-right" autoClose={5000} draggable />
+
           <Analytics />
         </>
       </Provider>
-      </ClerkProvider>
-  )
-}
+    </ClerkProvider>
+  );
+};
 
-export default api.withTRPC(MyApp)
+export default api.withTRPC(MyApp);

@@ -1,5 +1,9 @@
 import { type Prisma, type PrismaClient } from "@prisma/client";
 
+export type AccountBalanceHistory = {
+  date: Date;
+  avg: number;
+};
 export const getAccounts = (client: PrismaClient) =>
   client.financialAccount.findMany({
     include: { accountType: true, accountProvider: true },
@@ -58,8 +62,10 @@ export const getAccountBalanceHistory = (
   end: Date,
   client: PrismaClient,
 ) => {
-  return client.accountBalanceHistory.findMany({
-    where: { date: { gte: start, lte: end } },
-    orderBy: { date: "asc" },
-  });
+  return client.$queryRaw<
+    AccountBalanceHistory[]
+  >`SELECT date_trunc('day',"date"::date) as "date", avg(balance)
+                                              FROM "AccountBalanceHistory"
+                                              where "date" >= ${start.toISOString()}::timestamp and "date" < ${end.toISOString()}::timestamp
+                                              GROUP BY date_trunc('day',"date"::date) ORDER BY "date" ASC;`;
 };

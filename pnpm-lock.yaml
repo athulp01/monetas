@@ -388,6 +388,9 @@ importers:
       react-toastify:
         specifier: ^9.1.2
         version: 9.1.2(react-dom@18.2.0)(react@18.2.0)
+      react-top-loading-bar:
+        specifier: ^2.3.1
+        version: 2.3.1(react@18.2.0)
       superjson:
         specifier: 1.9.1
         version: 1.9.1
@@ -6395,7 +6398,7 @@ packages:
   /d3-time-format@3.0.0:
     resolution: {integrity: sha512-UXJh6EKsHBTjopVqZBhFysQcoXSv/5yLONZvkQ5Kk3qbwiUYkdX17Xa1PT6U1ZWXGGfB1ey5L8dKMlFq2DO0Ag==}
     dependencies:
-      d3-time: 1.1.0
+      d3-time: 2.1.1
     dev: false
 
   /d3-time@1.1.0:
@@ -12020,6 +12023,15 @@ packages:
       clsx: 1.2.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /react-top-loading-bar@2.3.1(react@18.2.0):
+    resolution: {integrity: sha512-rQk2Nm+TOBrM1C4E3e6KwT65iXyRSgBHjCkr2FNja1S51WaPulRA5nKj/xazuQ3x89wDDdGsrqkqy0RBIfd0xg==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16 || ^17 || ^18
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /react-transition-group@4.4.5(react-dom@18.2.0)(react@18.2.0):

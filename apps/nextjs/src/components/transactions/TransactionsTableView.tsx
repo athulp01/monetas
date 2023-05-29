@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
@@ -31,10 +31,7 @@ import TransactionCard from "./TransactionCard";
 import "@yaireo/tagify/dist/tagify.css";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 import { Controller } from "react-hook-form";
-
-// React-wrapper file
-
-// Tagify CSS
+import LoadingBar from "react-top-loading-bar";
 
 export type TransactionsList =
   RouterOutputs["transaction"]["listTransactions"]["transactions"];
@@ -48,6 +45,7 @@ interface Props {
 }
 
 const TransactionsTableView = (props: Props) => {
+  const loadingBarRef = useRef();
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<TransactionsList[0]>();
   const [currentPage, setCurrentPage] = useState(0);
@@ -59,6 +57,15 @@ const TransactionsTableView = (props: Props) => {
     >();
   const [hack, setHack] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const showLoadingBar: () => void = loadingBarRef.current?.continuousStart;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const hideLoadingBar: () => void = loadingBarRef.current?.complete;
 
   const transactionsQuery = api.transaction.listTransactions.useQuery({
     page: currentPage,
@@ -97,7 +104,7 @@ const TransactionsTableView = (props: Props) => {
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      hideLoadingBar();
     },
   });
 
@@ -105,16 +112,14 @@ const TransactionsTableView = (props: Props) => {
     api.transaction.updateTransaction.useMutation({
       onSuccess: async () => {
         editForm.reset();
+        hideLoadingBar();
         toast.success("Transaction updated successfully");
         await transactionsQuery.refetch();
       },
       onError: (err) => {
+        hideLoadingBar();
         toast.error("Error updating transaction");
         console.log(err);
-      },
-      onSettled: () => {
-        setIsInEditMode(-1);
-        setIsDialogOpen(false);
       },
     });
   const deleteTransactionMutation =
@@ -149,7 +154,9 @@ const TransactionsTableView = (props: Props) => {
       buttonColor: "success",
       message: "Do you want to create this transaction?",
       onConfirm: () => {
+        showLoadingBar();
         addTransactionMutation.mutate(payload);
+        setIsDialogOpen(false);
       },
     });
     setIsDialogOpen(true);
@@ -180,7 +187,10 @@ const TransactionsTableView = (props: Props) => {
       buttonColor: "success",
       message: "Do you want to edit this transaction?",
       onConfirm: () => {
+        showLoadingBar();
         updateTransactionMutation.mutate(payload);
+        setIsInEditMode(-1);
+        setIsDialogOpen(false);
       },
     });
     setIsDialogOpen(true);
@@ -214,6 +224,7 @@ const TransactionsTableView = (props: Props) => {
 
   return (
     <>
+      <LoadingBar height={8} color="black" ref={loadingBarRef} />
       <CardBoxModal
         {...dialogProps}
         buttonLabel="Confirm"
@@ -274,7 +285,7 @@ const TransactionsTableView = (props: Props) => {
           </div>
         </div>
 
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
           <div className="block md:hidden">
             {transactionsQuery?.data?.transactions?.map((transaction, i) => (
               <TransactionCard

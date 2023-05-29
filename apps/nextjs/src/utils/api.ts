@@ -1,3 +1,4 @@
+import { createContext } from "react";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import superjson from "superjson";
@@ -10,6 +11,8 @@ const getBaseUrl = () => {
 
   return `http://localhost:3000`; // dev SSR should use localhost
 };
+
+export const MutationContext = createContext<[() => void, () => void]>(null);
 
 export const api = createTRPCNext<AppRouter>({
   config() {
