@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm ci
+      - run: pnpm i
       - name: Publish email listener worker
         uses: cloudflare/wrangler-action@2.0.0
         with:
