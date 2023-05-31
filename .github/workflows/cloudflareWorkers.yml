@@ -2,8 +2,8 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "apps/email-listener/**/*"
+#    paths:
+#      - "apps/email-listener/**/*"
 
 jobs:
   deploy:
