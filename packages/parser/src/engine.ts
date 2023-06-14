@@ -2,8 +2,8 @@ import getAccount from "./account";
 import getBalance from "./balance";
 import {
   IAccountType,
-  type IBalance,
   IBalanceKeyWordsType,
+  type IBalance,
   type IncomingTransaction,
   type TMessageType,
   type TTransactionType,
@@ -68,7 +68,6 @@ export const getPayee = (message: string): string | null => {
   let index = lower.indexOf(" vpa ");
   let end = lower.indexOf(" ", index + 5);
   if (index > 0 && end > 0) {
-    console.log(index, end);
     return message.substring(index + 5, end);
   }
   // ICICI CC
@@ -99,12 +98,12 @@ export const getTransactionInfo = (message: string): IncomingTransaction => {
   const payee = getPayee(message);
   const availableBalance = getBalance(
     processedMessage,
-    IBalanceKeyWordsType.AVAILABLE
+    IBalanceKeyWordsType.AVAILABLE,
   );
   const transactionAmount = getTransactionAmount(processedMessage);
   const isValid =
     [availableBalance, transactionAmount, account.number].filter(
-      (x) => x !== ""
+      (x) => x !== "",
     ).length >= 2;
   const transactionType = isValid ? getTransactionType(processedMessage) : null;
   const balance: IBalance = { available: availableBalance, outstanding: null };
@@ -112,7 +111,7 @@ export const getTransactionInfo = (message: string): IncomingTransaction => {
   if (account && account.type === IAccountType.CREDIT_CARD) {
     balance.outstanding = getBalance(
       processedMessage,
-      IBalanceKeyWordsType.OUTSTANDING
+      IBalanceKeyWordsType.OUTSTANDING,
     );
   }
   return {

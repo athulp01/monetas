@@ -13,10 +13,12 @@ const server = z.object({
       : z.string().min(1).optional(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
   TELEGRAM_API_KEY: z.string(),
-  TELEGRAM_CHAT_ID: z.string(),
   TELEGRAM_SECRET_TOKEN: z.string(),
-  TELEGRAM_WEBAPP_URL: z.string(),
-
+  BASE_URL: z.string().url(),
+  GMAIL_OAUTH_ID: z.string(),
+  GMAIL_OAUTH_SECRET: z.string(),
+  GMAIL_OAUTH_REDIRECT_URL: z.string().url(),
+  PUB_SUB_TOPIC_NAME: z.string(),
 });
 
 /**
@@ -39,10 +41,12 @@ const processEnv = {
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   TELEGRAM_API_KEY: process.env.TELEGRAM_API_KEY,
-  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
   TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
-  TELEGRAM_WEBAPP_URL: process.env.TELEGRAM_WEBAPP_URL,
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  BASE_URL: process.env.BASE_URL,
+  GMAIL_OAUTH_ID: process.env.GMAIL_OAUTH_ID,
+  GMAIL_OAUTH_SECRET: process.env.GMAIL_OAUTH_SECRET,
+  GMAIL_OAUTH_REDIRECT_URL: process.env.GMAIL_OAUTH_REDIRECT_URL,
+  PUB_SUB_TOPIC_NAME: process.env.PUB_SUB_TOPIC_NAME,
 };
 
 // Don't touch the part below

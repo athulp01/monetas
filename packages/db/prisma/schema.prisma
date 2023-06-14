@@ -24,7 +24,7 @@ model FinancialAccount {
   transferredAccountsUnverified UnverifiedTransaction[]  @relation("TransferredAccountsUnverified")
   Transaction                   Transaction[]
   AccountBalanceHistory         AccountBalanceHistory[]
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId                        String                   @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@unique([userId, name])
   @@index([name])
@@ -54,10 +54,10 @@ model Budget {
   categoryId     String   @db.Uuid
   spent          Int      @default(0) @db.Integer
   category       Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId         String   @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@unique([monthAndYear, categoryId, userId])
-  @@index([monthAndYear,categoryId])
+  @@index([monthAndYear, categoryId])
 }
 
 model Category {
@@ -80,7 +80,7 @@ model Payee {
   unverifiedTransaction UnverifiedTransaction[]
   PayeeAlias            PayeeAlias[]
   categories            Category[]
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId                String                  @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@unique([name, userId])
 }
@@ -102,7 +102,7 @@ model Transaction {
   FinancialAccount     FinancialAccount? @relation(fields: [financialAccountId], references: [id])
   financialAccountId   String?           @db.Uuid
   tags                 TransactionTags[]
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId               String            @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@index([timeCreated])
 }
@@ -111,7 +111,7 @@ model TransactionTags {
   id           String        @id @default(uuid()) @db.Uuid
   transactions Transaction[]
   name         String        @unique
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId       String        @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@unique([name, userId])
 }
@@ -131,7 +131,7 @@ model UnverifiedTransaction {
   category             Category?         @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payee                Payee?            @relation(fields: [payeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transferredAccount   FinancialAccount? @relation("TransferredAccountsUnverified", fields: [transferredAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId               String            @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@index([timeCreated])
 }
@@ -145,7 +145,7 @@ model Investment {
   buyPrice     Int             @default(0) @db.Integer
   buyDate      DateTime
   currentPrice Int             @default(0) @db.Integer
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId       String          @default(dbgenerated("(current_setting('app.user_id'::text))"))
 
   @@unique([symbol, userId])
 }
@@ -163,7 +163,23 @@ model AccountBalanceHistory {
   id        String           @id @default(uuid()) @db.Uuid
   account   FinancialAccount @relation(fields: [accountId], references: [id])
   accountId String           @db.Uuid
-  userId String @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  userId    String           @default(dbgenerated("(current_setting('app.user_id'::text))"))
+}
+
+model TelegramDetails {
+  id                String  @id @default(uuid()) @db.Uuid
+  chatId            String?  @unique
+  userId            String  @unique @default(dbgenerated("(current_setting('app.user_id'::text))"))
+}
+
+model GmailOauthDetails {
+  id           String @id @default(uuid()) @db.Uuid
+  accessToken  String
+  refreshToken String
+  historyId    String
+  emailId      String @unique
+  expiry       String
+  userId       String @unique @default(dbgenerated("(current_setting('app.user_id'::text))"))
 }
 
 enum TRANSACTION_TYPE {

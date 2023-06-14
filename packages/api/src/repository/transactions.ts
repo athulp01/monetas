@@ -67,7 +67,15 @@ export const updateTransaction = (
 };
 
 export const getTransaction = (id: string, client: PrismaClient) =>
-  client.transaction.findUnique({ where: { id } });
+  client.transaction.findUnique({
+    where: { id },
+    include: {
+      sourceAccount: true,
+      transferredAccount: true,
+      category: true,
+      payee: true,
+    },
+  });
 
 export const getTotalExpenseForCategory = (
   categoryId: string,

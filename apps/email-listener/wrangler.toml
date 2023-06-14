@@ -1,5 +1,5 @@
 name = "email-listener"
-main = "index.ts"
+main = "[userId].ts"
 compatibility_date = "2023-02-16"
 
 [vars]

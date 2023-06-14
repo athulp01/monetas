@@ -3,6 +3,7 @@ import {
   mdiBank,
   mdiCashMultiple,
   mdiChartBar,
+  mdiCog,
   mdiMonitor,
   mdiPiggyBank,
   mdiWallet,
@@ -46,6 +47,11 @@ const menuAside: MenuAsideItem[] = [
     href: "analytics",
     label: "Analytics",
     icon: mdiChartBar,
+  },
+  {
+    href: "settings",
+    label: "Settings",
+    icon: mdiCog,
   },
 ];
 

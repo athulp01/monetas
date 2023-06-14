@@ -1,12 +1,13 @@
-import { createTRPCRouter } from "./trpc";
-import { transactionRouter } from "./router/transaction";
-import { categoryRouter } from "./router/category";
 import { accountRouter } from "./router/account";
-import { payeeRouter } from "./router/payee";
 import { budgetRouter } from "./router/budget";
-import { reportsRouter } from "./router/reports";
-import { unverifiedTransactionRouter } from "./router/unverifiedTransaction";
+import { categoryRouter } from "./router/category";
+import { integrationRouter } from "./router/intergration";
 import { investmentRouter } from "./router/investment";
+import { payeeRouter } from "./router/payee";
+import { reportsRouter } from "./router/reports";
+import { transactionRouter } from "./router/transaction";
+import { unverifiedTransactionRouter } from "./router/unverifiedTransaction";
+import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   transaction: transactionRouter,
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   reports: reportsRouter,
   unverifiedTransaction: unverifiedTransactionRouter,
   investment: investmentRouter,
+  integration: integrationRouter,
 });
 
 // export type definition of API

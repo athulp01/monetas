@@ -18,7 +18,7 @@ export const getInlineKeyboardMsg = (
         {
           text: "Review",
           web_app: {
-            url: `${process.env.TELEGRAM_WEBAPP_URL}/telegram/unverified/${transactionId}`,
+            url: `${process.env.BASE_URL}/telegram/unverified/${transactionId}`,
           },
         },
         { text: "Ignore", callback_data: TRANSACTION_ACTIONS.IGNORE },
@@ -45,6 +45,7 @@ export const callTelegramAPI = async (
 
 export const sendTransactionMessage = (
   message: string,
+  chatId: string,
   unverifiedTransactionId?: string,
 ) => {
   if (unverifiedTransactionId) {
@@ -53,13 +54,13 @@ export const sendTransactionMessage = (
     };
     return callTelegramAPI("sendMessage", {
       text: message,
-      chat_id: process.env.TELEGRAM_CHAT_ID,
+      chat_id: chatId,
       ...params,
     });
   } else {
     return callTelegramAPI("sendMessage", {
       text: message,
-      chat_id: process.env.TELEGRAM_CHAT_ID,
+      chat_id: chatId,
     });
   }
 };

@@ -78,7 +78,7 @@ export const accountRouter = createTRPCRouter({
         ctx.prisma,
       );
     }),
-  logAccountBalance: protectedProcedure.mutation(async ({ input, ctx }) => {
+  logAccountBalance: protectedProcedure.mutation(async ({ ctx }) => {
     const accounts = await getAccounts(ctx.prisma);
     const payload = accounts.map((account) => ({
       accountId: account.id,
