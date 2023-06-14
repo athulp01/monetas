@@ -5,20 +5,17 @@ import { z } from "zod";
  * built with invalid env vars.
  */
 const server = z.object({
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string().url().min(1),
   NODE_ENV: z.enum(["development", "test", "production"]),
   CLERK_SECRET_KEY:
     process.env.NODE_ENV === "production"
       ? z.string().min(1)
       : z.string().min(1).optional(),
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
-  TELEGRAM_API_KEY: z.string(),
-  TELEGRAM_SECRET_TOKEN: z.string(),
-  BASE_URL: z.string().url(),
-  GMAIL_OAUTH_ID: z.string(),
-  GMAIL_OAUTH_SECRET: z.string(),
-  GMAIL_OAUTH_REDIRECT_URL: z.string().url(),
-  PUB_SUB_TOPIC_NAME: z.string(),
+  TELEGRAM_API_KEY: z.string().min(1),
+  TELEGRAM_SECRET_TOKEN: z.string().min(1),
+  BASE_URL: z.string().url().min(1),
+  GMAIL_OAUTH_CLIENT_SECRET: z.string().min(1),
+  PUB_SUB_TOPIC_NAME: z.string().min(1),
 });
 
 /**
@@ -26,7 +23,9 @@ const server = z.object({
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 const client = z.object({
-  // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: z.string().min(1),
+  NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: z.string().url().min(1),
 });
 
 /**
@@ -43,9 +42,9 @@ const processEnv = {
   TELEGRAM_API_KEY: process.env.TELEGRAM_API_KEY,
   TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
   BASE_URL: process.env.BASE_URL,
-  GMAIL_OAUTH_ID: process.env.GMAIL_OAUTH_ID,
-  GMAIL_OAUTH_SECRET: process.env.GMAIL_OAUTH_SECRET,
-  GMAIL_OAUTH_REDIRECT_URL: process.env.GMAIL_OAUTH_REDIRECT_URL,
+  NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: process.env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
+  GMAIL_OAUTH_CLIENT_SECRET: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+  NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
   PUB_SUB_TOPIC_NAME: process.env.PUB_SUB_TOPIC_NAME,
 };
 

@@ -22,14 +22,14 @@ const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     ) as PrismaClient;
     const code = req.query.code as string;
     const oauth2Client = new google.auth.OAuth2(
-      env.GMAIL_OAUTH_ID,
-      env.GMAIL_OAUTH_SECRET,
-      env.GMAIL_OAUTH_REDIRECT_URL,
+      env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
+      env.GMAIL_OAUTH_CLIENT_SECRET,
+      env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
     );
     const { tokens } = await oauth2Client.getToken(code);
     const ticket = await oauth2Client.verifyIdToken({
       idToken: tokens.id_token,
-      audience: env.GMAIL_OAUTH_ID,
+      audience: env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
     });
     const payload = ticket.getPayload();
     oauth2Client.setCredentials(tokens);

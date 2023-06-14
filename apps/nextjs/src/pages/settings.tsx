@@ -1,8 +1,8 @@
 import React, { type ReactElement } from "react";
 import Head from "next/head";
-import * as icons from "@mdi/js";
 import {
   mdiBellCog,
+  mdiCashMultiple,
   mdiClose,
   mdiConnection,
   mdiGmail,
@@ -84,8 +84,10 @@ const PayeesPage = () => {
 
   const authenticate = () => {
     // Generate the URL for user consent
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=325122588306-9fs2i1ao7bipg8m0si11h708j00s549s.apps.googleusercontent.com&redirect_uri=${
-      env.GMAIL_OAUTH_REDIRECT_URL
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${
+      env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID
+    }&redirect_uri=${
+      env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL
     }&response_type=code&scope=${scopes.join("%20")}&access_type=offline`;
 
     // Redirect the user to the authUrl
@@ -99,7 +101,7 @@ const PayeesPage = () => {
       </Head>
       <SectionMain>
         <SectionTitleLineWithButton
-          icon={icons.mdiCashMultiple}
+          icon={mdiCashMultiple}
           title={"Settings"}
           main
         >

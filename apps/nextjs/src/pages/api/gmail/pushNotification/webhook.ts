@@ -18,9 +18,9 @@ import { env } from "~/env.mjs";
 
 // Create an OAuth2 client
 const oAuth2Client = new google.auth.OAuth2(
-  env.GMAIL_OAUTH_ID,
-  env.GMAIL_OAUTH_SECRET,
-  env.GMAIL_OAUTH_REDIRECT_URL,
+  env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
+  env.GMAIL_OAUTH_CLIENT_SECRET,
+  env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
 );
 
 const cleanEmailBody = (body: string | false) => {
