@@ -13,6 +13,7 @@ import { env } from "~/env.mjs";
 
 const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
+    console.log("Gmail callback");
     const auth = getAuth(req);
     if (auth.userId === null) {
       throw new Error("Not authenticated");
@@ -34,6 +35,7 @@ const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     const payload = ticket.getPayload();
     oauth2Client.setCredentials(tokens);
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    console.log("Setting up watch");
     gmail.users.watch(
       {
         userId: "me",
