@@ -36,33 +36,24 @@ const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     oauth2Client.setCredentials(tokens);
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
     console.log("Setting up watch");
-    gmail.users.watch(
+    const watchResponse = await gmail.users.watch({
+      userId: "me",
+      requestBody: {
+        topicName: env.PUB_SUB_TOPIC_NAME,
+        labelIds: ["INBOX"],
+      },
+    });
+    await addGmailIntegration(
       {
-        userId: "me",
-        requestBody: {
-          topicName: env.PUB_SUB_TOPIC_NAME,
-          labelIds: ["INBOX"],
-        },
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiry: tokens.expiry_date.toString(),
+        historyId: watchResponse.data.historyId,
+        emailId: payload.email,
       },
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      async (err, res) => {
-        if (err) {
-          console.error("Error setting up watch:", err);
-          return;
-        }
-        await addGmailIntegration(
-          {
-            accessToken: tokens.access_token,
-            refreshToken: tokens.refresh_token,
-            expiry: tokens.expiry_date.toString(),
-            historyId: res.data.historyId,
-            emailId: payload.email,
-          },
-          prisma,
-        );
-        console.log("Watch has been set up successfully: ", res.data);
-      },
+      prisma,
     );
+    console.log("Watch has been set up successfully");
     res.redirect("/settings");
   } catch (error) {
     console.error("Error fetching Gmail messages:", error);

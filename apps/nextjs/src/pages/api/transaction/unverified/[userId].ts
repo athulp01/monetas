@@ -36,11 +36,6 @@ const sendNotifications = (notification: TransactionNotification) => {
   });
 };
 
-const cleanTransaction = (transaction: IncomingTransaction) => {
-  transaction.payee = transaction.payee?.replace(/[^a-zA-Z ]/g, "").trim();
-  return transaction;
-};
-
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
@@ -51,7 +46,7 @@ export default async function handler(
   }
   const prisma = originalPrisma.$extends(forUser(userId)) as PrismaClient;
   if (request.method === "POST") {
-    const transaction = cleanTransaction(request.body as IncomingTransaction);
+    const transaction = request.body as IncomingTransaction;
     console.log(`New transaction detected ${JSON.stringify(transaction)}`);
     let account: FinancialAccount = null;
     if (transaction?.sourceAccount?.number) {
@@ -66,7 +61,10 @@ export default async function handler(
       );
     }
     console.log(transaction?.payee);
-    const payee = await getMatchingPayee(transaction?.payee, prisma);
+    const payee = await getMatchingPayee(
+      transaction?.payee.replace(/[^a-zA-Z ]/g, "").trim(),
+      prisma,
+    );
     console.log(account, payee);
     if (account && payee) {
       const addTransactionResponse = await addTransaction(
