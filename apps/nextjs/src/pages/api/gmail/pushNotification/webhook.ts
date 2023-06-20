@@ -117,7 +117,7 @@ function getEmailsUsingHistoryId(
   oAuth2Client.setCredentials(credentials);
   console.log("Retrieving emails from:", historyId);
   const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
-  gmail.users.history
+  return gmail.users.history
     .list({
       userId: "me",
       startHistoryId: historyId,
@@ -147,6 +147,7 @@ function getEmailsUsingHistoryId(
         return Promise.reject("No new emails since the specified historyId.");
       }
     })
+    .then((promises) => Promise.all(promises))
     .catch((error) => {
       console.log("An error occurred:", error);
     });
@@ -182,7 +183,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         };
       })
       .then((details) => {
-        getEmailsUsingHistoryId(
+        return getEmailsUsingHistoryId(
           details.userId,
           details.historyId,
           details.credentials,
