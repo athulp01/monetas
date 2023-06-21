@@ -14,6 +14,7 @@ import {
 } from "@monetas/db";
 import { getTransactionInfo, type IncomingTransaction } from "@monetas/parser";
 
+import { logger } from "~/utils/logger";
 import { env } from "~/env.mjs";
 
 const cleanEmailBody = (body: string | false) => {
@@ -47,61 +48,54 @@ function addUnverifiedTransaction(
     typeof transaction.amount === "number" &&
     transaction.amount > 0
   ) {
-    console.log(`New transaction detected: ${JSON.stringify(transaction)}`);
-    //Promise is ignored until there is a rollback mechanism
-    const promises: Promise<Response>[] = [];
-    promises.push(
-      fetch(
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        env.BASE_URL + "/api/transaction/unverified/" + userId,
-        {
-          method: "POST",
-          body: JSON.stringify(transaction),
-          headers: new Headers({
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          }),
-        },
-      ),
+    logger.info(
+      `Adding unverified transaction for ${userId} with amount ${transaction.amount} and type ${transaction.type}`,
     );
-    return promises;
-  } else {
-    console.log("No transaction detected.");
-    return Promise.reject("No transaction detected.");
+    //Promise is ignored until there is a rollback mechanism
+    void fetch(
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      env.BASE_URL + "/api/transaction/unverified/" + userId,
+      {
+        method: "POST",
+        body: JSON.stringify(transaction),
+        headers: new Headers({
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }),
+      },
+    );
   }
 }
 
-function getEmailUsingMessageId(
+async function getEmailUsingMessageId(
   messageId: string,
   userId: string,
   gmail: gmail_v1.Gmail,
 ) {
-  return new Promise<void>((resolve, reject) => {
-    gmail.users.messages
-      .get({
-        userId: "me",
-        id: messageId,
-        format: "raw",
-      })
-      .then((message) =>
-        simpleParser(Buffer.from(message.data.raw, "base64").toString("utf-8")),
-      )
-      .then((parsedEmail) => {
-        console.log("New email from:", parsedEmail.from.text);
-        const cleanedEmailBody = cleanEmailBody(parsedEmail.html);
-        const transaction: IncomingTransaction =
-          getTransactionInfo(cleanedEmailBody);
-        return addUnverifiedTransaction(transaction, userId);
-      })
-      .then((promises) => Promise.all(promises))
-      .then(() => {
-        resolve();
-      })
-      .catch((error) => {
-        console.error("Error parsing email:", error);
-        reject(error);
-      });
-  });
+  await gmail.users.messages
+    .get({
+      userId: "me",
+      id: messageId,
+      format: "raw",
+    })
+    .then((message) => {
+      logger.info(`Fetched email with messageId ${messageId} for ${userId}`);
+      return simpleParser(
+        Buffer.from(message.data.raw, "base64").toString("utf-8"),
+      );
+    })
+    .then((parsedEmail) => {
+      const cleanedEmailBody = cleanEmailBody(parsedEmail.html);
+      const transaction: IncomingTransaction =
+        getTransactionInfo(cleanedEmailBody);
+      logger.info(
+        `Parsed email with messageId ${messageId} for ${userId}, Sender: ${parsedEmail.from.text}`,
+      );
+      addUnverifiedTransaction(transaction, userId);
+    })
+    .catch((error) => {
+      logger.error(`Error with messageId ${messageId} for ${userId}: ${error}`);
+    });
 }
 
 function getEmailsUsingHistoryId(
@@ -115,7 +109,6 @@ function getEmailsUsingHistoryId(
     env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
   );
   oAuth2Client.setCredentials(credentials);
-  console.log("Retrieving emails from:", historyId);
   const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
   return gmail.users.history
     .list({
@@ -131,9 +124,8 @@ function getEmailsUsingHistoryId(
             historyItem.messagesAdded &&
             historyItem.messagesAdded.length > 0
           ) {
-            console.log(
-              "New messages added: ",
-              historyItem.messagesAdded.length,
+            logger.info(
+              `Found ${historyItem.messagesAdded.length} new emails for ${userId} since historyId ${historyId}`,
             );
             for (const messageAdded of historyItem.messagesAdded) {
               const messageId = messageAdded.message.id;
@@ -143,13 +135,15 @@ function getEmailsUsingHistoryId(
         }
         return promises;
       } else {
-        console.log("No new emails since the specified historyId.");
+        logger.info(
+          `No new emails found for ${userId} since historyId ${historyId}`,
+        );
         return Promise.reject("No new emails since the specified historyId.");
       }
     })
     .then((promises) => Promise.all(promises))
     .catch((error) => {
-      console.log("An error occurred:", error);
+      logger.error("An error occurred:", error);
     });
 }
 
@@ -159,7 +153,11 @@ interface GmailNotificationData {
 }
 const prisma = originalPrisma.$extends(bypassRLS()) as PrismaClient;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  logger.info("/api/gmail/pushNotification/webhook invoked");
   if (req.method === "POST") {
     const notification = req.body as pubsub_v1.Schema$ReceivedMessage;
     const data = JSON.parse(
@@ -168,10 +166,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const emailId = data.emailAddress;
     const historyId = data.historyId;
 
-    // Process the received notification
-    console.log("Received Gmail notification from:", emailId);
-    getGmailIntegrationByEmailAddress(emailId, prisma)
+    logger.info(
+      `Received notification for ${emailId} with historyId ${historyId}`,
+    );
+    await getGmailIntegrationByEmailAddress(emailId, prisma)
       .then((gmailOauthDetails) => {
+        if (!gmailOauthDetails) {
+          return Promise.reject(`No Gmail integration found for ${emailId}`);
+        }
+        logger.info(
+          `Matching Gmail integration found for ${emailId} using userId ${gmailOauthDetails.userId}`,
+        );
         return {
           credentials: {
             access_token: gmailOauthDetails.accessToken,
@@ -194,16 +199,20 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return updateHistoryId(historyId.toString(), emailId, prisma);
       })
       .then(() => {
+        // Acknowledge the notification to Gmail
+        logger.info(
+          `Acknowledging notification for ${emailId} with historyId ${historyId}`,
+        );
         res.status(200).end();
       })
       .catch((error) => {
-        console.error("Error retrieving Gmail integration:", error);
+        logger.error(
+          `Error processing notification for ${emailId} with historyId ${historyId}: ${error}`,
+        );
         res.status(500).end();
       });
-
-    // Acknowledge the notification to Gmail
-    console.log("Acknowledging Gmail notification from:", emailId);
   } else {
+    logger.error("Invalid method");
     res.status(405).end(); // Method Not Allowed
   }
 }

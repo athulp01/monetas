@@ -13,7 +13,6 @@ import { env } from "~/env.mjs";
 
 const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    console.log("Gmail callback");
     const auth = getAuth(req);
     if (auth.userId === null) {
       throw new Error("Not authenticated");
