@@ -5,6 +5,12 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@monetas/api";
 
+let telegramDate: string = null;
+export const setTelegramData = (data: string) => {
+  console.log("setting telegram data", data);
+  telegramDate = data;
+};
+
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
@@ -26,6 +32,11 @@ export const api = createTRPCNext<AppRouter>({
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          headers: () => {
+            return {
+              "x-telegram-data": telegramDate,
+            };
+          },
         }),
       ],
     };

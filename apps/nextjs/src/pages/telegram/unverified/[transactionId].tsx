@@ -12,7 +12,7 @@ import Datetime from "react-datetime";
 import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
 
-import { api } from "~/utils/api";
+import { api, setTelegramData } from "~/utils/api";
 import { TransactionTypeOptions } from "~/utils/constants";
 import { ControlledSelect } from "~/components/forms/ControlledSelect";
 import { type UnverifiedTransactionList } from "~/components/transactions/UnverifiedTransactionsTableView";
@@ -77,6 +77,7 @@ const Transaction = () => {
   useEffect(() => {
     if (Telegram) {
       console.log(JSON.stringify(Telegram));
+      setTelegramData(Telegram?.initData as string);
       Telegram?.MainButton.setText("Add");
       Telegram?.MainButton.onClick(() => {
         Telegram?.showConfirm(
