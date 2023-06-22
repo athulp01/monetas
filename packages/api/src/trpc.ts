@@ -50,23 +50,27 @@ const isAuthed = t.middleware(({ next, ctx }) => {
 const isTelegramDataValid = t.middleware(async ({ next, ctx }) => {
   console.log("isTelegramDataValid");
   if (ctx.telegramData) {
-    console.log(ctx.telegramData);
     const params = new URLSearchParams(ctx.telegramData);
     const hash = params.get("hash");
+    params.delete("hash");
+    params.sort();
+    let dataCheckString = "";
+    for (const [key, value] of params.entries()) {
+      dataCheckString += `${key}=${value}\n`;
+    }
+    dataCheckString = dataCheckString.slice(0, -1);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const chatId = JSON.parse(params.get("user"))?.id as string;
-    console.log(hash, chatId);
     const secret_key = crypto
       .createHmac("sha256", "WebAppData")
-      .update(process.env.TELGRAM_API_KEY)
+      .update(process.env.TELEGRAM_API_KEY)
       .digest();
-    if (
-      crypto
-        .createHmac("sha256", secret_key)
-        .update(ctx.telegramData)
-        .digest("hex") == hash
-    ) {
-      console.log("Valid");
+    const computedHash = crypto
+      .createHmac("sha256", secret_key)
+      .update(dataCheckString)
+      .digest("hex");
+    if (computedHash == hash) {
+      console.log("Valid hash");
       const prismaWithoutRls = prisma.$extends(bypassRLS()) as PrismaClient;
       const telegramIntegration = await getTelegramIntegrationByChatId(
         chatId,
