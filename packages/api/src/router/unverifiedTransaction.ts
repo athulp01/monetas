@@ -141,7 +141,7 @@ export const unverifiedTransactionRouter = createTRPCRouter({
             ),
           ]);
       }
-      if (input.payeeAlias) {
+      if (input.payeeAlias && input.payeeId) {
         await addPayeeAlias(input.payeeId, input.payeeAlias, ctx.prisma);
       }
       return;
