@@ -49,7 +49,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
 
 const isTelegramDataValid = t.middleware(async ({ next, ctx }) => {
   console.log("isTelegramDataValid");
-  if (!ctx.telegramData) {
+  if (ctx.telegramData) {
     console.log(ctx.telegramData);
     const params = new URLSearchParams(ctx.telegramData);
     const hash = params.get("hash");
