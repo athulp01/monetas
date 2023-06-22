@@ -1,9 +1,19 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { addPayee, deletePayee, getPayees, updatePayee } from "../repository/payee";
+
+import {
+  addPayee,
+  deletePayee,
+  getPayees,
+  updatePayee,
+} from "../repository/payee";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  telegramProcedure,
+} from "../trpc";
 
 export const payeeRouter = createTRPCRouter({
-  listPayees: publicProcedure
+  listPayees: telegramProcedure
     .input(z.object({ categoryId: z.string().uuid().optional() }).optional())
     .query(async ({ input, ctx }) => {
       const payees = await getPayees(input?.categoryId, ctx.prisma);
@@ -19,7 +29,7 @@ export const payeeRouter = createTRPCRouter({
         name: z.string(),
         categoryIds: z.array(z.string().uuid()).optional(),
         icon: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return addPayee(
@@ -28,7 +38,7 @@ export const payeeRouter = createTRPCRouter({
           icon: input.icon,
           categories: { connect: input.categoryIds?.map((id) => ({ id })) },
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   updatePayee: protectedProcedure
@@ -38,7 +48,7 @@ export const payeeRouter = createTRPCRouter({
         name: z.string().optional(),
         categoryIds: z.array(z.string().uuid()).optional(),
         icon: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return updatePayee(
@@ -50,14 +60,14 @@ export const payeeRouter = createTRPCRouter({
             ? { set: input.categoryIds?.map((id) => ({ id })) }
             : undefined,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   deletePayee: protectedProcedure
     .input(
       z.object({
         id: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return await deletePayee(input.id, ctx.prisma);

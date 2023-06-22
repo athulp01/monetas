@@ -1,16 +1,28 @@
+import { TRANSACTION_TYPE } from "@prisma/client";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { addCategory, deleteCategory, getCategories } from "../repository/category";
-import {TRANSACTION_TYPE} from "@prisma/client"
 
+import {
+  addCategory,
+  deleteCategory,
+  getCategories,
+} from "../repository/category";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  telegramProcedure,
+} from "../trpc";
 
 export const categoryRouter = createTRPCRouter({
-  listCategories: publicProcedure
+  listCategories: telegramProcedure
     .input(
-      z.object({ type: z.nativeEnum(TRANSACTION_TYPE).optional() }).optional()
+      z.object({ type: z.nativeEnum(TRANSACTION_TYPE).optional() }).optional(),
     )
     .query(async ({ input, ctx }) => {
-      const categories = (await getCategories(input?.type ?? TRANSACTION_TYPE.DEBIT, ctx.prisma)) ?? [];
+      const categories =
+        (await getCategories(
+          input?.type ?? TRANSACTION_TYPE.DEBIT,
+          ctx.prisma,
+        )) ?? [];
       const totalCount = await ctx.prisma.category.count();
       return {
         totalCount,
@@ -23,7 +35,7 @@ export const categoryRouter = createTRPCRouter({
         name: z.string(),
         type: z.nativeEnum(TRANSACTION_TYPE),
         icon: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return await addCategory(
@@ -32,7 +44,7 @@ export const categoryRouter = createTRPCRouter({
           type: input.type,
           icon: input.icon,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   deleteCategory: protectedProcedure

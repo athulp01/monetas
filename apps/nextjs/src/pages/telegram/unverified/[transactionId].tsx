@@ -3,52 +3,59 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import Datetime from 'react-datetime'
-import Select from 'react-select'
-import { Controller, useForm } from 'react-hook-form'
-import React, { useCallback, useEffect, useState } from 'react'
-import Script from 'next/script'
-import { api } from '~/utils/api'
-import { useRouter } from 'next/router'
-import telegramStyles from '~/css/telegram'
-import { TRANSACTION_TYPE } from '@prisma/client'
-import { type UnverifiedTransactionList } from '~/components/transactions/UnverifiedTransactionsTableView'
-import { TransactionTypeOptions } from '~/utils/constants'
-import { ControlledSelect } from '~/components/forms/ControlledSelect'
+
+import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Script from "next/script";
+import { TRANSACTION_TYPE } from "@prisma/client";
+import Datetime from "react-datetime";
+import { Controller, useForm } from "react-hook-form";
+import Select from "react-select";
+
+import { api } from "~/utils/api";
+import { TransactionTypeOptions } from "~/utils/constants";
+import { ControlledSelect } from "~/components/forms/ControlledSelect";
+import { type UnverifiedTransactionList } from "~/components/transactions/UnverifiedTransactionsTableView";
+import telegramStyles from "~/css/telegram";
 
 const Transaction = () => {
-  const { transactionId } = useRouter().query
-  const unverifiedTransactionQuery = api.unverifiedTransaction.getUnverifiedTransaction.useQuery(
-    {
-      id: transactionId as string,
-    },
-    {
-      onSuccess: (data) => {
-        editForm.reset(data)
+  const { transactionId } = useRouter().query;
+  const unverifiedTransactionQuery =
+    api.unverifiedTransaction.getUnverifiedTransaction.useQuery(
+      {
+        id: transactionId as string,
       },
-      refetchInterval: false,
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    }
-  )
-  const accountsQuery = api.account.listAccounts.useQuery()
+      {
+        onSuccess: (data) => {
+          editForm.reset(data);
+        },
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+    );
+  const accountsQuery = api.account.listAccounts.useQuery();
 
   const verifyTransactionMutation =
-    api.unverifiedTransaction.verifyUnverifiedTransaction.useMutation()
+    api.unverifiedTransaction.verifyUnverifiedTransaction.useMutation();
 
   const editForm = useForm<UnverifiedTransactionList[0]>({
     defaultValues: unverifiedTransactionQuery.data,
-  })
+  });
 
-  const payeesQuery = api.payee.listPayees.useQuery({ categoryId: editForm.watch('category')?.id })
-  const categoriesQuery = api.category.listCategories.useQuery({ type: editForm.watch('type') })
+  const payeesQuery = api.payee.listPayees.useQuery({
+    categoryId: editForm.watch("category")?.id,
+  });
+  const categoriesQuery = api.category.listCategories.useQuery({
+    type: editForm.watch("type"),
+  });
 
-  const [Telegram, setTelegram] = useState(null)
+  const [Telegram, setTelegram] = useState(null);
 
   const addTransaction = useCallback(
     async (transaction: UnverifiedTransactionList[0]) => {
-      Telegram?.MainButton.showProgress()
+      Telegram?.MainButton.showProgress();
       const payload = {
         amount: +transaction.amount,
         type: transaction.type,
@@ -58,33 +65,34 @@ const Transaction = () => {
         transferredAccountId: transaction.transferredAccount.id,
         unverifiedTransactionId: transaction.id,
         payeeAlias: transaction.payeeAlias ?? undefined,
-      }
-      const resp = await verifyTransactionMutation.mutateAsync(payload)
-      console.log(resp)
-      Telegram?.MainButton.hideProgress()
-      Telegram?.showAlert('Transaction added', () => Telegram?.close())
+      };
+      const resp = await verifyTransactionMutation.mutateAsync(payload);
+      console.log(resp);
+      Telegram?.MainButton.hideProgress();
+      Telegram?.showAlert("Transaction added", () => Telegram?.close());
     },
-    [Telegram, verifyTransactionMutation]
-  )
+    [Telegram, verifyTransactionMutation],
+  );
 
   useEffect(() => {
     if (Telegram) {
-      Telegram?.MainButton.setText('Add')
+      console.log(JSON.stringify(Telegram));
+      Telegram?.MainButton.setText("Add");
       Telegram?.MainButton.onClick(() => {
         Telegram?.showConfirm(
-          'Do you want to add this transaction to monetas',
+          "Do you want to add this transaction to monetas",
           (isConfirmed: boolean) => {
-            console.log(isConfirmed)
-            isConfirmed && void editForm.handleSubmit(addTransaction)()
-          }
-        )
-      })
-      Telegram?.MainButton.show()
-      Telegram?.BackButton.show()
-      Telegram?.BackButton.onClick(() => Telegram?.close())
-      console.log(Telegram?.version)
+            console.log(isConfirmed);
+            isConfirmed && void editForm.handleSubmit(addTransaction)();
+          },
+        );
+      });
+      Telegram?.MainButton.show();
+      Telegram?.BackButton.show();
+      Telegram?.BackButton.onClick(() => Telegram?.close());
+      console.log(Telegram?.version);
     }
-  }, [addTransaction, Telegram, editForm])
+  }, [addTransaction, Telegram, editForm]);
 
   if (
     unverifiedTransactionQuery.isLoading ||
@@ -92,7 +100,7 @@ const Transaction = () => {
     payeesQuery.isLoading ||
     categoriesQuery.isLoading
   ) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
@@ -100,14 +108,16 @@ const Transaction = () => {
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
         onLoad={() => {
-          setTelegram((window as any).Telegram.WebApp)
+          setTelegram((window as any).Telegram.WebApp);
         }}
       />
       <div className="h-screen">
         <style jsx global>
           {telegramStyles}
         </style>
-        <header className="text-center text-2xl font-bold">Review Transaction</header>
+        <header className="text-center text-2xl font-bold">
+          Review Transaction
+        </header>
 
         <form id="editForm" className="p-5">
           <Controller
@@ -136,8 +146,8 @@ const Transaction = () => {
                 })}
                 classNames={{
                   control: () =>
-                    ' w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-                  input: () => 'border-0 text-white py-4 bg-black',
+                    " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                  input: () => "border-0 text-white py-4 bg-black",
                 }}
               />
             )}
@@ -160,7 +170,7 @@ const Transaction = () => {
                 className="my-2"
                 form="editForm"
                 isLoading={categoriesQuery.isLoading}
-                isDisabled={editForm.watch('type') == null}
+                isDisabled={editForm.watch("type") == null}
                 getOptionLabel={(option) => option.name}
                 getOptionValue={(option) => option.id}
                 menuPortalTarget={document.body}
@@ -178,13 +188,13 @@ const Transaction = () => {
                 })}
                 classNames={{
                   control: () =>
-                    ' w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-                  input: () => 'border-0 text-white py-4',
+                    " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                  input: () => "border-0 text-white py-4",
                 }}
               />
             )}
           ></Controller>
-          {editForm.watch('type') !== TRANSACTION_TYPE.TRANSFER ? (
+          {editForm.watch("type") !== TRANSACTION_TYPE.TRANSFER ? (
             <Controller
               control={editForm.control}
               name="payee"
@@ -211,8 +221,8 @@ const Transaction = () => {
                   })}
                   classNames={{
                     control: () =>
-                      ' w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-                    input: () => 'border-0 text-white py-4',
+                      " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                    input: () => "border-0 text-white py-4",
                   }}
                 />
               )}
@@ -221,10 +231,10 @@ const Transaction = () => {
             <ControlledSelect
               control={editForm.control}
               form="editForm"
-              isDisabled={editForm.watch('type') == null}
+              isDisabled={editForm.watch("type") == null}
               name="transferredAccount"
               options={accountsQuery?.data.accounts.filter(
-                (account) => account.id !== editForm.watch('sourceAccount')?.id
+                (account) => account.id !== editForm.watch("sourceAccount")?.id,
               )}
             ></ControlledSelect>
           )}
@@ -240,12 +250,12 @@ const Transaction = () => {
                 dateFormat="Do MMMM YY"
                 className="my-2"
                 inputProps={{
-                  form: 'editForm',
-                  placeholder: 'Select date',
+                  form: "editForm",
+                  placeholder: "Select date",
                   onBlur: onBlur,
                   name: name,
                   className:
-                    'block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
+                    "block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
                 }}
                 onChange={onChange}
                 value={value}
@@ -259,7 +269,7 @@ const Transaction = () => {
             </span>
             <input
               form="editForm"
-              {...editForm.register('amount', { required: true })}
+              {...editForm.register("amount", { required: true })}
               placeholder="Amount"
               type="number"
               className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
@@ -280,7 +290,7 @@ const Transaction = () => {
         </form>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Transaction
+export default Transaction;

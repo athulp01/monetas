@@ -15,7 +15,11 @@ import {
   getUnverifiedTransactionCount,
   getUnverifiedTransactions,
 } from "../repository/unverifiedTransaction";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  telegramProcedure,
+} from "../trpc";
 
 export const unverifiedTransactionRouter = createTRPCRouter({
   listUnverifiedTransactions: protectedProcedure
@@ -37,20 +41,20 @@ export const unverifiedTransactionRouter = createTRPCRouter({
         unverifiedTransactions,
       };
     }),
-  deleteUnverifiedTransaction: publicProcedure
+  deleteUnverifiedTransaction: telegramProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       return await deleteUnverifiedTransaction(input.id, ctx.prisma);
     }),
-  getUnverifiedTransaction: publicProcedure
+  getUnverifiedTransaction: telegramProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
       return await getUnverifiedTransaction(input.id, ctx.prisma);
     }),
-  getUnverifiedTransactionCount: publicProcedure.query(async ({ ctx }) => {
+  getUnverifiedTransactionCount: protectedProcedure.query(async ({ ctx }) => {
     return getUnverifiedTransactionCount(ctx.prisma);
   }),
-  verifyUnverifiedTransaction: publicProcedure
+  verifyUnverifiedTransaction: telegramProcedure
     .input(
       z.object({
         amount: z.number().min(0),

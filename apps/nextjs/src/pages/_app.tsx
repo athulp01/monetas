@@ -27,7 +27,7 @@ import { api } from "../utils/api";
 const publicPages = [
   "/sign-in/[[...index]]",
   "/sign-up/[[...index]]",
-  "telegram",
+  "/telegram/unverified/[transactionId]",
 ];
 
 const MyApp: AppType = ({ Component, pageProps }) => {
@@ -105,7 +105,6 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             </>
           )}
           <ToastContainer position="top-right" autoClose={5000} draggable />
-
           <Analytics />
         </>
       </Provider>

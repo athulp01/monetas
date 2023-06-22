@@ -21,3 +21,5 @@ export interface TransactionNotification {
   transactionId: string;
   userId: string;
 }
+
+export const TELEGRAM_DATA_HEADER = "x-telegram-data";

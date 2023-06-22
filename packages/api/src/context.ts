@@ -6,7 +6,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { type inferAsyncReturnType } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
-import { forUser, prisma, type PrismaClient } from "@monetas/db";
+import { type PrismaClient } from "@monetas/db";
 
 /**
  * Replace this with an object if you want to pass things to createContextInner
@@ -22,10 +22,9 @@ type AuthContextProps = {
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 export const createContextInner = async ({ auth }: AuthContextProps) => {
-  const prismaWithRls = prisma.$extends(forUser(auth?.userId));
   return {
     auth,
-    prisma: prismaWithRls as PrismaClient,
+    prisma: null,
   };
 };
 
@@ -34,7 +33,12 @@ export const createContextInner = async ({ auth }: AuthContextProps) => {
  * @link https://trpc.io/docs/context
  **/
 export const createContext = async (opts: CreateNextContextOptions) => {
-  return await createContextInner({ auth: getAuth(opts.req) });
+  const telegramData = opts.req.headers["x-telegram-data"] as string;
+  const innerContext = await createContextInner({ auth: getAuth(opts.req) });
+  return {
+    ...innerContext,
+    telegramData,
+  };
 };
 
 export type Context = inferAsyncReturnType<typeof createContext>;
