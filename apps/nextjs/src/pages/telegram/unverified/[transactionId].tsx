@@ -62,7 +62,9 @@ const Transaction = () => {
         payeeId: transaction.payee ? transaction.payee.id : undefined,
         categoryId: transaction.category.id,
         sourceAccountId: transaction.sourceAccount.id,
-        transferredAccountId: transaction.transferredAccount.id,
+        transferredAccountId: transaction.transferredAccount
+          ? transaction.transferredAccount.id
+          : undefined,
         unverifiedTransactionId: transaction.id,
         payeeAlias: transaction.payeeAlias ?? undefined,
       };
