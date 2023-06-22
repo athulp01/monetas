@@ -10,10 +10,14 @@ import {
   logAccountBalance,
   updateAccount,
 } from "../repository/account";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  telegramProcedure,
+} from "../trpc";
 
 export const accountRouter = createTRPCRouter({
-  listAccounts: publicProcedure.query(async ({ ctx }) => {
+  listAccounts: telegramProcedure.query(async ({ ctx }) => {
     const accounts = await getAccounts(ctx.prisma);
     const totalCount = await ctx.prisma.financialAccount.count();
     return {

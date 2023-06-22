@@ -158,13 +158,43 @@ const Transaction = () => {
                 />
               )}
             ></Controller>
-            <ControlledSelect
+            <Controller
               control={editForm.control}
-              form="editForm"
               name="type"
-              options={TransactionTypeOptions}
-              isSimple
-            ></ControlledSelect>
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  className="my-2"
+                  onChange={(option) => field.onChange(option.id)}
+                  value={TransactionTypeOptions.filter(
+                    (option) => option.id === field.value,
+                  )}
+                  options={TransactionTypeOptions}
+                  form="editForm"
+                  getOptionLabel={(option) => option.name}
+                  getOptionValue={(option) => option.id}
+                  menuPortalTarget={document.body}
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                  isSearchable={false}
+                  theme={(theme) => ({
+                    ...theme,
+                    colors: {
+                      ...theme.colors,
+                      primary25: Telegram?.themeParams?.hint_color,
+                      primary: Telegram?.themeParams?.button_color,
+                      neutral0: Telegram?.themeParams?.secondary_bg_color,
+                      neutral80: Telegram?.themeParams?.text_color,
+                    },
+                  })}
+                  classNames={{
+                    control: () =>
+                      " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                    input: () => "border-0 text-white py-4 bg-black",
+                  }}
+                />
+              )}
+            ></Controller>
             <Controller
               control={editForm.control}
               name="category"

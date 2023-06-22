@@ -71,6 +71,7 @@ const isTelegramDataValid = t.middleware(async ({ next, ctx }) => {
       .createHmac("sha256", secret_key)
       .update(dataCheckString)
       .digest("hex");
+    //TODO: check auth date as well
     if (computedHash == hash) {
       console.log("Valid hash");
       const prismaWithoutRls = prisma.$extends(bypassRLS()) as PrismaClient;
