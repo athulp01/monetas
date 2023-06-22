@@ -59,8 +59,10 @@ const isTelegramDataValid = t.middleware(async ({ next, ctx }) => {
       dataCheckString += `${key}=${value}\n`;
     }
     dataCheckString = dataCheckString.slice(0, -1);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const chatId = JSON.parse(params.get("user"))?.id as string;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
+    const chatId: string = JSON.parse(
+      params.get("user"),
+    )?.id?.toString() as string;
     const secret_key = crypto
       .createHmac("sha256", "WebAppData")
       .update(process.env.TELEGRAM_API_KEY)
