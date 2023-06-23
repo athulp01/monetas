@@ -103,7 +103,7 @@ const InvestmentsTableView = (props: Props) => {
       name: investment.name,
       units: +investment.units,
       buyPrice: +investment.buyPrice,
-      buyDate: new Date(investment.buyDate),
+      buyDate: new Date(),
       type: INVESTMENT_TYPE.STOCK,
       symbol: investment.symbol,
       currentPrice: +Math.floor(investment.currentPrice),

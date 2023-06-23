@@ -6,13 +6,12 @@ import {
   mdiBankTransferOut,
   mdiChartPie,
   mdiChartTimelineVariant,
-  mdiCreditCardClock,
 } from "@mdi/js";
 import moment from "moment";
 
 import { api } from "~/utils/api";
+import CardBox from "~/components/common/cards/CardBox";
 import CardBoxWidget from "../components/common/cards/CardBoxWidget";
-import NotificationBar from "../components/common/misc/NotificationBar";
 import SectionMain from "../components/common/sections/SectionMain";
 import SectionTitleLineWithButton from "../components/common/sections/SectionTitleLineWithButton";
 import LayoutAuthenticated from "../components/layout";
@@ -62,13 +61,15 @@ const Dashboard = () => {
             label="Income"
           />
         </div>
-        <NotificationBar color="warning" icon={mdiCreditCardClock}>
-          Credit card bill payment is pending. Last date is 28 Feb, 2023
-        </NotificationBar>
         <SectionTitleLineWithButton
           icon={mdiChartPie}
           title="Trends overview"
         ></SectionTitleLineWithButton>
+        <CardBox className="min-h-1/4 mb-6 mt-6">
+          <h5 className="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-white">
+            Coming soon
+          </h5>
+        </CardBox>
       </SectionMain>
     </>
   );

@@ -10,6 +10,8 @@ const config = {
       "./tsconfig.json",
       "./apps/*/tsconfig.json",
       "./packages/*/tsconfig.json",
+      "./apps/electron/layers/main/tsconfig.json",
+      "./apps/electron/layers/preload/tsconfig.json",
     ],
   },
   settings: {
