@@ -147,7 +147,7 @@ const TransactionsTableView = (props: Props) => {
       sourceAccountId: data.sourceAccount?.id,
       transferredAccountId: data.transferredAccount?.id,
       timeCreated: new Date(data.timeCreated),
-      tags: data.tags.map((tag) => tag.name),
+      tags: data.tags?.map((tag) => tag.name) ?? undefined,
     };
     setDialogProps({
       title: "Confirmation",
@@ -179,7 +179,7 @@ const TransactionsTableView = (props: Props) => {
       sourceAccountId: data.sourceAccount?.id,
       transferredAccountId: data.transferredAccount?.id,
       timeCreated: new Date(data.timeCreated),
-      tags: data.tags.map((tag) => tag.name),
+      tags: data.tags?.map((tag) => tag.name) ?? undefined,
     };
     console.log(`Data: ${JSON.stringify(payload)}`);
     setDialogProps({
