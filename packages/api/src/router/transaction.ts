@@ -15,7 +15,7 @@ import {
   getTransactionsCount,
   updateTransaction,
 } from "../repository/transactions";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const transactionRouter = createTRPCRouter({
   listTransactions: protectedProcedure
@@ -39,7 +39,7 @@ export const transactionRouter = createTRPCRouter({
         transactions: transactionList,
       };
     }),
-  addTransaction: publicProcedure
+  addTransaction: protectedProcedure
     .input(
       z.object({
         amount: z.number().min(0),

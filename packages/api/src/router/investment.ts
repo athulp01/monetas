@@ -1,29 +1,33 @@
-
+import { INVESTMENT_TYPE } from "@prisma/client";
 import { z } from "zod";
 
-
-import { INVESTMENT_TYPE } from "@prisma/client";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { addInvestment, deleteInvestment, getInvestments, getQuote, updateInvestment } from "../repository/investment";
+import {
+  addInvestment,
+  deleteInvestment,
+  getInvestments,
+  getQuote,
+  updateInvestment,
+} from "../repository/investment";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const investmentRouter = createTRPCRouter({
-  getQuote: publicProcedure
+  getQuote: protectedProcedure
     .input(
       z.object({
         symbol: z.string(),
         type: z.nativeEnum(INVESTMENT_TYPE),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const quote = await getQuote(
-        input.symbol + (input.type === INVESTMENT_TYPE.STOCK ? ".NS" : ".BO")
+        input.symbol + (input.type === INVESTMENT_TYPE.STOCK ? ".NS" : ".BO"),
       );
       if (quote == null) {
         throw new Error("Invalid symbol");
       }
       return quote;
     }),
-  listInvestments: publicProcedure.query(async ({ ctx }) => {
+  listInvestments: protectedProcedure.query(async ({ ctx }) => {
     const investments = await getInvestments(ctx.prisma);
     const totalCount = await ctx.prisma.investment.count();
     return {
@@ -41,7 +45,7 @@ export const investmentRouter = createTRPCRouter({
         buyPrice: z.number(),
         buyDate: z.date(),
         currentPrice: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return addInvestment(
@@ -54,7 +58,7 @@ export const investmentRouter = createTRPCRouter({
           buyDate: input.buyDate,
           currentPrice: input.currentPrice,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   deleteInvestment: protectedProcedure
@@ -73,7 +77,7 @@ export const investmentRouter = createTRPCRouter({
         buyPrice: z.number().optional(),
         buyDate: z.date().optional(),
         currentPrice: z.number().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       return updateInvestment(
@@ -87,7 +91,7 @@ export const investmentRouter = createTRPCRouter({
           buyDate: input.buyDate,
           currentPrice: input.currentPrice,
         },
-        ctx.prisma
+        ctx.prisma,
       );
     }),
 });

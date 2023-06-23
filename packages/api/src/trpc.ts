@@ -104,7 +104,6 @@ const isTelegramDataValid = t.middleware(async ({ next, ctx }) => {
   throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
 });
 
-export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthed);
 
 export const telegramProcedure = t.procedure.use(isTelegramDataValid);
