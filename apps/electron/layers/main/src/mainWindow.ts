@@ -1,5 +1,5 @@
 import { join } from "path";
-import { BrowserWindow } from "electron";
+import { BrowserWindow, nativeTheme } from "electron";
 
 async function createWindow() {
   const browserWindow = new BrowserWindow({
@@ -7,7 +7,7 @@ async function createWindow() {
     movable: true,
     frame: false,
     titleBarStyle: "hidden",
-    vibrancy: "dark",
+    vibrancy: "sidebar",
     webPreferences: {
       nativeWindowOpen: true,
       webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
@@ -22,6 +22,7 @@ async function createWindow() {
    * @see https://github.com/electron/electron/issues/25012
    */
   browserWindow.on("ready-to-show", () => {
+    nativeTheme.themeSource = "light";
     browserWindow?.show();
 
     if (import.meta.env.DEV) {

@@ -104,7 +104,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
               </SignedOut>
             </>
           )}
-          <ToastContainer position="top-right" autoClose={5000} draggable />
+          <ToastContainer
+            hideProgressBar
+            position="top-right"
+            autoClose={5000}
+            draggable
+          />
           <Analytics />
         </>
       </Provider>

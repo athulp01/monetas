@@ -58,6 +58,7 @@
     "react-paginate": "^8.2.0",
     "react-redux": "^8.0.2",
     "react-select": "^5.7.0",
+    "react-telegram-login": "^1.1.2",
     "react-toastify": "^9.1.2",
     "react-top-loading-bar": "^2.3.1",
     "superjson": "1.9.1",

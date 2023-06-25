@@ -440,6 +440,9 @@ importers:
       react-select:
         specifier: ^5.7.0
         version: 5.7.0(@types/react@18.2.6)(react-dom@18.2.0)(react@18.2.0)
+      react-telegram-login:
+        specifier: ^1.1.2
+        version: 1.1.2(react@18.2.0)
       react-toastify:
         specifier: ^9.1.2
         version: 9.1.2(react-dom@18.2.0)(react@18.2.0)
@@ -13589,6 +13592,14 @@ packages:
     resolution: {integrity: sha512-yFNHrlVEReVYKsLI5lF05tZoHveA5pGzjFbFJY/3pOqqjGOmMmqx83N4hIjN2n6E1AOa+eQEUxs3CgRnPmT0RQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /react-telegram-login@1.1.2(react@18.2.0):
+    resolution: {integrity: sha512-pDP+bvfaklWgnK5O6yvZnIwgky0nnYUU6Zhk0EjdMSkPsLQoOzZRsXIoZnbxyBXhi7346bsxMH+EwwJPTxClDw==}
+    peerDependencies:
+      react: ^16.13.1
     dependencies:
       react: 18.2.0
     dev: false

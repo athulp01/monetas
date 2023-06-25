@@ -1,10 +1,11 @@
-import React, { type ReactNode } from 'react'
-import { containerMaxW } from '../../../config/config'
+import React, { type ReactNode } from "react";
 
 type Props = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 export default function SectionMain({ children }: Props) {
-  return <section className={`pt-6 ${containerMaxW}`}>{children}</section>
+  return (
+    <section className={`min-h-screen bg-gray-50 p-2 pt-6`}>{children}</section>
+  );
 }
