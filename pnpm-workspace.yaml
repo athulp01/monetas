@@ -3,7 +3,6 @@ packages:
   - apps/nextjs
   - apps/importer
   - apps/email-listener
-  - apps/electron
   - packages/api
   - packages/db
   - packages/parser
