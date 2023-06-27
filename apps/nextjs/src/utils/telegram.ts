@@ -6,7 +6,7 @@ import {
 
 import { TRANSACTION_ACTIONS, type TelegramMethod } from "~/types/telegram";
 
-export const TELEGRAM_SECRET_HEADER = "X-Telegram-Bot-Api-Secret-Token";
+export const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
 export const TELEGRAM_BASE_URL = "https://api.telegram.org";
 
 export const getInlineKeyboardMsg = (
