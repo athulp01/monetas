@@ -30,7 +30,7 @@ const scopes = [
   "profile",
 ];
 
-const PayeesPage = () => {
+const SettingsPage = () => {
   const gmailIntegrationQuery = api.integration.getGmailIntegration.useQuery();
   const telegramIntegrationQuery =
     api.integration.getTelegramIntegration.useQuery();
@@ -145,8 +145,8 @@ const PayeesPage = () => {
   );
 };
 
-PayeesPage.getLayout = function getLayout(page: ReactElement) {
+SettingsPage.getLayout = function getLayout(page: ReactElement) {
   return <LayoutAuthenticated>{page}</LayoutAuthenticated>;
 };
 
-export default PayeesPage;
+export default SettingsPage;
