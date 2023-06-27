@@ -102,7 +102,7 @@ const SettingsPage = () => {
                 bottonSize="medium"
                 dataOnauth={(data) => {
                   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
-                  addTelegramIntegration(data.id);
+                  addTelegramIntegration(data.id.toString());
                 }}
                 botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
               />
