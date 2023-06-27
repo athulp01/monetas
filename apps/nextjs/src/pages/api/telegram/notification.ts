@@ -13,7 +13,10 @@ import {
   NotificationType,
   type TransactionNotification,
 } from "~/utils/constants";
-import { sendTransactionMessage } from "~/utils/telegram";
+import {
+  TELEGRAM_SECRET_HEADER,
+  sendTransactionMessage,
+} from "~/utils/telegram";
 
 async function sendUnverifiedTransactionNotification(
   id: string,
@@ -43,6 +46,7 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
+  authorizeRequestFromTG(request);
   if (request.method === "POST") {
     const notification = request.body as TransactionNotification;
     const prisma = originalPrisma.$extends(
@@ -76,4 +80,13 @@ export default async function handler(
     return;
   }
   response.status(400).json({ error: "Invalid request" });
+}
+
+export function authorizeRequestFromTG(request: NextApiRequest) {
+  if (
+    request.headers[TELEGRAM_SECRET_HEADER] !==
+    process.env.TELEGRAM_SECRET_TOKEN
+  ) {
+    return new Response("Unauthorized", { status: 403 });
+  }
 }

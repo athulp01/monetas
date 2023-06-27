@@ -23,7 +23,6 @@ import { TELEGRAM_SECRET_HEADER } from "~/utils/telegram";
 import { env } from "~/env.mjs";
 
 const sendNotifications = (notification: TransactionNotification) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const url = new URL("api/telegram/notification", env.BASE_URL);
   console.log("Sending notification to:", url.toString());
   return fetch(url.toString(), {

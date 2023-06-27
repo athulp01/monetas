@@ -30,7 +30,7 @@ export default function CardBox({
 }: Props) {
   const componentClass = [
     "bg-white flex",
-    hasTable ? "border-0" : "border",
+    hasTable ? "" : "shadow",
     className,
     rounded,
     flex,
