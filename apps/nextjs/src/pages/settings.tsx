@@ -104,7 +104,7 @@ const SettingsPage = () => {
                   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
                   addTelegramIntegration(data.id);
                 }}
-                botName="monetas_notification_bot"
+                botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
               />
             )}
             <div className={"mt-12 flex justify-between"}>
