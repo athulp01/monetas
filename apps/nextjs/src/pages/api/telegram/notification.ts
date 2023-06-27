@@ -46,7 +46,10 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  authorizeRequestFromTG(request);
+  if (!authorizeRequestFromTG(request)) {
+    response.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   if (request.method === "POST") {
     const notification = request.body as TransactionNotification;
     const prisma = originalPrisma.$extends(
@@ -83,10 +86,8 @@ export default async function handler(
 }
 
 export function authorizeRequestFromTG(request: NextApiRequest) {
-  if (
-    request.headers[TELEGRAM_SECRET_HEADER] !==
+  return (
+    request.headers[TELEGRAM_SECRET_HEADER] ===
     process.env.TELEGRAM_SECRET_TOKEN
-  ) {
-    return new Response("Unauthorized", { status: 403 });
-  }
+  );
 }

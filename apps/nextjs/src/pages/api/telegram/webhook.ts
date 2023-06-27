@@ -8,7 +8,10 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method === "POST") {
-    authorizeRequestFromTG(req);
+    if (authorizeRequestFromTG(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const payload = req.body as Update;
     console.log(req.body);
 
@@ -38,10 +41,8 @@ export default async function handler(
 
 // Verify the request signature
 export function authorizeRequestFromTG(request: NextApiRequest) {
-  if (
-    request.headers[TELEGRAM_SECRET_HEADER] !==
+  return (
+    request.headers[TELEGRAM_SECRET_HEADER] ===
     process.env.TELEGRAM_SECRET_TOKEN
-  ) {
-    return new Response("Unauthorized", { status: 403 });
-  }
+  );
 }

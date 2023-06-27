@@ -35,6 +35,10 @@ const sendNotifications = (notification: TransactionNotification) => {
   });
 };
 
+const verifyTransaction = (transaction: IncomingTransaction) => {
+  return !(transaction?.type == null || transaction?.amount == null);
+};
+
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
@@ -46,6 +50,9 @@ export default async function handler(
   const prisma = originalPrisma.$extends(forUser(userId)) as PrismaClient;
   if (request.method === "POST") {
     const transaction = request.body as IncomingTransaction;
+    if (!verifyTransaction(transaction)) {
+      return response.status(400).json({ error: "Invalid transaction" });
+    }
     console.log(`New transaction detected ${JSON.stringify(transaction)}`);
     let account: FinancialAccount = null;
     if (transaction?.sourceAccount?.number) {
