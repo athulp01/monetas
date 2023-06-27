@@ -25,6 +25,11 @@ import { env } from "~/env.mjs";
 const sendNotifications = (notification: TransactionNotification) => {
   const url = new URL("api/telegram/notification", env.BASE_URL);
   console.log("Sending notification to:", url.toString());
+  console.log(
+    "Headers:",
+    TELEGRAM_SECRET_HEADER,
+    process.env.TELEGRAM_SECRET_TOKEN,
+  );
   return fetch(url.toString(), {
     method: "POST",
     headers: {

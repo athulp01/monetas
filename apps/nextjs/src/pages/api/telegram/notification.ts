@@ -86,6 +86,7 @@ export default async function handler(
 }
 
 export function authorizeRequestFromTG(request: NextApiRequest) {
+  console.log(`headers: ${JSON.stringify(request.headers)}`);
   return (
     request.headers[TELEGRAM_SECRET_HEADER] ===
     process.env.TELEGRAM_SECRET_TOKEN
