@@ -14,7 +14,6 @@ import {
 } from "@monetas/db";
 import { getTransactionInfo, type IncomingTransaction } from "@monetas/parser";
 
-import { logger } from "~/utils/logger";
 import { env } from "~/env.mjs";
 
 const cleanEmailBody = (body: string | false) => {
@@ -48,22 +47,18 @@ function addUnverifiedTransaction(
     typeof transaction.amount === "number" &&
     transaction.amount > 0
   ) {
-    logger.info(
+    console.info(
       `Adding unverified transaction for ${userId} with amount ${transaction.amount} and type ${transaction.type}`,
     );
     //Promise is ignored until there is a rollback mechanism
-    void fetch(
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-      env.BASE_URL + "/api/transaction/unverified/" + userId,
-      {
-        method: "POST",
-        body: JSON.stringify(transaction),
-        headers: new Headers({
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        }),
-      },
-    );
+    void fetch(env.BASE_URL + "/api/transaction/unverified/" + userId, {
+      method: "POST",
+      body: JSON.stringify(transaction),
+      headers: new Headers({
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      }),
+    });
   }
 }
 
@@ -79,7 +74,7 @@ async function getEmailUsingMessageId(
       format: "raw",
     })
     .then((message) => {
-      logger.info(`Fetched email with messageId ${messageId} for ${userId}`);
+      console.info(`Fetched email with messageId ${messageId} for ${userId}`);
       return simpleParser(
         Buffer.from(message.data.raw, "base64").toString("utf-8"),
       );
@@ -88,13 +83,15 @@ async function getEmailUsingMessageId(
       const cleanedEmailBody = cleanEmailBody(parsedEmail.html);
       const transaction: IncomingTransaction =
         getTransactionInfo(cleanedEmailBody);
-      logger.info(
+      console.info(
         `Parsed email with messageId ${messageId} for ${userId}, Sender: ${parsedEmail.from.text}`,
       );
       addUnverifiedTransaction(transaction, userId);
     })
     .catch((error) => {
-      logger.error(`Error with messageId ${messageId} for ${userId}: ${error}`);
+      console.error(
+        `Error with messageId ${messageId} for ${userId}: ${error}`,
+      );
     });
 }
 
@@ -124,7 +121,7 @@ function getEmailsUsingHistoryId(
             historyItem.messagesAdded &&
             historyItem.messagesAdded.length > 0
           ) {
-            logger.info(
+            console.info(
               `Found ${historyItem.messagesAdded.length} new emails for ${userId} since historyId ${historyId}`,
             );
             for (const messageAdded of historyItem.messagesAdded) {
@@ -135,7 +132,7 @@ function getEmailsUsingHistoryId(
         }
         return promises;
       } else {
-        logger.info(
+        console.info(
           `No new emails found for ${userId} since historyId ${historyId}`,
         );
         return Promise.reject("No new emails since the specified historyId.");
@@ -143,7 +140,7 @@ function getEmailsUsingHistoryId(
     })
     .then((promises) => Promise.all(promises))
     .catch((error) => {
-      logger.error("An error occurred:", error);
+      console.error("An error occurred:", error);
     });
 }
 
@@ -157,7 +154,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  logger.info("/api/gmail/pushNotification/webhook invoked");
+  console.info("/api/gmail/pushNotification/webhook invoked");
   if (req.method === "POST") {
     const notification = req.body as pubsub_v1.Schema$ReceivedMessage;
     const data = JSON.parse(
@@ -166,7 +163,7 @@ export default async function handler(
     const emailId = data.emailAddress;
     const historyId = data.historyId;
 
-    logger.info(
+    console.info(
       `Received notification for ${emailId} with historyId ${historyId}`,
     );
     await getGmailIntegrationByEmailAddress(emailId, prisma)
@@ -174,7 +171,7 @@ export default async function handler(
         if (!gmailOauthDetails) {
           return Promise.reject(`No Gmail integration found for ${emailId}`);
         }
-        logger.info(
+        console.info(
           `Matching Gmail integration found for ${emailId} using userId ${gmailOauthDetails.userId}`,
         );
         return {
@@ -200,19 +197,19 @@ export default async function handler(
       })
       .then(() => {
         // Acknowledge the notification to Gmail
-        logger.info(
+        console.info(
           `Acknowledging notification for ${emailId} with historyId ${historyId}`,
         );
         res.status(200).end();
       })
       .catch((error) => {
-        logger.error(
+        console.error(
           `Error processing notification for ${emailId} with historyId ${historyId}: ${error}`,
         );
         res.status(500).end();
       });
   } else {
-    logger.error("Invalid method");
+    console.error("Invalid method");
     res.status(405).end(); // Method Not Allowed
   }
 }
