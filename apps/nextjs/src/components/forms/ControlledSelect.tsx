@@ -1,29 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import Select from 'react-select'
-import { Controller, type ControllerProps } from 'react-hook-form'
-import React from 'react'
+
+import React from "react";
+import { Controller, type ControllerProps } from "react-hook-form";
+import Select from "react-select";
 
 interface Props {
-  control: any
-  name: string
-  form: string
+  control: any;
+  name: string;
+  className?: string;
+  form: string;
   options: {
-    name: string
-    id: string
-  }[]
-  isSimple?: boolean
-  rules?: ControllerProps['rules']
-  isClearable?: boolean
-  isMulti?: boolean
-  isLoading?: boolean
-  isDisabled?: boolean
-  portal?: HTMLElement
+    name: string;
+    id: string;
+  }[];
+  isSimple?: boolean;
+  rules?: ControllerProps["rules"];
+  isClearable?: boolean;
+  isMulti?: boolean;
+  isLoading?: boolean;
+  isDisabled?: boolean;
+  portal?: HTMLElement;
 }
 
 export const ControlledSelect = ({
   control,
+  className,
   name,
   form,
   options,
@@ -43,11 +46,18 @@ export const ControlledSelect = ({
       render={({ field }) => (
         <Select
           {...field}
+          className={className}
           onChange={
-            isSimple ? (option) => field.onChange(option.id) : (option) => field.onChange(option)
+            isSimple
+              ? (option) => field.onChange(option.id)
+              : (option) => field.onChange(option)
           }
           isLoading={isLoading}
-          value={isSimple ? options.filter((option) => option.id === field.value) : field.value}
+          value={
+            isSimple
+              ? options.filter((option) => option.id === field.value)
+              : field.value
+          }
           isMulti={isMulti}
           isClearable={isClearable}
           isDisabled={isDisabled}
@@ -63,11 +73,11 @@ export const ControlledSelect = ({
           isSearchable={false}
           classNames={{
             control: () =>
-              ' w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-            input: () => 'border-0 text-white py-4',
+              " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+            input: () => "border-0 text-white py-4",
           }}
         />
       )}
     ></Controller>
-  )
-}
+  );
+};

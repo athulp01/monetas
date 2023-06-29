@@ -238,28 +238,6 @@ importers:
         specifier: ^4.9.5
         version: 4.9.5
 
-  apps/importer:
-    dependencies:
-      csv-parser:
-        specifier: ^3.0.0
-        version: 3.0.0
-      fs:
-        specifier: 0.0.1-security
-        version: 0.0.1-security
-    devDependencies:
-      '@monetas/db':
-        specifier: ^0.1.0
-        version: link:../../packages/db
-      openai:
-        specifier: ^3.2.1
-        version: 3.2.1
-      ts-node:
-        specifier: ^10.9.1
-        version: 10.9.1(@types/node@18.16.5)(typescript@5.0.4)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.4
-
   apps/nextjs:
     dependencies:
       '@clerk/nextjs':
@@ -280,6 +258,9 @@ importers:
       '@monetas/db':
         specifier: ^0.1.0
         version: link:../../packages/db
+      '@monetas/importer':
+        specifier: ^1.0.0
+        version: link:../../packages/importer
       '@monetas/parser':
         specifier: ^1.0.0
         version: link:../../packages/parser
@@ -571,6 +552,31 @@ importers:
         version: 10.9.1(@types/node@20.2.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
+        version: 5.0.4
+
+  packages/importer:
+    dependencies:
+      csv-parser:
+        specifier: ^3.0.0
+        version: 3.0.0
+      fs:
+        specifier: 0.0.1-security
+        version: 0.0.1-security
+      papaparse:
+        specifier: ^5.4.1
+        version: 5.4.1
+    devDependencies:
+      '@monetas/db':
+        specifier: ^0.1.0
+        version: link:../db
+      openai:
+        specifier: ^3.2.1
+        version: 3.2.1
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.1(@types/node@18.16.5)(typescript@5.0.4)
+      typescript:
+        specifier: ^5.0.2
         version: 5.0.4
 
   packages/parser:
@@ -11266,6 +11272,10 @@ packages:
       registry-auth-token: 4.2.2
       registry-url: 5.1.0
       semver: 6.3.0
+    dev: false
+
+  /papaparse@5.4.1:
+    resolution: {integrity: sha512-HipMsgJkZu8br23pW15uvo6sib6wne/4woLZPlFf3rpDyMe9ywEXUsuD7+6K9PRkJlVT51j/sCOYDKGGS3ZJrw==}
     dev: false
 
   /parent-module@1.0.1:

@@ -125,7 +125,7 @@ const PayeeTableView = (props: Props) => {
   const handleEdit = (i: number) => {
     editForm.reset(payeesQuery.data.payees[i]);
     setIsInEditMode(i);
-    // setHack(true)
+    setHack(true);
   };
 
   const handleDelete = (id: string) => {

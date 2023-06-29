@@ -1,10 +1,13 @@
 import { useState, type ReactElement } from "react";
 import Head from "next/head";
 import {
+  mdiCancel,
   mdiCashMultiple,
   mdiCheck,
+  mdiContentSave,
   mdiCreditCardClock,
   mdiEye,
+  mdiImport,
   mdiPlusThick,
 } from "@mdi/js";
 
@@ -18,12 +21,18 @@ import TransactionsTableView from "../components/transactions/TransactionsTableV
 import { getPageTitle } from "../config/config";
 import "flowbite";
 import { api } from "~/utils/api";
+import ImportTableView from "~/components/transactions/ImportTableView";
 import NotificationBar from "../components/common/misc/NotificationBar";
 import UnverifiedTransactionsTableView from "../components/transactions/UnverifiedTransactionsTableView";
 
+enum Mode {
+  Review,
+  Import,
+  Create,
+  View,
+}
 const TransactionsPage = () => {
-  const [isInReviewMode, setIsInReviewMode] = useState(false);
-  const [createMode, setCreateMode] = useState(false);
+  const [mode, setMode] = useState<Mode>(Mode.View);
   const unverifiedTranstotalCountQuery =
     api.unverifiedTransaction.getUnverifiedTransactionCount.useQuery();
 
@@ -35,44 +44,67 @@ const TransactionsPage = () => {
       <SectionMain>
         <SectionTitleLineWithButton
           icon={mdiCashMultiple}
-          title={isInReviewMode ? "Recent transactions" : "Transactions "}
-          main={!isInReviewMode}
+          title={getTitle(mode)}
         >
           <BaseButtons>
-            {!isInReviewMode && (
+            {mode === Mode.View && (
               <>
                 <BaseButton
                   className={"mr-2"}
                   icon={mdiPlusThick}
                   color="contrast"
-                  disabled={createMode}
                   label="Add new"
-                  onClick={() => setCreateMode(true)}
+                  onClick={() => setMode(Mode.Create)}
+                />
+                <BaseButton
+                  className={"mr-2"}
+                  icon={mdiImport}
+                  color="info"
+                  label="Import"
+                  onClick={() => setMode(Mode.Import)}
                 />
               </>
             )}
-            {isInReviewMode && (
+            {mode === Mode.Import && (
+              <>
+                <BaseButton
+                  className={"mr-2"}
+                  icon={mdiCancel}
+                  color="danger"
+                  label="Cancel"
+                  onClick={() => setMode(Mode.View)}
+                />
+                <BaseButton
+                  className={"mr-2"}
+                  icon={mdiContentSave}
+                  color="success"
+                  label="Save"
+                  onClick={() => setMode(Mode.Import)}
+                />
+              </>
+            )}
+            {mode === Mode.Review && (
               <BaseButton
                 icon={mdiCheck}
                 color="contrast"
                 label="Finish review"
-                onClick={() => setIsInReviewMode(false)}
+                onClick={() => setMode(Mode.View)}
               />
             )}
           </BaseButtons>
         </SectionTitleLineWithButton>
-        {!isInReviewMode && (
+        {mode === Mode.View && (
           <NotificationBar
             color="warning"
             className="hidden md:block"
             icon={mdiCreditCardClock}
             button={
               <BaseButton
-                disabled={createMode}
+                disabled={mode === Mode.Create}
                 icon={mdiEye}
                 label="Review"
                 color="white"
-                onClick={() => setIsInReviewMode(true)}
+                onClick={() => setMode(Mode.Review)}
                 small
                 roundedFull
               />
@@ -84,19 +116,31 @@ const TransactionsPage = () => {
           </NotificationBar>
         )}
         <CardBox className="mb-6 mt-6" hasTable>
-          {isInReviewMode && (
+          {mode === Mode.Review && (
             <UnverifiedTransactionsTableView></UnverifiedTransactionsTableView>
           )}
-          {!isInReviewMode && (
+          {mode === Mode.View && (
             <TransactionsTableView
-              handleCreateModeCancel={() => setCreateMode(false)}
-              isCreateMode={createMode}
+              handleCreateModeCancel={() => setMode(Mode.View)}
+              isCreateMode={mode === Mode.Create}
             />
           )}
+          {mode === Mode.Import && <ImportTableView></ImportTableView>}
         </CardBox>
       </SectionMain>
     </>
   );
+};
+
+const getTitle = (mode: Mode) => {
+  switch (mode) {
+    case Mode.Review:
+      return "Review Transactions";
+    case Mode.Import:
+      return "Import Transactions";
+    case Mode.View:
+      return "Transactions";
+  }
 };
 
 TransactionsPage.getLayout = function getLayout(page: ReactElement) {
