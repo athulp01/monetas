@@ -49,22 +49,15 @@ const ImportTableView = () => {
   const totalCount = parsedStatement?.transactions?.length ?? 0;
   const numPages = Math.floor(totalCount / ITEMS_PER_PAGE) + 1;
 
-  const paginatedTransactions = useMemo(() => {
-    console.log(
-      currentPage,
+  const paginatedTransactions = useMemo(
+    () =>
       parsedStatement?.transactions?.slice(
         currentPage * ITEMS_PER_PAGE,
         (currentPage + 1) * ITEMS_PER_PAGE,
-      ),
-    );
+      ) ?? [],
 
-    return (
-      parsedStatement?.transactions?.slice(
-        currentPage * ITEMS_PER_PAGE,
-        (currentPage + 1) * ITEMS_PER_PAGE,
-      ) ?? []
-    );
-  }, [parsedStatement, currentPage]);
+    [parsedStatement, currentPage],
+  );
 
   const handleDelete = (id: string) => {
     setDialogProps({
