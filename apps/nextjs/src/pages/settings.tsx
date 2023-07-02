@@ -1,15 +1,9 @@
 import React, { type ReactElement } from "react";
 import Head from "next/head";
-import {
-  mdiCashMultiple,
-  mdiConnection,
-  mdiGmail,
-  mdiPlusThick,
-} from "@mdi/js";
+import { mdiCashMultiple, mdiConnection, mdiGmail, mdiTune } from "@mdi/js";
 
 import { getPageTitle } from "~/config/config";
 import BaseButton from "../components/common/buttons/BaseButton";
-import BaseButtons from "../components/common/buttons/BaseButtons";
 import SectionMain from "../components/common/sections/SectionMain";
 import SectionTitleLineWithButton from "../components/common/sections/SectionTitleLineWithButton";
 import LayoutAuthenticated from "../components/layout";
@@ -67,16 +61,12 @@ const SettingsPage = () => {
           icon={mdiCashMultiple}
           title={"Settings"}
           main
-        >
-          <BaseButtons>
-            <BaseButton icon={mdiPlusThick} color="contrast" label="Add new" />
-          </BaseButtons>
-        </SectionTitleLineWithButton>
+        ></SectionTitleLineWithButton>
         <section>
           <div className="mb-3 flex items-center justify-start">
             <IconRounded
               icon={mdiConnection}
-              color="white"
+              color="transparent"
               className="mr-3"
               bg
             />
@@ -138,6 +128,23 @@ const SettingsPage = () => {
                 small
               ></BaseButton>
             )}
+          </CardBox>
+
+          <div className="mb-3 mt-3 flex items-center justify-start">
+            <IconRounded
+              icon={mdiTune}
+              color="transparent"
+              className="mr-3"
+              bg
+            />
+            <h1 className={`leading-tight`}>Preferences</h1>
+          </div>
+
+          <CardBox>
+            <div className={"flex justify-between"}>
+              <div className={"text-xl"}>Theme</div>
+              <div className={"text-gray-500"}>Light</div>
+            </div>
           </CardBox>
         </section>
       </SectionMain>
