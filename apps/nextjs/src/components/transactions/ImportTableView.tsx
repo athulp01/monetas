@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { mdiPencil, mdiTrashCan } from "@mdi/js";
+import { mdiTrashCan } from "@mdi/js";
 import { TRANSACTION_TYPE } from "@prisma/client";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 
@@ -12,8 +12,9 @@ import { Controller, useForm } from "react-hook-form";
 import LoadingBar from "react-top-loading-bar";
 
 import {
-  parseHDFCStatement,
-  type ParsedHDFCStatementResult,
+  parseHDFCAccountStatement,
+  parseHDFCCreditCardStatement,
+  type ParsedStatementResult,
 } from "@monetas/importer";
 
 import { api } from "~/utils/api";
@@ -29,7 +30,7 @@ import { ControlledSelect } from "../forms/ControlledSelect";
 
 const ImportTableView = () => {
   const loadingBarRef = useRef();
-  const editForm = useForm<ParsedHDFCStatementResult["transactions"][]>();
+  const editForm = useForm<ParsedStatementResult["transactions"]>();
   const targetAccountForm = useForm();
   const [currentPage, setCurrentPage] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,7 +45,7 @@ const ImportTableView = () => {
   const payeesQuery = api.payee.listPayees.useQuery({});
 
   const [parsedStatement, setParsedStatement] =
-    useState<ParsedHDFCStatementResult>(null);
+    useState<ParsedStatementResult>(null);
   const totalCount = parsedStatement?.transactions?.length ?? 0;
   const numPages = Math.floor(totalCount / ITEMS_PER_PAGE) + 1;
 
@@ -83,24 +84,40 @@ const ImportTableView = () => {
     const file = e.target.files[0];
     if (!file) return;
     if (
-      !file.name.endsWith(".csv") &&
-      !file.name.endsWith(".CSV") &&
-      !file.name.endsWith(".txt")
+      !file.name.toLowerCase().endsWith(".csv") &&
+      !file.name.toLowerCase().endsWith(".txt") &&
+      !file.name.toLowerCase().endsWith(".pdf")
     ) {
-      setParsingError("Invalid file type. Please upload a CSV or TXT file.");
+      setParsingError(
+        "Invalid file type. Please upload a CSV,TXT or PDF file.",
+      );
       return;
     }
-    parseHDFCStatement(file)
-      .then((result) => {
-        console.log(result);
-        console.log(targetAccountForm.getValues("targetAccount"));
-        setParsedStatement(result);
-        editForm.reset(result.transactions);
-      })
-      .catch((err) => {
-        setParsingError(err);
-        console.log(err);
-      });
+    if (file.name.toLowerCase().endsWith(".pdf")) {
+      file
+        .arrayBuffer()
+        .then((buffer) => {
+          return parseHDFCCreditCardStatement(buffer);
+        })
+        .then((result) => {
+          console.log(result);
+          console.log(targetAccountForm.getValues("targetAccount"));
+          setParsedStatement(result);
+          editForm.reset(result.transactions);
+        });
+    } else {
+      parseHDFCAccountStatement(file)
+        .then((result) => {
+          console.log(result);
+          console.log(targetAccountForm.getValues("targetAccount"));
+          setParsedStatement(result);
+          editForm.reset(result.transactions);
+        })
+        .catch((err) => {
+          setParsingError(err);
+          console.log(err);
+        });
+    }
   };
 
   return (
@@ -258,13 +275,13 @@ const ImportTableView = () => {
           <table className="hidden w-full text-left text-sm text-gray-500 dark:text-gray-400 md:table">
             <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <TableHeader title="Account"></TableHeader>
                 <TableHeader title="Type"></TableHeader>
                 <TableHeader title="Category" isSortable></TableHeader>
                 <TableHeader title="Payee" isSortable></TableHeader>
                 <TableHeader title="Date"></TableHeader>
                 <TableHeader title="Amount"></TableHeader>
                 <TableHeader title="Tags"></TableHeader>
+                <TableHeader title="Description"></TableHeader>
                 <TableHeader></TableHeader>
               </tr>
             </thead>
@@ -274,17 +291,6 @@ const ImportTableView = () => {
                   key={i + currentPage * ITEMS_PER_PAGE}
                   className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
-                  <th
-                    scope="row"
-                    className="whitespace-nowrap px-1 py-4 font-medium text-gray-900 dark:text-white"
-                  >
-                    <ControlledSelect
-                      control={editForm.control}
-                      form="editForm"
-                      name={`${i + currentPage * ITEMS_PER_PAGE}.sourceAccount`}
-                      options={accountsQuery?.data.accounts}
-                    ></ControlledSelect>
-                  </th>
                   <td className="px-1 py-4">
                     <ControlledSelect
                       control={editForm.control}
@@ -393,14 +399,13 @@ const ImportTableView = () => {
                       )}
                     ></Controller>
                   </td>
+                  <td className="px-1 py-4">
+                    <div className={"w-48 break-words text-xs"}>
+                      {transaction.notes}
+                    </div>
+                  </td>
                   <td className="px-1 py-4 text-right">
                     <BaseButtons type="justify-start lg:justify-end" noWrap>
-                      <BaseButton
-                        color="info"
-                        icon={mdiPencil}
-                        onClick={() => console.log(i)}
-                        small
-                      />
                       <BaseButton
                         color="danger"
                         icon={mdiTrashCan}
@@ -451,7 +456,7 @@ const ImportTableView = () => {
               onPageChange={(event) => {
                 setCurrentPage(event.selected);
               }}
-              pageRangeDisplayed={500}
+              pageRangeDisplayed={4}
               forcePage={currentPage}
               pageCount={numPages}
               previousLabel={

@@ -1,1 +1,1 @@
-export { parseHDFCStatement } from "./src/hdfc";
+export { parseHDFCAccountStatement } from "./src/hdfc";
