@@ -28,6 +28,7 @@ const publicPages = [
   "/sign-in/[[...index]]",
   "/sign-up/[[...index]]",
   "/telegram/unverified/[transactionId]",
+  "/privacy-policy",
 ];
 
 const MyApp: AppType = ({ Component, pageProps }) => {
