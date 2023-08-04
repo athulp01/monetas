@@ -22,7 +22,6 @@ export const GetStarted = () => {
 
   useEffect(() => {
     setGetStartedInProgress(true);
-    setCurrentStep(1);
   }, []);
 
   if (accountsQuery.isLoading) {

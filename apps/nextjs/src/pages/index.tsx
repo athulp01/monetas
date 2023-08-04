@@ -10,6 +10,7 @@ import moment from "moment";
 
 import { api } from "~/utils/api";
 import CardBox from "~/components/common/cards/CardBox";
+import TableLoading from "~/components/common/loading/TableLoading";
 import {
   GET_STARTED_IN_PROGRESS_KEY,
   GET_STARTED_STEP_KEY,
@@ -40,6 +41,16 @@ const Dashboard = () => {
   });
   const netWorthQuery = api.reports.getNetWorth.useQuery();
   const accountsQuery = api.account.listAccounts.useQuery();
+
+  if (
+    accountsQuery.isLoading ||
+    incomeQuery.isLoading ||
+    expenseQuery.isLoading ||
+    netWorthQuery.isLoading
+  ) {
+    return <TableLoading></TableLoading>;
+  }
+
   const haveAnAccount =
     accountsQuery.data?.totalCount > 0 && !getStartedInProgess;
 
