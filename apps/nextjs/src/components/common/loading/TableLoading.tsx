@@ -4,7 +4,7 @@ export default function TableLoading() {
   return (
     <div
       role="status"
-      className="max-w-full animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 bg-white p-4 shadow dark:divide-gray-700 dark:border-gray-700 md:p-6"
+      className="min-h-full max-w-full animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 bg-white p-4 shadow dark:divide-gray-700 dark:border-gray-700 md:p-6"
     >
       <div className="flex items-center justify-between">
         <div>

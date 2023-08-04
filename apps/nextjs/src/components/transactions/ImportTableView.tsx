@@ -22,10 +22,12 @@ import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { AccountList } from "~/components/accounts/AccountsTableView";
 import { Alert } from "~/components/common/alerts/Alert";
 import { CardTable } from "~/components/common/cards/CardTable";
+import TableLoading from "~/components/common/loading/TableLoading";
 import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
+import { HDFCInstructions } from "~/components/transactions/HDFCInstructions";
 import { ITEMS_PER_PAGE } from "~/config/site";
 import { useDialog } from "~/hooks/useDialog";
 import BaseButton from "../common/buttons/BaseButton";
@@ -74,7 +76,9 @@ const ImportTableView = (props: Props) => {
   const [parsedTransactions, setParsedTransactions] =
     useState<TransactionImportForm>(null);
 
-  const accountsQuery = api.account.listAccounts.useQuery();
+  const accountsQuery = api.account.listAccounts.useQuery({
+    provider: "HDFC Bank",
+  });
   const categoriesQuery = api.category.listCategories.useQuery();
   const payeesQuery = api.payee.listPayees.useQuery({});
 
@@ -211,6 +215,13 @@ const ImportTableView = (props: Props) => {
     }
   };
 
+  if (
+    accountsQuery.isLoading ||
+    categoriesQuery.isLoading ||
+    payeesQuery.isLoading
+  )
+    return <TableLoading />;
+
   return (
     <>
       <CardBoxModal
@@ -302,138 +313,149 @@ const ImportTableView = (props: Props) => {
             )}
           </>
         )}
-        <form
-          id="importForm"
-          hidden
-          onSubmit={importForm.handleSubmit(onImportFormSubmit)}
-        ></form>
-        <Table
-          isPaginated={true}
-          currentPage={currentPage}
-          totalItems={totalCount}
-          itemsInCurrentPage={paginatedTransactions?.length}
-          setCurrentPage={setCurrentPage}
-        >
-          <TableHeaderBlock>
-            <tr>
-              <TableHeader title="Type"></TableHeader>
-              <TableHeader title="Category" isSortable></TableHeader>
-              <TableHeader title="Payee" isSortable></TableHeader>
-              <TableHeader title="Date"></TableHeader>
-              <TableHeader title="Amount"></TableHeader>
-              <TableHeader title="Description"></TableHeader>
-              <TableHeader></TableHeader>
-            </tr>
-          </TableHeaderBlock>
-          <tbody>
-            {paginatedTransactions?.map((transaction, i) => (
-              <TableRow>
-                <TableCell>
-                  <ControlledSelect
-                    control={importForm.control}
-                    form="importForm"
-                    name={
-                      `form.${i + currentPage * ITEMS_PER_PAGE}.type` as const
-                    }
-                    isSimple
-                    options={TransactionTypeOptions}
-                  ></ControlledSelect>
-                </TableCell>
-                <TableCell>
-                  <ControlledSelect
-                    control={importForm.control}
-                    isLoading={categoriesQuery.isLoading}
-                    isDisabled={
-                      importForm.watch(
-                        `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
-                      ) == null
-                    }
-                    form="importForm"
-                    name={`form.${i + currentPage * ITEMS_PER_PAGE}.category`}
-                    options={categoriesQuery?.data?.categories}
-                  ></ControlledSelect>
-                </TableCell>
-                <TableCell>
-                  {importForm.watch(
-                    `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
-                  ) !== TRANSACTION_TYPE.TRANSFER ? (
-                    <ControlledSelect
-                      control={importForm.control}
-                      form="importForm"
-                      isClearable={true}
-                      isLoading={payeesQuery.isLoading}
-                      isDisabled={
-                        importForm.watch(
-                          `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
-                        ) == null
-                      }
-                      name={`form.${i + currentPage * ITEMS_PER_PAGE}.payee`}
-                      rules={{ required: false }}
-                      options={payeesQuery?.data?.payees}
-                    ></ControlledSelect>
-                  ) : (
-                    <ControlledSelect
-                      control={importForm.control}
-                      form="importForm"
-                      isDisabled={
-                        importForm.watch(
-                          `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
-                        ) == null
-                      }
-                      name={`form.${
-                        i + currentPage * ITEMS_PER_PAGE
-                      }.transferredAccount`}
-                      options={accountsQuery?.data.accounts.filter(
-                        (account) =>
-                          account.id !==
+        {parsedStatement == null && <HDFCInstructions></HDFCInstructions>}
+        {parsedStatement && (
+          <>
+            <form
+              id="importForm"
+              hidden
+              onSubmit={importForm.handleSubmit(onImportFormSubmit)}
+            ></form>
+            <Table
+              isPaginated={true}
+              currentPage={currentPage}
+              totalItems={totalCount}
+              itemsInCurrentPage={paginatedTransactions?.length}
+              setCurrentPage={setCurrentPage}
+            >
+              <TableHeaderBlock>
+                <tr>
+                  <TableHeader title="Type"></TableHeader>
+                  <TableHeader title="Category" isSortable></TableHeader>
+                  <TableHeader title="Payee" isSortable></TableHeader>
+                  <TableHeader title="Date"></TableHeader>
+                  <TableHeader title="Amount"></TableHeader>
+                  <TableHeader title="Description"></TableHeader>
+                  <TableHeader></TableHeader>
+                </tr>
+              </TableHeaderBlock>
+              <tbody>
+                {paginatedTransactions?.map((transaction, i) => (
+                  <TableRow>
+                    <TableCell>
+                      <ControlledSelect
+                        control={importForm.control}
+                        form="importForm"
+                        name={
+                          `form.${
+                            i + currentPage * ITEMS_PER_PAGE
+                          }.type` as const
+                        }
+                        isSimple
+                        options={TransactionTypeOptions}
+                      ></ControlledSelect>
+                    </TableCell>
+                    <TableCell>
+                      <ControlledSelect
+                        control={importForm.control}
+                        isLoading={categoriesQuery.isLoading}
+                        isDisabled={
                           importForm.watch(
-                            `form.${
-                              i + currentPage * ITEMS_PER_PAGE
-                            }.sourceAccount`,
-                          )?.id,
+                            `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
+                          ) == null
+                        }
+                        form="importForm"
+                        name={`form.${
+                          i + currentPage * ITEMS_PER_PAGE
+                        }.category`}
+                        options={categoriesQuery?.data?.categories}
+                      ></ControlledSelect>
+                    </TableCell>
+                    <TableCell>
+                      {importForm.watch(
+                        `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
+                      ) !== TRANSACTION_TYPE.TRANSFER ? (
+                        <ControlledSelect
+                          control={importForm.control}
+                          form="importForm"
+                          isClearable={true}
+                          isLoading={payeesQuery.isLoading}
+                          isDisabled={
+                            importForm.watch(
+                              `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
+                            ) == null
+                          }
+                          name={`form.${
+                            i + currentPage * ITEMS_PER_PAGE
+                          }.payee`}
+                          rules={{ required: false }}
+                          options={payeesQuery?.data?.payees}
+                        ></ControlledSelect>
+                      ) : (
+                        <ControlledSelect
+                          control={importForm.control}
+                          form="importForm"
+                          isDisabled={
+                            importForm.watch(
+                              `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
+                            ) == null
+                          }
+                          name={`form.${
+                            i + currentPage * ITEMS_PER_PAGE
+                          }.transferredAccount`}
+                          options={accountsQuery?.data.accounts.filter(
+                            (account) =>
+                              account.id !==
+                              importForm.watch(
+                                `form.${
+                                  i + currentPage * ITEMS_PER_PAGE
+                                }.sourceAccount`,
+                              )?.id,
+                          )}
+                        ></ControlledSelect>
                       )}
-                    ></ControlledSelect>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <ControlledDateTime
-                    control={importForm.control}
-                    name={`form.${
-                      i + currentPage * ITEMS_PER_PAGE
-                    }.timeCreated`}
-                    form="importForm"
-                  ></ControlledDateTime>
-                </TableCell>
-                <TableCell>
-                  <ControlledInputMoney
-                    control={importForm.control}
-                    name={`form.${i + currentPage * ITEMS_PER_PAGE}.amount`}
-                    form="importForm"
-                    inputProps={{
-                      placeholder: "Amount",
-                      required: true,
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className={"w-72 break-words text-xs"}>
-                    {transaction.notes}
-                  </div>
-                </TableCell>
-                <td className="px-1 py-4 text-right">
-                  <BaseButtons type="justify-start lg:justify-end" noWrap>
-                    <BaseButton
-                      color="danger"
-                      icon={mdiTrashCan}
-                      onClick={() => handleDelete(i.toString())}
-                      small
-                    ></BaseButton>
-                  </BaseButtons>
-                </td>
-              </TableRow>
-            ))}
-          </tbody>
-        </Table>
+                    </TableCell>
+                    <TableCell>
+                      <ControlledDateTime
+                        control={importForm.control}
+                        name={`form.${
+                          i + currentPage * ITEMS_PER_PAGE
+                        }.timeCreated`}
+                        form="importForm"
+                      ></ControlledDateTime>
+                    </TableCell>
+                    <TableCell>
+                      <ControlledInputMoney
+                        control={importForm.control}
+                        name={`form.${i + currentPage * ITEMS_PER_PAGE}.amount`}
+                        form="importForm"
+                        inputProps={{
+                          placeholder: "Amount",
+                          required: true,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className={"w-72 break-words text-xs"}>
+                        {transaction.notes}
+                      </div>
+                    </TableCell>
+                    <td className="px-1 py-4 text-right">
+                      <BaseButtons type="justify-start lg:justify-end" noWrap>
+                        <BaseButton
+                          color="danger"
+                          icon={mdiTrashCan}
+                          onClick={() => handleDelete(i.toString())}
+                          small
+                        ></BaseButton>
+                      </BaseButtons>
+                    </td>
+                  </TableRow>
+                ))}
+              </tbody>
+            </Table>
+          </>
+        )}
       </CardTable>
     </>
   );

@@ -145,7 +145,7 @@ const AccountsTableView = () => {
 
   const handleEdit = (i: number) => {
     setIsInEditMode(i);
-    editForm.reset(accountsQuery.data.accounts[i]);
+    editForm.reset(accountsQuery.data?.accounts[i]);
   };
 
   const handleDelete = (id: string) => {

@@ -22,12 +22,16 @@ export const accountRouter = createTRPCRouter({
       z
         .object({
           type: z.string().uuid().optional(),
-          provider: z.string().uuid().optional(),
+          provider: z.string().optional(),
         })
         .optional(),
     )
-    .query(async ({ ctx }) => {
-      const accounts = await getAccounts(ctx.prisma);
+    .query(async ({ input, ctx }) => {
+      const accounts = await getAccounts(
+        input?.provider,
+        input?.type,
+        ctx.prisma,
+      );
       const totalCount = await ctx.prisma.financialAccount.count();
       return {
         totalCount,
@@ -92,7 +96,7 @@ export const accountRouter = createTRPCRouter({
       );
     }),
   logAccountBalance: protectedProcedure.mutation(async ({ ctx }) => {
-    const accounts = await getAccounts(ctx.prisma);
+    const accounts = await getAccounts(null, null, ctx.prisma);
     const payload = accounts.map((account) => ({
       accountId: account.id,
       balance: account.balance,
