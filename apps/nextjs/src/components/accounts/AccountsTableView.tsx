@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { useState } from "react";
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+import {
+  mdiCancel,
+  mdiCheck,
+  mdiPencil,
+  mdiPlus,
+  mdiPlusThick,
+  mdiTrashCan,
+} from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
 import BaseButtons from "../common/buttons/BaseButtons";
@@ -13,6 +20,12 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { CardTable } from "~/components/common/cards/CardTable";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import { SearchInput } from "~/components/forms/SearchInput";
 import { useTable } from "~/hooks/useTable";
 import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
@@ -27,14 +40,10 @@ export type AccountUpdate = RouterInputs["account"]["updateAccount"];
 export type ProviderList = RouterOutputs["account"]["listAccountProviders"];
 export type TypeList = RouterOutputs["account"]["listAccountTypes"];
 
-interface Props {
-  isCreateMode: boolean;
-  handleCreateModeCancel: () => void;
-}
-
-const AccountsTableView = (props: Props) => {
+const AccountsTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<AccountList[0]>();
+  const [isCreateMode, setIsCreateMode] = useState(false);
 
   const providersQuery = api.account.listAccountProviders.useQuery();
   const typesQuery = api.account.listAccountTypes.useQuery();
@@ -43,7 +52,7 @@ const AccountsTableView = (props: Props) => {
   const accountCreateMutation = api.account.addAccount.useMutation({
     onSuccess: async () => {
       createForm.reset();
-      props?.handleCreateModeCancel();
+      setIsCreateMode(false);
       toast.success("Account created successfully");
       await accountsQuery.refetch();
     },
@@ -136,7 +145,7 @@ const AccountsTableView = (props: Props) => {
 
   const handleEdit = (i: number) => {
     setIsInEditMode(i);
-    editForm.reset(accountsQuery.data.accounts[i]);
+    editForm.reset(accountsQuery.data?.accounts[i]);
   };
 
   const handleDelete = (id: string) => {
@@ -165,7 +174,7 @@ const AccountsTableView = (props: Props) => {
         isActive={isDialogOpen}
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
-      <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
+      <CardTable>
         <form
           id="createForm"
           hidden
@@ -177,60 +186,132 @@ const AccountsTableView = (props: Props) => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <div className="relative ml-6">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="table-search"
-              className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder="Search accounts"
-            ></input>
+          <SearchInput></SearchInput>
+          <div>
+            <BaseButton
+              icon={mdiPlusThick}
+              color="contrast"
+              className={"mr-2"}
+              disabled={isCreateMode}
+              onClick={() => setIsCreateMode(true)}
+            />
           </div>
         </div>
 
-        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
-          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <TableHeader></TableHeader>
-                <TableHeader title="Name"></TableHeader>
-                <TableHeader title="Account Number"></TableHeader>
-                <TableHeader title="Type" isSortable></TableHeader>
-                <TableHeader title="Provider" isSortable></TableHeader>
-                <TableHeader title="Balance" isSortable></TableHeader>
-                <TableHeader></TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {props?.isCreateMode && (
-                <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
-                  <td className="px-1 py-4">
-                    {watchProvider?.icon && (
-                      <Image
-                        alt="logo"
-                        width={40}
-                        height={40}
-                        src={watchProvider?.icon}
-                      ></Image>
-                    )}
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+        <Table>
+          <TableHeaderBlock>
+            <tr>
+              <TableHeader></TableHeader>
+              <TableHeader title="Name"></TableHeader>
+              <TableHeader title="Account Number"></TableHeader>
+              <TableHeader title="Type" isSortable></TableHeader>
+              <TableHeader title="Provider" isSortable></TableHeader>
+              <TableHeader title="Balance" isSortable></TableHeader>
+              <TableHeader></TableHeader>
+            </tr>
+          </TableHeaderBlock>
+          <tbody>
+            {isCreateMode && (
+              <TableRow>
+                <TableCell>
+                  {watchProvider?.icon && (
+                    <Image
+                      alt="logo"
+                      width={40}
+                      height={40}
+                      src={watchProvider?.icon}
+                    ></Image>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <ControlledInput
+                    control={createForm.control}
+                    name="name"
+                    form="createForm"
+                    inputProps={{
+                      placeholder: "Name",
+                      required: true,
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ControlledInput
+                    control={createForm.control}
+                    name="accountNumber"
+                    form="createForm"
+                    inputProps={{
+                      className: "w-24",
+                      width: "4",
+                      placeholder: "Last 4 digits",
+                      required: true,
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ControlledSelect
+                    control={createForm.control}
+                    name="accountType"
+                    form="createForm"
+                    options={typesQuery.data}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ControlledSelect
+                    control={createForm.control}
+                    name="accountProvider"
+                    form="createForm"
+                    options={providersQuery.data}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex w-40">
+                    <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
+                      ₹
+                    </span>
+                    <input
+                      form="createForm"
+                      {...createForm.register("balance", { required: true })}
+                      placeholder="Balance"
+                      type="number"
+                      className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                      required
+                    ></input>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <BaseButtons type="justify-start lg:justify-end" noWrap>
+                    <BaseButton
+                      color="success"
+                      icon={mdiPlus}
+                      small
+                      type="submit"
+                      form="createForm"
+                      // onClick={props?.handleCreate}
+                    />
+                    <BaseButton
+                      color="danger"
+                      icon={mdiCancel}
+                      small
+                      onClick={() => setIsCreateMode(false)}
+                    ></BaseButton>
+                  </BaseButtons>
+                </TableCell>
+              </TableRow>
+            )}
+            {accountsQuery.data.accounts?.map((account, i) => (
+              <TableRow key={account.id}>
+                <TableCell>
+                  <Image
+                    alt="logo"
+                    width={40}
+                    height={40}
+                    src={account.accountProvider.icon}
+                  ></Image>
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
                     <ControlledInput
-                      control={createForm.control}
+                      control={editForm.control}
                       name="name"
                       form="createForm"
                       inputProps={{
@@ -238,12 +319,16 @@ const AccountsTableView = (props: Props) => {
                         required: true,
                       }}
                     />
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+                  ) : (
+                    account.name
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
                     <ControlledInput
-                      control={createForm.control}
+                      control={editForm.control}
                       name="accountNumber"
-                      form="createForm"
+                      form="editForm"
                       inputProps={{
                         className: "w-24",
                         width: "4",
@@ -251,193 +336,99 @@ const AccountsTableView = (props: Props) => {
                         required: true,
                       }}
                     />
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+                  ) : (
+                    account.accountNumber
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
                     <ControlledSelect
-                      control={createForm.control}
+                      control={editForm.control}
                       name="accountType"
-                      form="createForm"
+                      form="editForm"
                       options={typesQuery.data}
                     />
-                  </td>
-                  <td className="px-1 py-4">
+                  ) : (
+                    account.accountType.name
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
                     <ControlledSelect
-                      control={createForm.control}
+                      control={editForm.control}
                       name="accountProvider"
-                      form="createForm"
+                      form="editForm"
                       options={providersQuery.data}
                     />
-                  </td>
-                  <td className="px-1 py-4">
-                    <div className="flex w-40">
-                      <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
-                        ₹
-                      </span>
-                      <input
-                        form="createForm"
-                        {...createForm.register("balance", { required: true })}
-                        placeholder="Balance"
-                        type="number"
-                        className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                        required
-                      ></input>
-                    </div>
-                  </td>
-                  <td className="px-1 py-4 text-right">
+                  ) : (
+                    account.accountProvider.name
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
+                    <ControlledInputMoney
+                      form="editForm"
+                      control={editForm.control}
+                      name="balance"
+                      inputProps={{
+                        placeholder: "Balance",
+                        required: true,
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className={
+                        account?.balance < 0
+                          ? "font-semibold text-red-600"
+                          : "font-semibold text-green-500"
+                      }
+                    >
+                      <NumberDynamic
+                        value={Math.abs(account?.balance)}
+                        prefix={`${account?.balance < 0 ? "-" : "+"} ₹`}
+                      ></NumberDynamic>
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode !== i ? (
                     <BaseButtons type="justify-start lg:justify-end" noWrap>
                       <BaseButton
-                        color="success"
-                        icon={mdiPlus}
+                        color="info"
+                        icon={mdiPencil}
+                        onClick={() => handleEdit(i)}
                         small
-                        type="submit"
-                        form="createForm"
-                        // onClick={props?.handleCreate}
                       />
                       <BaseButton
                         color="danger"
-                        icon={mdiCancel}
+                        icon={mdiTrashCan}
+                        onClick={() => handleDelete(account?.id)}
                         small
-                        onClick={props?.handleCreateModeCancel}
                       ></BaseButton>
                     </BaseButtons>
-                  </td>
-                </tr>
-              )}
-              {accountsQuery.data.accounts?.map((account, i) => (
-                <tr
-                  key={account.id}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <td className="px-1 py-4">
-                    <Image
-                      alt="logo"
-                      width={40}
-                      height={40}
-                      src={account.accountProvider.icon}
-                    ></Image>
-                  </td>
-                  <td className="whitespace-nowrap px-1 py-4 font-medium text-gray-900">
-                    {isInEditMode === i ? (
-                      <ControlledInput
-                        control={editForm.control}
-                        name="name"
-                        form="createForm"
-                        inputProps={{
-                          placeholder: "Name",
-                          required: true,
-                        }}
-                      />
-                    ) : (
-                      account.name
-                    )}
-                  </td>
-                  <td className="whitespace-nowrap px-1 py-4 font-medium text-gray-900">
-                    {isInEditMode === i ? (
-                      <ControlledInput
-                        control={editForm.control}
-                        name="accountNumber"
+                  ) : (
+                    <BaseButtons type="justify-start lg:justify-end" noWrap>
+                      <BaseButton
+                        color="success"
+                        icon={mdiCheck}
+                        type="submit"
                         form="editForm"
-                        inputProps={{
-                          className: "w-24",
-                          width: "4",
-                          placeholder: "Last 4 digits",
-                          required: true,
-                        }}
+                        small
                       />
-                    ) : (
-                      account.accountNumber
-                    )}
-                  </td>
-                  <td scope="row" className="px-1 py-4  dark:text-white">
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        name="accountType"
-                        form="editForm"
-                        options={typesQuery.data}
+                      <BaseButton
+                        color="danger"
+                        onClick={() => setIsInEditMode(null)}
+                        icon={mdiCancel}
+                        small
                       />
-                    ) : (
-                      account.accountType.name
-                    )}
-                  </td>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        name="accountProvider"
-                        form="editForm"
-                        options={providersQuery.data}
-                      />
-                    ) : (
-                      account.accountProvider.name
-                    )}
-                  </td>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledInputMoney
-                        form="editForm"
-                        control={editForm.control}
-                        name="balance"
-                        inputProps={{
-                          placeholder: "Balance",
-                          required: true,
-                        }}
-                      />
-                    ) : (
-                      <span
-                        className={
-                          account?.balance < 0
-                            ? "font-semibold text-red-600"
-                            : "font-semibold text-green-500"
-                        }
-                      >
-                        <NumberDynamic
-                          value={Math.abs(account?.balance)}
-                          prefix={`${account?.balance < 0 ? "-" : "+"} ₹`}
-                        ></NumberDynamic>
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-1 py-4 text-right">
-                    {isInEditMode !== i ? (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="info"
-                          icon={mdiPencil}
-                          onClick={() => handleEdit(i)}
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          icon={mdiTrashCan}
-                          onClick={() => handleDelete(account?.id)}
-                          small
-                        ></BaseButton>
-                      </BaseButtons>
-                    ) : (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="success"
-                          icon={mdiCheck}
-                          type="submit"
-                          form="editForm"
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          onClick={() => setIsInEditMode(null)}
-                          icon={mdiCancel}
-                          small
-                        />
-                      </BaseButtons>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    </BaseButtons>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
+      </CardTable>
     </>
   );
 };

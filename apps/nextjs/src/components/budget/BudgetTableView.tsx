@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { useState } from "react";
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+import {
+  mdiCancel,
+  mdiCheck,
+  mdiPencil,
+  mdiPlus,
+  mdiPlusThick,
+  mdiTrashCan,
+} from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
 import BaseButtons from "../common/buttons/BaseButtons";
@@ -15,6 +22,13 @@ import moment from "moment";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { EmptyBudget } from "~/components/budget/EmptyBudget";
+import { CardTable } from "~/components/common/cards/CardTable";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import { SearchInput } from "~/components/forms/SearchInput";
 import { useTable } from "~/hooks/useTable";
 import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
@@ -24,11 +38,6 @@ import { ControlledSelect } from "../forms/ControlledSelect";
 export type BudgetList = RouterOutputs["budget"]["listBudgets"]["budget"];
 export type BudgetCreate = RouterInputs["budget"]["addBudget"];
 export type BudgetUpdate = RouterInputs["budget"]["updateBudget"];
-
-interface Props {
-  isCreateMode: boolean;
-  handleCreateModeCancel: () => void;
-}
 
 const getColorOfRemaining = (remaining: number) => {
   if (remaining < 0.5) {
@@ -40,9 +49,10 @@ const getColorOfRemaining = (remaining: number) => {
   }
 };
 
-const BudgetTableView = (props: Props) => {
+const BudgetTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<BudgetList[0]>();
+  const [isCreateMode, setIsCreateMode] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<moment.Moment>(moment());
 
   const categoriesQuery = api.category.listCategories.useQuery();
@@ -53,7 +63,7 @@ const BudgetTableView = (props: Props) => {
   const budgetCreateMutation = api.budget.addBudget.useMutation({
     onSuccess: async () => {
       createForm.reset();
-      props?.handleCreateModeCancel();
+      setIsCreateMode(false);
       toast.success("BudgetScreen created successfully");
       await budgetQuery.refetch();
     },
@@ -169,7 +179,7 @@ const BudgetTableView = (props: Props) => {
         isActive={isDialogOpen}
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
-      <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
+      <CardTable>
         <form
           id="createForm"
           hidden
@@ -181,30 +191,8 @@ const BudgetTableView = (props: Props) => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <div className="relative ml-6">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="table-search"
-              className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder="Search budgets"
-            ></input>
-          </div>
-          <div className="ml-6 mt-4 sm:mr-6 sm:mt-0">
+          <SearchInput></SearchInput>
+          <div className="ml-6 mt-4 flex sm:mr-6 sm:mt-0">
             <Datetime
               timeFormat={false}
               onChange={(value: moment.Moment) => setSelectedMonth(value)}
@@ -218,12 +206,22 @@ const BudgetTableView = (props: Props) => {
                   "block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
               }}
             />
+            <BaseButton
+              className={"ml-3"}
+              icon={mdiPlusThick}
+              color="contrast"
+              disabled={isCreateMode}
+              onClick={() => setIsCreateMode(true)}
+            />
           </div>
         </div>
 
-        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
-          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+        {budgetQuery.data?.totalCount === 0 && !isCreateMode && (
+          <EmptyBudget></EmptyBudget>
+        )}
+        {(budgetQuery.data?.totalCount != 0 || isCreateMode) && (
+          <Table>
+            <TableHeaderBlock>
               <tr>
                 <TableHeader title="Category"></TableHeader>
                 <TableHeader title="Budgeted" isSortable></TableHeader>
@@ -231,19 +229,19 @@ const BudgetTableView = (props: Props) => {
                 <TableHeader></TableHeader>
                 <TableHeader></TableHeader>
               </tr>
-            </thead>
+            </TableHeaderBlock>
             <tbody>
-              {props?.isCreateMode && (
-                <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
-                  <td scope="row" className="px-1 py-4">
+              {isCreateMode && (
+                <TableRow>
+                  <TableCell>
                     <ControlledSelect
                       control={createForm.control}
                       name="category"
                       form="createForm"
                       options={categoriesQuery.data.categories}
                     ></ControlledSelect>
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <ControlledInputMoney
                       form="createForm"
                       control={createForm.control}
@@ -253,10 +251,10 @@ const BudgetTableView = (props: Props) => {
                         required: true,
                       }}
                     ></ControlledInputMoney>
-                  </td>
-                  <td className="px-1 py-4">N/A</td>
-                  <td className="px-1 py-4">N/A</td>
-                  <td className="px-1 py-4 text-right">
+                  </TableCell>
+                  <TableCell>N/A</TableCell>
+                  <TableCell>N/A</TableCell>
+                  <TableCell>
                     <BaseButtons type="justify-start md:justify-end" noWrap>
                       <BaseButton
                         color="success"
@@ -270,21 +268,15 @@ const BudgetTableView = (props: Props) => {
                         color="danger"
                         icon={mdiCancel}
                         small
-                        onClick={props?.handleCreateModeCancel}
+                        onClick={() => setIsCreateMode(false)}
                       ></BaseButton>
                     </BaseButtons>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
               {budgetQuery.data.budget?.map((budget, i) => (
-                <tr
-                  key={budget.id}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <th
-                    scope="row"
-                    className="whitespace-nowrap px-1 py-4 font-medium text-gray-900 dark:text-white"
-                  >
+                <TableRow key={budget.id}>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <ControlledSelect
                         control={editForm.control}
@@ -295,8 +287,8 @@ const BudgetTableView = (props: Props) => {
                     ) : (
                       budget.category.name
                     )}
-                  </th>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <ControlledInputMoney
                         form="editForm"
@@ -315,8 +307,8 @@ const BudgetTableView = (props: Props) => {
                         ></NumberDynamic>
                       </span>
                     )}
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <span
                       className={`${getColorOfRemaining(
                         Math.round(budget?.spent / budget?.budgetedAmount),
@@ -327,8 +319,8 @@ const BudgetTableView = (props: Props) => {
                         prefix={`₹`}
                       ></NumberDynamic>
                     </span>
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <div className="mb-1 flex justify-end">
                       <span className="text-sm font-medium text-black dark:text-white">{`${Math.round(
                         (budget?.spent / budget?.budgetedAmount) * 100,
@@ -349,8 +341,8 @@ const BudgetTableView = (props: Props) => {
                         }}
                       ></div>
                     </div>
-                  </td>
-                  <td className="px-1 py-4 text-right">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode !== i ? (
                       <BaseButtons type="justify-start lg:justify-end" noWrap>
                         <BaseButton
@@ -383,13 +375,13 @@ const BudgetTableView = (props: Props) => {
                         />
                       </BaseButtons>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
             </tbody>
-          </table>
-        </div>
-      </div>
+          </Table>
+        )}
+      </CardTable>
     </>
   );
 };

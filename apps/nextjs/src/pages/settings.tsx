@@ -1,11 +1,10 @@
 import React, { type ReactElement } from "react";
 import Head from "next/head";
-import { mdiCashMultiple, mdiConnection, mdiGmail, mdiTune } from "@mdi/js";
+import { mdiConnection, mdiGmail, mdiTune } from "@mdi/js";
 
 import { getPageTitle } from "~/config/config";
 import BaseButton from "../components/common/buttons/BaseButton";
 import SectionMain from "../components/common/sections/SectionMain";
-import SectionTitleLineWithButton from "../components/common/sections/SectionTitleLineWithButton";
 import LayoutAuthenticated from "../components/layout";
 import "flowbite";
 import TelegramLoginButton from "react-telegram-login";
@@ -16,6 +15,7 @@ import CardBox from "~/components/common/cards/CardBox";
 import IconRounded from "~/components/common/icon/IconRounded";
 import { ActiveIndicator } from "~/components/common/indicators/ActiveIndicator";
 import { InActiveIndicator } from "~/components/common/indicators/InActiveIndicator";
+import { DefaultLoading } from "~/components/common/loading/DefaultLoading";
 import { env } from "~/env.mjs";
 
 const scopes = [
@@ -38,9 +38,15 @@ const SettingsPage = () => {
         console.log(err);
       },
     });
+  const deleteGmailIntegrationMutation =
+    api.integration.deleteGmailIntegration.useMutation();
 
   const addTelegramIntegration = (chatId: string) => {
     telegramIntegrationMutation.mutate({ chatId });
+  };
+
+  const deleteGmailIntegration = () => {
+    deleteGmailIntegrationMutation.mutate();
   };
 
   const authenticate = () => {
@@ -57,11 +63,6 @@ const SettingsPage = () => {
         <title>{getPageTitle("Settings")}</title>
       </Head>
       <SectionMain>
-        <SectionTitleLineWithButton
-          icon={mdiCashMultiple}
-          title={"Settings"}
-          main
-        ></SectionTitleLineWithButton>
         <section>
           <div className="mb-3 flex items-center justify-start">
             <IconRounded
@@ -73,60 +74,60 @@ const SettingsPage = () => {
             <h1 className={`leading-tight`}>Integrations</h1>
           </div>
           <CardBox>
-            <div className={"flex justify-between"}>
-              <span className={"text-xl"}>Telegram</span>
-              {telegramIntegrationQuery.data?.isConnected && (
-                <ActiveIndicator />
-              )}
-              {!telegramIntegrationQuery.data?.isConnected && (
-                <InActiveIndicator />
-              )}
-            </div>
-            <div className={"mb-3 mt-3 text-sm font-light"}>
-              Integrate Telegram to receive real-time transaction notifications,
-              allowing you to conveniently edit and verify transactions directly
-              from Telegram.
-            </div>
-            {!telegramIntegrationQuery.data?.isConnected && (
-              <TelegramLoginButton
-                bottonSize="medium"
-                dataOnauth={(data) => {
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
-                  addTelegramIntegration(data.id.toString());
-                }}
-                botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
-              />
-            )}
-            <div className={"mt-12 flex justify-between"}>
-              <span className={"text-xl"}>Gmail</span>
-              {gmailIntegrationQuery.data?.isConnected && <ActiveIndicator />}
-              {!gmailIntegrationQuery.data?.isConnected && (
-                <InActiveIndicator />
-              )}
-            </div>
-            <div className={"mb-3 mt-3 text-sm font-light"}>
-              Effortlessly extract transaction information by integrating with
-              Gmail, streamlining the process of gathering transaction details
-              automatically.
-            </div>
-            {!gmailIntegrationQuery.data?.isConnected && (
-              <BaseButton
-                onClick={authenticate}
-                label={"Authorize"}
-                icon={mdiGmail}
-                iconSize={28}
-                color={"success"}
-                small
-              ></BaseButton>
-            )}
-            {gmailIntegrationQuery.data?.isConnected && (
-              <BaseButton
-                label={"Revoke access"}
-                icon={mdiGmail}
-                iconSize={28}
-                color={"danger"}
-                small
-              ></BaseButton>
+            {gmailIntegrationQuery.isLoading ||
+            telegramIntegrationQuery.isLoading ? (
+              <DefaultLoading />
+            ) : (
+              <>
+                <div className={"flex justify-between"}>
+                  <span className={"text-xl"}>Telegram</span>
+                  {telegramIntegrationQuery.data?.isConnected && (
+                    <ActiveIndicator />
+                  )}
+                  {!telegramIntegrationQuery.data?.isConnected && (
+                    <InActiveIndicator />
+                  )}
+                </div>
+                <div className={"mb-3 mt-3 text-sm font-light"}>
+                  Integrate Telegram to receive real-time transaction
+                  notifications, allowing you to conveniently edit and verify
+                  transactions directly from Telegram.
+                </div>
+                {!telegramIntegrationQuery.data?.isConnected && (
+                  <TelegramLoginButton
+                    bottonSize="medium"
+                    dataOnauth={(data) => {
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+                      addTelegramIntegration(data.id.toString());
+                    }}
+                    botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
+                  />
+                )}
+                <div className={"mt-12 flex justify-between"}>
+                  <span className={"text-xl"}>Gmail</span>
+                  {gmailIntegrationQuery.data?.isConnected && (
+                    <ActiveIndicator />
+                  )}
+                  {!gmailIntegrationQuery.data?.isConnected && (
+                    <InActiveIndicator />
+                  )}
+                </div>
+                <div className={"mb-3 mt-3 text-sm font-light"}>
+                  Effortlessly extract transaction information by integrating
+                  with Gmail, streamlining the process of gathering transaction
+                  details automatically.
+                </div>
+                {!gmailIntegrationQuery.data?.isConnected && (
+                  <BaseButton
+                    onClick={authenticate}
+                    label={"Authorize"}
+                    icon={mdiGmail}
+                    iconSize={28}
+                    color={"success"}
+                    small
+                  ></BaseButton>
+                )}
+              </>
             )}
           </CardBox>
 

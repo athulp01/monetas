@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { useState } from "react";
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+import {
+  mdiCancel,
+  mdiCheck,
+  mdiPencil,
+  mdiPlus,
+  mdiPlusThick,
+  mdiTrashCan,
+} from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
 import BaseButtons from "../common/buttons/BaseButtons";
@@ -11,6 +18,12 @@ import "react-datetime/css/react-datetime.css";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { CardTable } from "~/components/common/cards/CardTable";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import { SearchInput } from "~/components/forms/SearchInput";
 import { useTable } from "~/hooks/useTable";
 import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
@@ -21,21 +34,17 @@ export type PayeeList = RouterOutputs["payee"]["listPayees"]["payees"];
 export type PayeeCreate = RouterInputs["payee"]["addPayee"];
 export type PayeeUpdate = RouterInputs["payee"]["updatePayee"];
 
-interface Props {
-  isCreateMode: boolean;
-  handleCreateModeCancel: () => void;
-}
-
-const PayeeTableView = (props: Props) => {
+const PayeeTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<PayeeList[0]>();
+  const [isCreateMode, setIsCreateMode] = useState(false);
   const categoriesQuery = api.category.listCategories.useQuery();
   const payeesQuery = api.payee.listPayees.useQuery();
 
   const payeeUpdateMutation = api.payee.updatePayee.useMutation({
     onSuccess: async () => {
       createForm.reset();
-      props?.handleCreateModeCancel();
+      setIsCreateMode(false);
       toast.success("Payee updated successfully");
       await payeesQuery.refetch();
     },
@@ -51,7 +60,7 @@ const PayeeTableView = (props: Props) => {
   const payeeCreateMutation = api.payee.addPayee.useMutation({
     onSuccess: async () => {
       editForm.reset();
-      props?.handleCreateModeCancel();
+      setIsCreateMode(false);
       toast.success("Payee created successfully");
       await payeesQuery.refetch();
     },
@@ -152,7 +161,7 @@ const PayeeTableView = (props: Props) => {
         isActive={isDialogOpen}
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
-      <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
+      <CardTable>
         <form
           id="createForm"
           hidden
@@ -164,47 +173,76 @@ const PayeeTableView = (props: Props) => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <div className="relative ml-6">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="table-search"
-              className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder="Search payees"
-            ></input>
+          <SearchInput></SearchInput>
+          <div className={"mr-2"}>
+            <BaseButton
+              icon={mdiPlusThick}
+              color="contrast"
+              disabled={isCreateMode}
+              onClick={() => setIsCreateMode(true)}
+            />
           </div>
         </div>
 
-        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
-          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <TableHeader title="Name"></TableHeader>
-                <TableHeader title="Category" isSortable></TableHeader>
-                <TableHeader></TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {props?.isCreateMode && (
-                <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
-                  <td scope="row" className="px-1 py-4">
-                    <ControlledInput
+        <Table>
+          <TableHeaderBlock>
+            <tr>
+              <TableHeader title="Name"></TableHeader>
+              <TableHeader title="Category" isSortable></TableHeader>
+              <TableHeader></TableHeader>
+            </tr>
+          </TableHeaderBlock>
+          <tbody>
+            {isCreateMode && (
+              <TableRow>
+                <TableCell>
+                  <ControlledInput
+                    form="createForm"
+                    control={createForm.control}
+                    name="name"
+                    inputProps={{
+                      placeholder: "Name",
+                      type: "text",
+                      required: true,
+                    }}
+                  ></ControlledInput>
+                </TableCell>
+                <TableCell>
+                  <ControlledSelect
+                    control={createForm.control}
+                    name="categories"
+                    options={categoriesQuery.data?.categories}
+                    isMulti
+                    form="createForm"
+                  ></ControlledSelect>
+                </TableCell>
+                <TableCell>
+                  <BaseButtons type="justify-start lg:justify-end" noWrap>
+                    <BaseButton
+                      color="success"
+                      icon={mdiPlus}
+                      small
+                      type="submit"
                       form="createForm"
-                      control={createForm.control}
+                      // onClick={props?.handleCreate}
+                    />
+                    <BaseButton
+                      color="danger"
+                      icon={mdiCancel}
+                      small
+                      onClick={() => setIsCreateMode(false)}
+                    ></BaseButton>
+                  </BaseButtons>
+                </TableCell>
+              </TableRow>
+            )}
+            {payeesQuery.data.payees?.map((payee, i) => (
+              <TableRow key={payee.id}>
+                <TableCell>
+                  {isInEditMode === i ? (
+                    <ControlledInput
+                      form="editForm"
+                      control={editForm.control}
                       name="name"
                       inputProps={{
                         placeholder: "Name",
@@ -212,112 +250,62 @@ const PayeeTableView = (props: Props) => {
                         required: true,
                       }}
                     ></ControlledInput>
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+                  ) : (
+                    payee.name
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode === i ? (
                     <ControlledSelect
-                      control={createForm.control}
+                      control={editForm.control}
                       name="categories"
-                      options={categoriesQuery.data?.categories}
                       isMulti
-                      form="createForm"
+                      options={categoriesQuery.data?.categories}
+                      form="editForm"
                     ></ControlledSelect>
-                  </td>
-                  <td className="px-1 py-4 text-right">
+                  ) : (
+                    payee.categories.map((category) => category.name).join(", ")
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isInEditMode !== i ? (
                     <BaseButtons type="justify-start lg:justify-end" noWrap>
                       <BaseButton
-                        color="success"
-                        icon={mdiPlus}
+                        color="info"
+                        icon={mdiPencil}
+                        onClick={() => handleEdit(i)}
                         small
-                        type="submit"
-                        form="createForm"
-                        // onClick={props?.handleCreate}
                       />
                       <BaseButton
                         color="danger"
-                        icon={mdiCancel}
+                        icon={mdiTrashCan}
+                        onClick={() => handleDelete(payee?.id)}
                         small
-                        onClick={props?.handleCreateModeCancel}
                       ></BaseButton>
                     </BaseButtons>
-                  </td>
-                </tr>
-              )}
-              {payeesQuery.data.payees?.map((payee, i) => (
-                <tr
-                  key={payee.id}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <td className="whitespace-nowrap px-1 py-4 font-medium text-gray-900">
-                    {isInEditMode === i ? (
-                      <ControlledInput
+                  ) : (
+                    <BaseButtons type="justify-start lg:justify-end" noWrap>
+                      <BaseButton
+                        color="success"
+                        icon={mdiCheck}
+                        type="submit"
                         form="editForm"
-                        control={editForm.control}
-                        name="name"
-                        inputProps={{
-                          placeholder: "Name",
-                          type: "text",
-                          required: true,
-                        }}
-                      ></ControlledInput>
-                    ) : (
-                      payee.name
-                    )}
-                  </td>
-                  <td scope="row" className="px-1 py-4  dark:text-white">
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        name="categories"
-                        isMulti
-                        options={categoriesQuery.data?.categories}
-                        form="editForm"
-                      ></ControlledSelect>
-                    ) : (
-                      payee.categories
-                        .map((category) => category.name)
-                        .join(", ")
-                    )}
-                  </td>
-                  <td className="px-1 py-4 text-right">
-                    {isInEditMode !== i ? (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="info"
-                          icon={mdiPencil}
-                          onClick={() => handleEdit(i)}
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          icon={mdiTrashCan}
-                          onClick={() => handleDelete(payee?.id)}
-                          small
-                        ></BaseButton>
-                      </BaseButtons>
-                    ) : (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="success"
-                          icon={mdiCheck}
-                          type="submit"
-                          form="editForm"
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          onClick={() => setIsInEditMode(null)}
-                          icon={mdiCancel}
-                          small
-                        />
-                      </BaseButtons>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                        small
+                      />
+                      <BaseButton
+                        color="danger"
+                        onClick={() => setIsInEditMode(null)}
+                        icon={mdiCancel}
+                        small
+                      />
+                    </BaseButtons>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
+      </CardTable>
     </>
   );
 };

@@ -1,11 +1,13 @@
 import { z } from "zod";
+
 import {
   getNetExpensePerCategory,
-  getNetExpensePerDay, getNetExpensePerPayee,
+  getNetExpensePerDay,
+  getNetExpensePerPayee,
   getNetWorth,
   getTotalExpensesForTheMonth,
-  getTotalIncomeForTheMonth
-} from "../repository/reports";
+  getTotalIncomeForTheMonth,
+} from "../repository/reportsRepo";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const reportsRouter = createTRPCRouter({
@@ -14,7 +16,7 @@ export const reportsRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const response = await getTotalExpensesForTheMonth(
         input.month,
-        ctx.prisma
+        ctx.prisma,
       );
       return { totalExpenses: response?._sum?.amount || 0, month: input.month };
     }),
@@ -34,14 +36,14 @@ export const reportsRouter = createTRPCRouter({
         rangeStart: z.date(),
         rangeEnd: z.date(),
         precision: z.enum(["day", "month"]),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       return await getNetExpensePerDay(
         input.rangeStart,
         input.rangeEnd,
         input.precision,
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   getNetExpensePerCategory: protectedProcedure
@@ -49,13 +51,13 @@ export const reportsRouter = createTRPCRouter({
       z.object({
         rangeStart: z.date(),
         rangeEnd: z.date(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       return await getNetExpensePerCategory(
         input.rangeStart,
         input.rangeEnd,
-        ctx.prisma
+        ctx.prisma,
       );
     }),
   getNetExpensePerPayee: protectedProcedure
@@ -63,13 +65,13 @@ export const reportsRouter = createTRPCRouter({
       z.object({
         rangeStart: z.date(),
         rangeEnd: z.date(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       return await getNetExpensePerPayee(
         input.rangeStart,
         input.rangeEnd,
-        ctx.prisma
+        ctx.prisma,
       );
     }),
 });

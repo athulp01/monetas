@@ -4,10 +4,10 @@ import { type FinancialAccount } from "@prisma/client";
 import {
   getMatchingAccountByName,
   getMatchingAccountByNumber,
-} from "@monetas/api/src/repository/account";
-import { getMatchingPayee } from "@monetas/api/src/repository/payee";
-import { addTransaction } from "@monetas/api/src/repository/transactions";
-import { addUnverifiedTransaction } from "@monetas/api/src/repository/unverifiedTransaction";
+} from "@monetas/api/src/repository/accountsRepo";
+import { getMatchingPayee } from "@monetas/api/src/repository/payeesRepo";
+import { addTransaction } from "@monetas/api/src/repository/transactionsRepo";
+import { addUnverifiedTransaction } from "@monetas/api/src/repository/unverifiedTransactionsRepo";
 import {
   forUser,
   prisma as originalPrisma,

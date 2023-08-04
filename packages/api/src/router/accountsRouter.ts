@@ -9,7 +9,7 @@ import {
   getAccounts,
   logAccountBalance,
   updateAccount,
-} from "../repository/account";
+} from "../repository/accountsRepo";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -17,14 +17,27 @@ import {
 } from "../trpc";
 
 export const accountRouter = createTRPCRouter({
-  listAccounts: telegramProcedure.query(async ({ ctx }) => {
-    const accounts = await getAccounts(ctx.prisma);
-    const totalCount = await ctx.prisma.financialAccount.count();
-    return {
-      totalCount,
-      accounts,
-    };
-  }),
+  listAccounts: telegramProcedure
+    .input(
+      z
+        .object({
+          type: z.string().uuid().optional(),
+          provider: z.string().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ input, ctx }) => {
+      const accounts = await getAccounts(
+        input?.provider,
+        input?.type,
+        ctx.prisma,
+      );
+      const totalCount = await ctx.prisma.financialAccount.count();
+      return {
+        totalCount,
+        accounts,
+      };
+    }),
   listAccountProviders: protectedProcedure.query(async ({ ctx }) => {
     return await getAccountProviders(ctx.prisma);
   }),
@@ -83,7 +96,7 @@ export const accountRouter = createTRPCRouter({
       );
     }),
   logAccountBalance: protectedProcedure.mutation(async ({ ctx }) => {
-    const accounts = await getAccounts(ctx.prisma);
+    const accounts = await getAccounts(null, null, ctx.prisma);
     const payload = accounts.map((account) => ({
       accountId: account.id,
       balance: account.balance,

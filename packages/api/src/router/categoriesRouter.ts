@@ -5,7 +5,7 @@ import {
   addCategory,
   deleteCategory,
   getCategories,
-} from "../repository/category";
+} from "../repository/categoriesRepo";
 import {
   createTRPCRouter,
   protectedProcedure,

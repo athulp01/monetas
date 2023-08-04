@@ -7,7 +7,7 @@ import {
   getInvestments,
   getQuote,
   updateInvestment,
-} from "../repository/investment";
+} from "../repository/investmentsRepo";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const investmentRouter = createTRPCRouter({

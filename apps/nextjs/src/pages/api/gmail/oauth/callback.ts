@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getAuth } from "@clerk/nextjs/server";
 import { google } from "googleapis";
 
-import { addGmailIntegration } from "@monetas/api/src/repository/integration";
+import { addGmailIntegration } from "@monetas/api/src/repository/integrationsRepo";
 import {
   forUser,
   prisma as originalPrisma,

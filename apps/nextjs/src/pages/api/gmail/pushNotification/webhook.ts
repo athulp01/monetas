@@ -6,7 +6,7 @@ import { simpleParser } from "mailparser";
 import {
   getGmailIntegrationByEmailAddress,
   updateHistoryId,
-} from "@monetas/api/src/repository/integration";
+} from "@monetas/api/src/repository/integrationsRepo";
 import {
   bypassRLS,
   prisma as originalPrisma,

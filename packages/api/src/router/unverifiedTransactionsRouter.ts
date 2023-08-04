@@ -5,16 +5,19 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
-import { updateAccount } from "../repository/account";
-import { getBudgetByCategoryId, updateBudgetSpent } from "../repository/budget";
-import { addPayeeAlias } from "../repository/payee";
-import { addTransaction } from "../repository/transactions";
+import { updateAccount } from "../repository/accountsRepo";
+import {
+  getBudgetByCategoryId,
+  updateBudgetSpent,
+} from "../repository/budgetsRepo";
+import { addPayeeAlias } from "../repository/payeesRepo";
+import { addTransaction } from "../repository/transactionsRepo";
 import {
   deleteUnverifiedTransaction,
   getUnverifiedTransaction,
   getUnverifiedTransactionCount,
   getUnverifiedTransactions,
-} from "../repository/unverifiedTransaction";
+} from "../repository/unverifiedTransactionsRepo";
 import {
   createTRPCRouter,
   protectedProcedure,

@@ -1,10 +1,13 @@
 import { z } from "zod";
 
-import { getGmailIntegration } from "../repository/integration";
+import {
+  deleteGmailIntegration,
+  getGmailIntegration,
+} from "../repository/integrationsRepo";
 import {
   addTelegramIntegration,
   getTelegramIntegration,
-} from "../repository/telegram";
+} from "../repository/telegramRepo";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const integrationRouter = createTRPCRouter({
@@ -12,6 +15,9 @@ export const integrationRouter = createTRPCRouter({
     return (await getGmailIntegration(ctx.prisma))
       ? { isConnected: true }
       : { isConnected: false };
+  }),
+  deleteGmailIntegration: protectedProcedure.mutation(async ({ ctx }) => {
+    return await deleteGmailIntegration(ctx.prisma);
   }),
   getTelegramIntegration: protectedProcedure.query(async ({ ctx }) => {
     return (await getTelegramIntegration(ctx.prisma))
