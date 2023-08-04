@@ -34,7 +34,7 @@ function parseDate(dateString: string) {
   const parts = dateString.split("/");
   const day = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1; // Month is zero-based
-  const year = 2000 + parseInt(parts[2], 10); // Assuming year is between 2000-2099
+  const year = parseInt(parts[2], 10); // Assuming year is between 2000-2099
   return new Date(year, month, day);
 }
 

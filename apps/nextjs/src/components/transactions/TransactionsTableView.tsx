@@ -65,7 +65,6 @@ const TransactionsTableView = () => {
   const topLoadingBar = useContext(TopLoadingBarStateContext);
   const dialog = useDialog();
   const router = useRouter();
-  console.log("Query: ", router.query);
   const [mode, setMode] = useState<Mode>("VIEW");
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<TransactionsList[0]>();
