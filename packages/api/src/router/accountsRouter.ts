@@ -9,7 +9,7 @@ import {
   getAccounts,
   logAccountBalance,
   updateAccount,
-} from "../repository/account";
+} from "../repository/accountsRepo";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -17,14 +17,23 @@ import {
 } from "../trpc";
 
 export const accountRouter = createTRPCRouter({
-  listAccounts: telegramProcedure.query(async ({ ctx }) => {
-    const accounts = await getAccounts(ctx.prisma);
-    const totalCount = await ctx.prisma.financialAccount.count();
-    return {
-      totalCount,
-      accounts,
-    };
-  }),
+  listAccounts: telegramProcedure
+    .input(
+      z
+        .object({
+          type: z.string().uuid().optional(),
+          provider: z.string().uuid().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx }) => {
+      const accounts = await getAccounts(ctx.prisma);
+      const totalCount = await ctx.prisma.financialAccount.count();
+      return {
+        totalCount,
+        accounts,
+      };
+    }),
   listAccountProviders: protectedProcedure.query(async ({ ctx }) => {
     return await getAccountProviders(ctx.prisma);
   }),

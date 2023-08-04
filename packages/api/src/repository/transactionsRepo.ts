@@ -55,6 +55,16 @@ export const addTransaction = (
   });
 };
 
+export const addTransactions = (
+  transactions: Prisma.TransactionCreateManyInput[],
+  client: PrismaClient,
+) => {
+  return client.transaction.createMany({
+    data: transactions,
+    skipDuplicates: true,
+  });
+};
+
 export const deleteTransaction = (id: string, client: PrismaClient) =>
   client.transaction.delete({ where: { id } });
 

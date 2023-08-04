@@ -5,7 +5,7 @@ import {
   deletePayee,
   getPayees,
   updatePayee,
-} from "../repository/payee";
+} from "../repository/payeesRepo";
 import {
   createTRPCRouter,
   protectedProcedure,

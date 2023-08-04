@@ -1,37 +1,57 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import React, { useEffect, useRef, useState } from "react";
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  mdiCancel,
+  mdiCheck,
+  mdiFileImport,
+  mdiPencil,
+  mdiPlus,
+  mdiPlusThick,
+  mdiTrashCan,
+} from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
 import BaseButtons from "../common/buttons/BaseButtons";
 import "flowbite";
 import Datetime from "react-datetime";
 
-import { ITEMS_PER_PAGE } from "../../config/site";
-import { DateFormater } from "../../lib/utils";
+import { ITEMS_PER_PAGE } from "~/config/site";
+import { DateFormater } from "~/lib/utils";
 import TableLoading from "../common/loading/TableLoading";
 import NumberDynamic from "../common/misc/NumberDynamic";
 import "react-datetime/css/react-datetime.css";
 import { TRANSACTION_TYPE } from "@prisma/client";
 import moment from "moment";
 import Sheet from "react-modal-sheet";
-import ReactPaginate from "react-paginate";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
 import { TransactionTypeOptions } from "~/utils/constants";
-import { useTable } from "../../hooks/useTable";
-import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import { useTable } from "~/hooks/useTable";
+import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledDateTime } from "../forms/ControlledDateTime";
 import { ControlledInputMoney } from "../forms/ControlledInputMoney";
 import { ControlledSelect } from "../forms/ControlledSelect";
 import TransactionCard from "./TransactionCard";
 import "@yaireo/tagify/dist/tagify.css";
+import { useRouter } from "next/router";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 import { Controller } from "react-hook-form";
-import LoadingBar from "react-top-loading-bar";
+
+import { TopLoadingBarStateContext } from "~/utils/contexts";
+import { CardTable } from "~/components/common/cards/CardTable";
+import IconRounded from "~/components/common/icon/IconRounded";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import { SearchInput } from "~/components/forms/SearchInput";
+import { EmptyTransactions } from "~/components/transactions/EmptyTransactions";
+import ImportTableView from "~/components/transactions/ImportTableView";
+import { IconMap } from "~/config/iconMap";
+import { useDialog } from "~/hooks/useDialog";
 
 export type TransactionsList =
   RouterOutputs["transaction"]["listTransactions"]["transactions"];
@@ -39,33 +59,20 @@ export type TransactionCreate = RouterInputs["transaction"]["addTransaction"];
 export type TransactionUpdate =
   RouterInputs["transaction"]["updateTransaction"];
 
-interface Props {
-  isCreateMode: boolean;
-  handleCreateModeCancel: () => void;
-}
+type Mode = "CREATE" | "EDIT" | "VIEW" | "IMPORT" | "REVIEW" | "EMPTY";
 
-const TransactionsTableView = (props: Props) => {
-  const loadingBarRef = useRef();
+const TransactionsTableView = () => {
+  const topLoadingBar = useContext(TopLoadingBarStateContext);
+  const dialog = useDialog();
+  const router = useRouter();
+  console.log("Query: ", router.query);
+  const [mode, setMode] = useState<Mode>("VIEW");
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<TransactionsList[0]>();
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(moment());
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogProps, setDialogProps] =
-    useState<
-      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
-    >();
   const [hack, setHack] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const showLoadingBar: () => void = loadingBarRef.current?.continuousStart;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const hideLoadingBar: () => void = loadingBarRef.current?.complete;
 
   const transactionsQuery = api.transaction.listTransactions.useQuery({
     page: currentPage,
@@ -87,6 +94,14 @@ const TransactionsTableView = (props: Props) => {
         : createForm.watch("category")?.id,
   });
 
+  useEffect(() => {
+    if (router.query["import"]) {
+      setMode("IMPORT");
+    } else {
+      setMode("VIEW");
+    }
+  }, [router]);
+
   const handleCardEdit = (index: number) => {
     setIsInEditMode(index);
     editForm.reset(transactionsQuery.data.transactions[index]);
@@ -95,7 +110,7 @@ const TransactionsTableView = (props: Props) => {
   const addTransactionMutation = api.transaction.addTransaction.useMutation({
     onSuccess: async () => {
       createForm.reset();
-      props?.handleCreateModeCancel();
+      setMode("VIEW");
       toast.success("Transaction created successfully");
       await transactionsQuery.refetch();
     },
@@ -104,7 +119,7 @@ const TransactionsTableView = (props: Props) => {
       console.log(err);
     },
     onSettled: () => {
-      hideLoadingBar();
+      topLoadingBar.hide();
     },
   });
 
@@ -112,12 +127,12 @@ const TransactionsTableView = (props: Props) => {
     api.transaction.updateTransaction.useMutation({
       onSuccess: async () => {
         editForm.reset();
-        hideLoadingBar();
+        topLoadingBar.hide();
         toast.success("Transaction updated successfully");
         await transactionsQuery.refetch();
       },
       onError: (err) => {
-        hideLoadingBar();
+        topLoadingBar.hide();
         toast.error("Error updating transaction");
         console.log(err);
       },
@@ -133,12 +148,11 @@ const TransactionsTableView = (props: Props) => {
         console.log(err);
       },
       onSettled: () => {
-        setIsDialogOpen(false);
+        dialog.hide();
       },
     });
 
   const onCreateFormSubmit = (data: TransactionsList[0]): void => {
-    console.log(data);
     const payload: TransactionCreate = {
       amount: +data.amount,
       type: data.type,
@@ -149,17 +163,17 @@ const TransactionsTableView = (props: Props) => {
       timeCreated: new Date(data.timeCreated),
       tags: data.tags?.map((tag) => tag.name) ?? undefined,
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to create this transaction?",
       onConfirm: () => {
-        showLoadingBar();
+        topLoadingBar.show();
         addTransactionMutation.mutate(payload);
-        setIsDialogOpen(false);
+        dialog.hide();
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const onEditFormSubmit = (data: TransactionsList[0]) => {
@@ -181,19 +195,18 @@ const TransactionsTableView = (props: Props) => {
       timeCreated: new Date(data.timeCreated),
       tags: data.tags?.map((tag) => tag.name) ?? undefined,
     };
-    console.log(`Data: ${JSON.stringify(payload)}`);
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to edit this transaction?",
       onConfirm: () => {
-        showLoadingBar();
+        topLoadingBar.show();
         updateTransactionMutation.mutate(payload);
         setIsInEditMode(-1);
-        setIsDialogOpen(false);
+        dialog.hide();
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const handleEdit = (i: number) => {
@@ -203,7 +216,7 @@ const TransactionsTableView = (props: Props) => {
   };
 
   const handleDelete = (id: string) => {
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "danger",
       message: "Do you want to delete this transaction?",
@@ -211,7 +224,7 @@ const TransactionsTableView = (props: Props) => {
         deleteTransactionMutation.mutate(id);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   useEffect(() => {
@@ -222,16 +235,22 @@ const TransactionsTableView = (props: Props) => {
     return <TableLoading></TableLoading>;
   }
 
+  if (mode === "IMPORT") {
+    return (
+      <ImportTableView handleSave={() => setMode("VIEW")}></ImportTableView>
+    );
+  }
+
   return (
     <>
-      <LoadingBar height={8} color="black" ref={loadingBarRef} />
       <CardBoxModal
-        {...dialogProps}
+        {...dialog.props}
         buttonLabel="Confirm"
-        isActive={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
+        isActive={dialog.isOpen}
+        onCancel={dialog.hide}
       ></CardBoxModal>
-      <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
+
+      <CardTable>
         <form
           id="createForm"
           hidden
@@ -242,31 +261,9 @@ const TransactionsTableView = (props: Props) => {
           hidden
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
-        <div className="flex flex-wrap items-center justify-between pb-4">
-          <div className="relative ml-6">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="table-search"
-              className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder="Search transactions"
-            ></input>
-          </div>
-          <div className="ml-6 mt-4 sm:mr-6 sm:mt-0">
+        <div className="flex min-w-full flex-wrap items-center justify-between pb-4">
+          <SearchInput></SearchInput>
+          <div className="ml-6 mt-4 flex sm:mr-6 sm:mt-0">
             <Datetime
               timeFormat={false}
               onChange={(value: moment.Moment | string) =>
@@ -282,10 +279,28 @@ const TransactionsTableView = (props: Props) => {
                   "block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
               }}
             />
+            <BaseButton
+              icon={mdiPlusThick}
+              color="contrast"
+              className={"ml-2"}
+              disabled={mode === "CREATE"}
+              onClick={() => setMode("CREATE")}
+            />
+            <BaseButton
+              icon={mdiFileImport}
+              tooltip="Import transactions"
+              color="contrast"
+              className={"ml-2"}
+              onClick={() => setMode("IMPORT")}
+            />
           </div>
         </div>
 
-        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
+        {transactionsQuery.data?.totalCount === 0 && mode === "EMPTY" && (
+          <EmptyTransactions></EmptyTransactions>
+        )}
+
+        <CardTable>
           <div className="block md:hidden">
             {transactionsQuery?.data?.transactions?.map((transaction, i) => (
               <TransactionCard
@@ -296,429 +311,381 @@ const TransactionsTableView = (props: Props) => {
               ></TransactionCard>
             ))}
           </div>
-          <table className="hidden w-full text-left text-sm text-gray-500 dark:text-gray-400 md:table">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <TableHeader title="Account"></TableHeader>
-                <TableHeader title="Type"></TableHeader>
-                <TableHeader title="Category" isSortable></TableHeader>
-                <TableHeader title="Payee" isSortable></TableHeader>
-                <TableHeader title="Date"></TableHeader>
-                <TableHeader title="Amount"></TableHeader>
-                <TableHeader title="Tags"></TableHeader>
-                <TableHeader></TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {props?.isCreateMode && (
-                <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
-                  <td scope="row" className="px-1 py-4">
-                    <ControlledSelect
-                      control={createForm.control}
-                      form="createForm"
-                      name="sourceAccount"
-                      options={accountsQuery?.data?.accounts}
-                    ></ControlledSelect>
-                  </td>
-                  <td className="px-1 py-4">
-                    <ControlledSelect
-                      control={createForm.control}
-                      form="createForm"
-                      name="type"
-                      options={TransactionTypeOptions}
-                      isSimple
-                    ></ControlledSelect>
-                  </td>
-                  <td className="px-1 py-4">
-                    <ControlledSelect
-                      control={createForm.control}
-                      form="createForm"
-                      isDisabled={createForm.watch("type") == null}
-                      isLoading={categoriesQuery.isLoading}
-                      name="category"
-                      options={categoriesQuery?.data?.categories}
-                    ></ControlledSelect>
-                  </td>
-                  <td className="px-1 py-4">
-                    {createForm.watch("type") === TRANSACTION_TYPE.TRANSFER && (
-                      <ControlledSelect
-                        control={createForm.control}
-                        form="createForm"
-                        name="transferredAccount"
-                        options={accountsQuery?.data?.accounts?.filter(
-                          (account) =>
-                            account.id !==
-                            createForm.watch("sourceAccount")?.id,
+          {(transactionsQuery.data?.totalCount != 0 || mode === "CREATE") && (
+            <>
+              <Table
+                isPaginated
+                currentPage={currentPage}
+                totalItems={totalCount}
+                itemsInCurrentPage={
+                  transactionsQuery?.data?.transactions?.length
+                }
+                setCurrentPage={setCurrentPage}
+              >
+                <TableHeaderBlock>
+                  <tr>
+                    <TableHeader title={""}></TableHeader>
+                    <TableHeader title="Account"></TableHeader>
+                    <TableHeader title="Type"></TableHeader>
+                    <TableHeader title="Category" isSortable></TableHeader>
+                    <TableHeader title="Payee" isSortable></TableHeader>
+                    <TableHeader title="Date"></TableHeader>
+                    <TableHeader title="Amount"></TableHeader>
+                    <TableHeader title="Tags"></TableHeader>
+                    <TableHeader></TableHeader>
+                  </tr>
+                </TableHeaderBlock>
+                <tbody>
+                  {mode === "CREATE" && (
+                    <TableRow>
+                      <TableCell>
+                        <></>
+                      </TableCell>
+                      <TableCell>
+                        <ControlledSelect
+                          control={createForm.control}
+                          form="createForm"
+                          name="sourceAccount"
+                          options={accountsQuery?.data?.accounts}
+                        ></ControlledSelect>
+                      </TableCell>
+                      <TableCell>
+                        <ControlledSelect
+                          control={createForm.control}
+                          form="createForm"
+                          name="type"
+                          options={TransactionTypeOptions}
+                          isSimple
+                        ></ControlledSelect>
+                      </TableCell>
+                      <TableCell>
+                        <ControlledSelect
+                          control={createForm.control}
+                          form="createForm"
+                          isDisabled={createForm.watch("type") == null}
+                          isLoading={categoriesQuery.isLoading}
+                          name="category"
+                          options={categoriesQuery?.data?.categories}
+                        ></ControlledSelect>
+                      </TableCell>
+                      <TableCell>
+                        {createForm.watch("type") ===
+                          TRANSACTION_TYPE.TRANSFER && (
+                          <ControlledSelect
+                            control={createForm.control}
+                            form="createForm"
+                            name="transferredAccount"
+                            options={accountsQuery?.data?.accounts?.filter(
+                              (account) =>
+                                account.id !==
+                                createForm.watch("sourceAccount")?.id,
+                            )}
+                          ></ControlledSelect>
                         )}
-                      ></ControlledSelect>
-                    )}
-                    {createForm.watch("type") !== TRANSACTION_TYPE.TRANSFER && (
-                      <ControlledSelect
-                        isLoading={payeesQuery.isLoading}
-                        control={createForm.control}
-                        isDisabled={createForm.watch("type") == null}
-                        rules={{ required: false }}
-                        form="createForm"
-                        name="payee"
-                        options={payeesQuery?.data?.payees}
-                        isClearable
-                      ></ControlledSelect>
-                    )}
-                  </td>
+                        {createForm.watch("type") !==
+                          TRANSACTION_TYPE.TRANSFER && (
+                          <ControlledSelect
+                            isLoading={payeesQuery.isLoading}
+                            control={createForm.control}
+                            isDisabled={createForm.watch("type") == null}
+                            rules={{ required: false }}
+                            form="createForm"
+                            name="payee"
+                            options={payeesQuery?.data?.payees}
+                            isClearable
+                          ></ControlledSelect>
+                        )}
+                      </TableCell>
 
-                  <td className="px-1 py-4">
-                    <ControlledDateTime
-                      control={createForm.control}
-                      name="timeCreated"
-                      form="createForm"
-                    ></ControlledDateTime>
-                  </td>
+                      <TableCell>
+                        <ControlledDateTime
+                          control={createForm.control}
+                          name="timeCreated"
+                          form="createForm"
+                        ></ControlledDateTime>
+                      </TableCell>
 
-                  <td className="px-1 py-4">
-                    <ControlledInputMoney
-                      control={createForm.control}
-                      name="amount"
-                      form="createForm"
-                      inputProps={{
-                        placeholder: "Amount",
-                        required: true,
-                      }}
-                    />
-                  </td>
-                  <td className="px-1 py-4">
-                    <Controller
-                      control={createForm.control}
-                      name={"tags"}
-                      rules={{ required: false }}
-                      render={({ field }) => (
-                        <Tags
-                          onChange={(e) => {
-                            field.onChange(
-                              // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                              e.detail.tagify
-                                .getCleanValue()
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-                                .map((tag) => ({ name: tag.value })),
-                            );
+                      <TableCell>
+                        <ControlledInputMoney
+                          control={createForm.control}
+                          name="amount"
+                          form="createForm"
+                          inputProps={{
+                            placeholder: "Amount",
+                            required: true,
                           }}
-                          value={field.value?.map((tag) => ({
-                            value: tag.name,
-                          }))}
                         />
-                      )}
-                    ></Controller>
-                  </td>
-                  <td className="px-1 py-4 text-right">
-                    <BaseButtons type="justify-start lg:justify-end" noWrap>
-                      <BaseButton
-                        color="success"
-                        icon={mdiPlus}
-                        small
-                        type="submit"
-                        form="createForm"
-                        // onClick={props?.handleCreate}
-                      />
-                      <BaseButton
-                        color="danger"
-                        icon={mdiCancel}
-                        small
-                        onClick={() => {
-                          createForm.reset();
-                          props?.handleCreateModeCancel();
-                        }}
-                      ></BaseButton>
-                    </BaseButtons>
-                  </td>
-                </tr>
-              )}
-              {transactionsQuery?.data.transactions?.map((transaction, i) => (
-                <tr
-                  key={transaction.id}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <th
-                    scope="row"
-                    className="whitespace-nowrap px-1 py-4 font-medium text-gray-900 dark:text-white"
-                  >
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        form="editForm"
-                        name="sourceAccount"
-                        options={accountsQuery?.data.accounts}
-                      ></ControlledSelect>
-                    ) : (
-                      transaction.sourceAccount.name
-                    )}
-                  </th>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        form="editForm"
-                        name="type"
-                        isSimple
-                        options={TransactionTypeOptions}
-                      ></ControlledSelect>
-                    ) : (
-                      transaction.type.charAt(0) +
-                      transaction.type.substring(1).toLowerCase()
-                    )}
-                  </td>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledSelect
-                        control={editForm.control}
-                        isLoading={categoriesQuery.isLoading}
-                        isDisabled={editForm.watch("type") == null}
-                        form="editForm"
-                        name="category"
-                        options={categoriesQuery?.data?.categories}
-                      ></ControlledSelect>
-                    ) : (
-                      transaction.category.name
-                    )}
-                  </td>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      editForm.watch("type") !== TRANSACTION_TYPE.TRANSFER ? (
-                        <ControlledSelect
-                          control={editForm.control}
-                          form="editForm"
-                          isClearable={true}
-                          isLoading={payeesQuery.isLoading}
-                          isDisabled={editForm.watch("type") == null}
-                          name="payee"
+                      </TableCell>
+                      <TableCell>
+                        <Controller
+                          control={createForm.control}
+                          name={"tags"}
                           rules={{ required: false }}
-                          options={payeesQuery?.data?.payees}
-                        ></ControlledSelect>
-                      ) : (
-                        <ControlledSelect
-                          control={editForm.control}
-                          form="editForm"
-                          isDisabled={editForm.watch("type") == null}
-                          name="transferredAccount"
-                          options={accountsQuery?.data.accounts.filter(
-                            (account) =>
-                              account.id !==
-                              editForm.watch("sourceAccount")?.id,
+                          render={({ field }) => (
+                            <Tags
+                              onChange={(e) => {
+                                field.onChange(
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                                  e.detail.tagify
+                                    .getCleanValue()
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+                                    .map((tag) => ({ name: tag.value })),
+                                );
+                              }}
+                              value={field.value?.map((tag) => ({
+                                value: tag.name,
+                              }))}
+                            />
                           )}
-                        ></ControlledSelect>
-                      )
-                    ) : transaction.type === "TRANSFER" ? (
-                      transaction?.transferredAccount?.name
-                    ) : (
-                      transaction.payee?.name
-                    )}
-                  </td>
-
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledDateTime
-                        control={editForm.control}
-                        name="timeCreated"
-                        form="editForm"
-                      ></ControlledDateTime>
-                    ) : (
-                      DateFormater.format(new Date(transaction.timeCreated))
-                    )}
-                  </td>
-
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <ControlledInputMoney
-                        control={editForm.control}
-                        name="amount"
-                        form="editForm"
-                        inputProps={{
-                          placeholder: "Amount",
-                          required: true,
-                        }}
-                      />
-                    ) : (
-                      <span
-                        className={
-                          transaction?.type === "DEBIT"
-                            ? "font-semibold text-red-600"
-                            : transaction?.type === "CREDIT"
-                            ? "font-semibold text-green-500"
-                            : "font-semibold text-blue-500"
-                        }
-                      >
-                        <NumberDynamic
-                          value={transaction?.amount}
-                          prefix={`${
-                            transaction?.type === "DEBIT"
-                              ? "-"
-                              : transaction?.type === "CREDIT"
-                              ? "+"
-                              : "  "
-                          } ₹`}
-                        ></NumberDynamic>
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-1 py-4">
-                    {isInEditMode === i ? (
-                      <Controller
-                        control={editForm.control}
-                        name={"tags"}
-                        rules={{ required: false }}
-                        render={({ field }) => (
-                          <Tags
-                            onChange={(e) => {
-                              field.onChange(
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                                e.detail.tagify
-                                  .getCleanValue()
-                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-                                  .map((tag) => ({ name: tag.value })),
-                              );
-                            }}
-                            value={field.value?.map((tag) => ({
-                              value: tag.name,
-                            }))}
+                        ></Controller>
+                      </TableCell>
+                      <TableCell>
+                        <BaseButtons type="justify-start lg:justify-end" noWrap>
+                          <BaseButton
+                            color="success"
+                            icon={mdiPlus}
+                            small
+                            type="submit"
+                            form="createForm"
+                            // onClick={props?.handleCreate}
                           />
-                        )}
-                      ></Controller>
-                    ) : (
-                      transaction?.tags.map((tag) => (
-                        <span
-                          className={
-                            "mr-2 rounded-lg border-0 bg-gray-300 p-1 pl-2 pr-2 text-black"
-                          }
-                          key={tag.id}
-                        >
-                          {tag.name}
-                        </span>
-                      ))
-                    )}
-                  </td>
-                  <td className="px-1 py-4 text-right">
-                    {isInEditMode !== i ? (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="info"
-                          icon={mdiPencil}
-                          onClick={() => handleEdit(i)}
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          icon={mdiTrashCan}
-                          onClick={() => handleDelete(transaction?.id)}
-                          small
-                        ></BaseButton>
-                      </BaseButtons>
-                    ) : (
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="success"
-                          icon={mdiCheck}
-                          type="submit"
-                          form="editForm"
-                          small
-                        />
-                        <BaseButton
-                          color="danger"
-                          onClick={() => setIsInEditMode(-1)}
-                          icon={mdiCancel}
-                          small
-                        />
-                      </BaseButtons>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {!transactionsQuery.isLoading && totalCount === 0 && (
-                <tr className="h-40">
-                  <td rowSpan={6} className="text-center" colSpan={5}>
-                    No transactions found!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                          <BaseButton
+                            color="danger"
+                            icon={mdiCancel}
+                            small
+                            onClick={() => {
+                              createForm.reset();
+                              setMode("VIEW");
+                            }}
+                          ></BaseButton>
+                        </BaseButtons>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {transactionsQuery?.data.transactions?.map(
+                    (transaction, i) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          <IconRounded
+                            color={"transparent"}
+                            bg
+                            icon={IconMap[transaction.category.icon]}
+                          ></IconRounded>{" "}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <ControlledSelect
+                              control={editForm.control}
+                              form="editForm"
+                              name="sourceAccount"
+                              options={accountsQuery?.data.accounts}
+                            ></ControlledSelect>
+                          ) : (
+                            transaction.sourceAccount.name
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <ControlledSelect
+                              control={editForm.control}
+                              form="editForm"
+                              name="type"
+                              isSimple
+                              options={TransactionTypeOptions}
+                            ></ControlledSelect>
+                          ) : (
+                            transaction.type.charAt(0) +
+                            transaction.type.substring(1).toLowerCase()
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <ControlledSelect
+                              control={editForm.control}
+                              isLoading={categoriesQuery.isLoading}
+                              isDisabled={editForm.watch("type") == null}
+                              form="editForm"
+                              name="category"
+                              options={categoriesQuery?.data?.categories}
+                            ></ControlledSelect>
+                          ) : (
+                            transaction.category.name
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            editForm.watch("type") !==
+                            TRANSACTION_TYPE.TRANSFER ? (
+                              <ControlledSelect
+                                control={editForm.control}
+                                form="editForm"
+                                isClearable={true}
+                                isLoading={payeesQuery.isLoading}
+                                isDisabled={editForm.watch("type") == null}
+                                name="payee"
+                                rules={{ required: false }}
+                                options={payeesQuery?.data?.payees}
+                              ></ControlledSelect>
+                            ) : (
+                              <ControlledSelect
+                                control={editForm.control}
+                                form="editForm"
+                                isDisabled={editForm.watch("type") == null}
+                                name="transferredAccount"
+                                options={accountsQuery?.data.accounts.filter(
+                                  (account) =>
+                                    account.id !==
+                                    editForm.watch("sourceAccount")?.id,
+                                )}
+                              ></ControlledSelect>
+                            )
+                          ) : transaction.type === "TRANSFER" ? (
+                            transaction?.transferredAccount?.name
+                          ) : (
+                            transaction.payee?.name
+                          )}
+                        </TableCell>
 
-          <nav
-            className="flex items-end justify-between p-4"
-            aria-label="Table navigation"
-          >
-            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-              Showing{" "}
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {currentPage * ITEMS_PER_PAGE + 1}-
-                {currentPage * ITEMS_PER_PAGE +
-                  transactionsQuery?.data.transactions?.length}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {totalCount}
-              </span>
-            </span>
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <svg
-                  className="w-5"
-                  style={{ height: "1.14rem" }}
-                  aria-hidden="true"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              }
-              onPageChange={(event) => {
-                setCurrentPage(event.selected);
-              }}
-              pageRangeDisplayed={5}
-              forcePage={currentPage}
-              pageCount={numPages}
-              previousLabel={
-                <svg
-                  className="h-5 w-5"
-                  style={{ height: "1.14rem" }}
-                  aria-hidden="true"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              }
-              containerClassName={
-                "inline-flex items-center -space-x-px text-gray-500  bg-white border-gray-300"
-              }
-              pageLinkClassName={
-                "px-3 py-2 leading-tight border hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              }
-              breakLinkClassName={
-                "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              }
-              previousLinkClassName={
-                "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              }
-              nextLinkClassName={
-                "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              }
-              activeLinkClassName={
-                "z-10 px-3 py-2 leading-tight text-blue-600 border bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-              }
-              renderOnZeroPageCount={null}
-            />
-          </nav>
-        </div>
-      </div>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <ControlledDateTime
+                              control={editForm.control}
+                              name="timeCreated"
+                              form="editForm"
+                            ></ControlledDateTime>
+                          ) : (
+                            DateFormater.format(
+                              new Date(transaction.timeCreated),
+                            )
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <ControlledInputMoney
+                              control={editForm.control}
+                              name="amount"
+                              form="editForm"
+                              inputProps={{
+                                placeholder: "Amount",
+                                required: true,
+                              }}
+                            />
+                          ) : (
+                            <span
+                              className={
+                                transaction?.type === "DEBIT"
+                                  ? "font-semibold text-red-600"
+                                  : transaction?.type === "CREDIT"
+                                  ? "font-semibold text-green-500"
+                                  : "font-semibold text-blue-500"
+                              }
+                            >
+                              <NumberDynamic
+                                value={transaction?.amount}
+                                prefix={`${
+                                  transaction?.type === "DEBIT"
+                                    ? "-"
+                                    : transaction?.type === "CREDIT"
+                                    ? "+"
+                                    : "  "
+                                } ₹`}
+                              ></NumberDynamic>
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode === i ? (
+                            <Controller
+                              control={editForm.control}
+                              name={"tags"}
+                              rules={{ required: false }}
+                              render={({ field }) => (
+                                <Tags
+                                  onChange={(e) => {
+                                    field.onChange(
+                                      // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                                      e.detail.tagify
+                                        .getCleanValue()
+                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+                                        .map((tag) => ({ name: tag.value })),
+                                    );
+                                  }}
+                                  value={field.value?.map((tag) => ({
+                                    value: tag.name,
+                                  }))}
+                                />
+                              )}
+                            ></Controller>
+                          ) : (
+                            transaction?.tags.map((tag) => (
+                              <span
+                                className={
+                                  "mr-2 rounded-lg border-0 bg-gray-300 p-1 pl-2 pr-2 text-black"
+                                }
+                                key={tag.id}
+                              >
+                                {tag.name}
+                              </span>
+                            ))
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isInEditMode !== i ? (
+                            <BaseButtons
+                              type="justify-start lg:justify-end"
+                              noWrap
+                            >
+                              <BaseButton
+                                color="info"
+                                icon={mdiPencil}
+                                onClick={() => handleEdit(i)}
+                                small
+                              />
+                              <BaseButton
+                                color="danger"
+                                icon={mdiTrashCan}
+                                onClick={() => handleDelete(transaction?.id)}
+                                small
+                              ></BaseButton>
+                            </BaseButtons>
+                          ) : (
+                            <BaseButtons
+                              type="justify-start lg:justify-end"
+                              noWrap
+                            >
+                              <BaseButton
+                                color="success"
+                                icon={mdiCheck}
+                                type="submit"
+                                form="editForm"
+                                small
+                              />
+                              <BaseButton
+                                color="danger"
+                                onClick={() => setIsInEditMode(-1)}
+                                icon={mdiCancel}
+                                small
+                              />
+                            </BaseButtons>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                  {!transactionsQuery.isLoading && totalCount === 0 && (
+                    <tr className="h-40">
+                      <td rowSpan={6} className="text-center" colSpan={5}>
+                        No transactions found!
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </>
+          )}
+        </CardTable>
+      </CardTable>
       <Sheet
         snapPoints={[0.5]}
         isOpen={isSheetOpen}

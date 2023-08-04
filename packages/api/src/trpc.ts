@@ -16,7 +16,7 @@ import { ZodError } from "zod";
 import { bypassRLS, forUser, prisma, type PrismaClient } from "@monetas/db";
 
 import { type Context } from "./context";
-import { getTelegramIntegrationByChatId } from "./repository/telegram";
+import { getTelegramIntegrationByChatId } from "./repository/telegramRepo";
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,

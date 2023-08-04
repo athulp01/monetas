@@ -1,12 +1,8 @@
 import { useState, type ReactElement } from "react";
 import Head from "next/head";
-import { mdiChartBar, mdiDownload } from "@mdi/js";
 
-import BaseButton from "../components/common/buttons/BaseButton";
-import BaseButtons from "../components/common/buttons/BaseButtons";
 import CardBox from "../components/common/cards/CardBox";
 import SectionMain from "../components/common/sections/SectionMain";
-import SectionTitleLineWithButton from "../components/common/sections/SectionTitleLineWithButton";
 import LayoutAuthenticated from "../components/layout";
 import { getPageTitle } from "../config/config";
 import "flowbite";
@@ -39,13 +35,8 @@ const AnalyticsPage = () => {
         <title>{getPageTitle("Analytics")}</title>
       </Head>
       <SectionMain>
-        <SectionTitleLineWithButton icon={mdiChartBar} title={"Analytics"} main>
-          <BaseButtons>
-            <BaseButton icon={mdiDownload} color="whiteDark"></BaseButton>
-          </BaseButtons>
-        </SectionTitleLineWithButton>
-        <CardBox className="mb-6 mt-6">
-          <div className="flex flex-wrap justify-between">
+        <CardBox hasTable>
+          <div className="mt-6 flex flex-wrap justify-between p-2">
             <Select
               getOptionLabel={(option) => option.name}
               getOptionValue={(option) => option.id}

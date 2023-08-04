@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { getTelegramIntegration } from "@monetas/api/src/repository/telegram";
-import { getTransaction } from "@monetas/api/src/repository/transactions";
-import { getUnverifiedTransaction } from "@monetas/api/src/repository/unverifiedTransaction";
+import { getTelegramIntegration } from "@monetas/api/src/repository/telegramRepo";
+import { getTransaction } from "@monetas/api/src/repository/transactionsRepo";
+import { getUnverifiedTransaction } from "@monetas/api/src/repository/unverifiedTransactionsRepo";
 import {
   forUser,
   prisma as originalPrisma,

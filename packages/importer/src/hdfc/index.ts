@@ -2,8 +2,6 @@ import Papa from "papaparse";
 import * as pdfjs from "pdfjs-dist";
 import { getDocument } from "pdfjs-dist";
 
-import { type Prisma } from "@monetas/db";
-
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 type CSVRow = {
@@ -15,10 +13,23 @@ type CSVRow = {
   "Closing Balance": number;
 };
 
+export type ParsedTransaction = {
+  timeCreated: Date;
+  amount: number;
+  notes: string;
+  type: "CREDIT" | "DEBIT";
+};
+
 export type ParsedStatementResult = {
-  transactions: Prisma.TransactionCreateInput[];
+  transactions: ParsedTransaction[];
   errors: number;
 };
+
+const dateTimeRegex = /^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/;
+const dateRegex = /^(\d{2}\/\d{2}\/\d{4})/;
+const amountRegexDebit = / ([0-9]+(,[0-9]+)*\.[0-9][0-9])$/;
+const amountRegexCredit = / ([0-9]+(,[0-9]+)*\.[0-9][0-9]) Cr$/;
+
 function parseDate(dateString: string) {
   const parts = dateString.split("/");
   const day = parseInt(parts[0], 10);
@@ -35,72 +46,70 @@ function parseDateTime(dateTimeString: string) {
   return new Date(`${date.toDateString()} ${time}`);
 }
 
+const parseCCStatementLine = (lastLine: string): ParsedTransaction => {
+  const transactionDateStringMatch =
+    lastLine.match(dateTimeRegex) ?? lastLine.match(dateRegex);
+  if (transactionDateStringMatch) {
+    const remainingString = lastLine.substring(
+      transactionDateStringMatch[0].length,
+      lastLine.length,
+    );
+    const transactionDate = parseDateTime(transactionDateStringMatch[0]);
+    const transactionAmountMatch =
+      remainingString.match(amountRegexDebit) ??
+      remainingString.match(amountRegexCredit);
+    if (transactionAmountMatch) {
+      const transactionDescription = remainingString
+        .substring(0, remainingString.length - transactionAmountMatch[0].length)
+        .trim();
+      const transactionType = transactionAmountMatch[0].includes("Cr")
+        ? "CREDIT"
+        : "DEBIT";
+      const transactionAmount = parseInt(
+        transactionAmountMatch[0]
+          .replaceAll("Cr", "")
+          .trim()
+          .replaceAll(",", ""),
+      );
+      return {
+        timeCreated: transactionDate,
+        amount: transactionAmount,
+        notes: transactionDescription,
+        type: transactionType,
+      };
+    }
+  }
+  return null;
+};
+
 export const parseHDFCCreditCardStatement = async (data: ArrayBuffer) => {
-  const dateTimeRegex = /^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/;
-  const dateRegex = /^(\d{2}\/\d{2}\/\d{4})/;
-  const amountRegexDebit = / ([0-9]+(,[0-9]+)*\.[0-9][0-9])$/;
-  const amountRegexCredit = / ([0-9]+(,[0-9]+)*\.[0-9][0-9]) Cr$/;
   return new Promise<ParsedStatementResult>((resolve, reject) => {
-    const transactions: Prisma.TransactionCreateInput[] = [];
+    const transactions: ParsedTransaction[] = [];
     getDocument(data).promise.then(async (doc) => {
       for (let i = 0; i < doc.numPages; ++i) {
         const page = await doc.getPage(i + 1);
         const textItems = (await page.getTextContent()).items;
         let finalString = "";
-        let line = 0;
-        // Concatenate the string of the item to the final string
+        let lineNumber = 0;
+        let transactionTableStart = false;
         for (let i = 0; i < textItems.length; i++) {
-          if (line != textItems[i].transform[5]) {
-            const lastLine = finalString.substring(
-              finalString.lastIndexOf("\n") + 1,
-              finalString.length,
-            );
-            const transactionDateStringMatch =
-              lastLine.match(dateTimeRegex) ?? lastLine.match(dateRegex);
-            if (transactionDateStringMatch) {
-              const remainingString = lastLine.substring(
-                transactionDateStringMatch[0].length,
-                lastLine.length,
-              );
-              const transactionDate = parseDateTime(
-                transactionDateStringMatch[0],
-              );
-              const transactionAmountMatch =
-                remainingString.match(amountRegexDebit) ??
-                remainingString.match(amountRegexCredit);
-              if (transactionAmountMatch) {
-                console.log(lastLine);
-                const transactionDescription = remainingString
-                  .substring(
-                    0,
-                    remainingString.length - transactionAmountMatch[0].length,
-                  )
-                  .trim();
-                console.log(transactionDescription);
-                const transactionType = transactionAmountMatch[0].includes("Cr")
-                  ? "CREDIT"
-                  : "DEBIT";
-                const transactionAmount = parseInt(
-                  transactionAmountMatch[0]
-                    .replaceAll("Cr", "")
-                    .trim()
-                    .replaceAll(",", ""),
-                );
-                transactions.push({
-                  timeCreated: transactionDate,
-                  amount: transactionAmount,
-                  notes: transactionDescription,
-                  type: transactionType,
-                  category: null,
-                  sourceAccount: null,
-                });
+          // @ts-ignore
+          if (lineNumber != textItems[i].transform[5]) {
+            if (lineNumber != 0) {
+              if (transactionTableStart) {
+                const transaction = parseCCStatementLine(finalString);
+                transaction && transactions.push(transaction);
+              } else {
+                if (finalString.includes("Domestic Transactions")) {
+                  transactionTableStart = true;
+                }
               }
+              finalString = "";
             }
-            if (line != 0) {
-              finalString += "\n";
-            }
-            line = textItems[i].transform[5];
+            // @ts-ignore
+            lineNumber = textItems[i].transform[5];
           }
+          // @ts-ignore
           finalString += textItems[i].str;
         }
       }
@@ -111,7 +120,7 @@ export const parseHDFCCreditCardStatement = async (data: ArrayBuffer) => {
 
 export const parseHDFCAccountStatement = async (file: File) => {
   return new Promise<ParsedStatementResult>((resolve, reject) => {
-    const transactions: Prisma.TransactionCreateInput[] = [];
+    const transactions: ParsedTransaction[] = [];
     let errors = 0;
     Papa.parse(file, {
       header: true,
@@ -132,8 +141,6 @@ export const parseHDFCAccountStatement = async (file: File) => {
               amount: row["Debit Amount"] || row["Credit Amount"],
               notes: row.Narration,
               type: row["Debit Amount"] ? "DEBIT" : "CREDIT",
-              sourceAccount: null,
-              category: null,
             });
           }
         }

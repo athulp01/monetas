@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { useState } from "react";
-import { mdiCancel, mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+import {
+  mdiCancel,
+  mdiCheck,
+  mdiPencil,
+  mdiPlus,
+  mdiPlusThick,
+  mdiTrashCan,
+} from "@mdi/js";
 
 import BaseButton from "../common/buttons/BaseButton";
 import BaseButtons from "../common/buttons/BaseButtons";
@@ -13,6 +20,13 @@ import { INVESTMENT_TYPE } from "@prisma/client";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { CardTable } from "~/components/common/cards/CardTable";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import { SearchInput } from "~/components/forms/SearchInput";
+import { EmptyInvestments } from "~/components/investments/EmptyInvestments";
 import { useTable } from "~/hooks/useTable";
 import { CurrencyFormatter } from "~/lib/utils";
 import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
@@ -24,14 +38,10 @@ export type InvestmentList =
 export type InvestmentCreate = RouterInputs["investment"]["addInvestment"];
 export type InvestmentUpdate = RouterInputs["investment"]["updateInvestment"];
 
-interface Props {
-  isCreateMode: boolean;
-  handleCreateModeCancel: () => void;
-}
-
-const InvestmentsTableView = (props: Props) => {
+const InvestmentsTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<InvestmentList[0]>();
+  const [isCreateMode, setIsCreateMode] = useState(false);
 
   const investmentsQuery = api.investment.listInvestments.useQuery();
   api.investment.getQuote.useQuery(
@@ -48,7 +58,7 @@ const InvestmentsTableView = (props: Props) => {
   const investmentCreateMutation = api.investment.addInvestment.useMutation({
     onSuccess: async () => {
       createForm.reset();
-      props?.handleCreateModeCancel();
+      setIsCreateMode(false);
       toast.success("Investment created successfully");
       await investmentsQuery.refetch();
     },
@@ -168,7 +178,7 @@ const InvestmentsTableView = (props: Props) => {
         isActive={isDialogOpen}
         onCancel={() => setIsDialogOpen(false)}
       ></CardBoxModal>
-      <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg">
+      <CardTable>
         <form
           id="createForm"
           hidden
@@ -180,34 +190,22 @@ const InvestmentsTableView = (props: Props) => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <div className="relative ml-6">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="table-search"
-              className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder="Search accounts"
-            ></input>
+          <SearchInput></SearchInput>
+          <div className={"mr-2"}>
+            <BaseButton
+              icon={mdiPlusThick}
+              color="contrast"
+              disabled={isCreateMode}
+              onClick={() => setIsCreateMode(true)}
+            />
           </div>
         </div>
-
-        <div className="relative overflow-x-auto p-2 shadow-md sm:rounded-lg">
-          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+        {investmentsQuery.data?.investments.length === 0 && !isCreateMode && (
+          <EmptyInvestments></EmptyInvestments>
+        )}
+        {(investmentsQuery.data?.totalCount != 0 || isCreateMode) && (
+          <Table>
+            <TableHeaderBlock>
               <tr>
                 <TableHeader title="Symbol"></TableHeader>
                 <TableHeader title="Name"></TableHeader>
@@ -217,11 +215,11 @@ const InvestmentsTableView = (props: Props) => {
                 <TableHeader title="P/L" isSortable></TableHeader>
                 <TableHeader></TableHeader>
               </tr>
-            </thead>
+            </TableHeaderBlock>
             <tbody>
-              {props?.isCreateMode && (
-                <tr className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 ">
-                  <td scope="row" className="px-1 py-4">
+              {isCreateMode && (
+                <TableRow>
+                  <TableCell>
                     <ControlledInput
                       control={createForm.control}
                       name="symbol"
@@ -231,8 +229,8 @@ const InvestmentsTableView = (props: Props) => {
                         required: true,
                       }}
                     />
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <input
                       disabled
                       form="createForm"
@@ -241,8 +239,8 @@ const InvestmentsTableView = (props: Props) => {
                         "block min-w-0 flex-1 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 "
                       }
                     ></input>
-                  </td>
-                  <td scope="row" className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <ControlledInput
                       control={createForm.control}
                       name="units"
@@ -254,23 +252,25 @@ const InvestmentsTableView = (props: Props) => {
                         required: true,
                       }}
                     />
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex w-40">
                       <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
                         ₹
                       </span>
                       <input
                         form="createForm"
-                        {...createForm.register("buyPrice", { required: true })}
+                        {...createForm.register("buyPrice", {
+                          required: true,
+                        })}
                         placeholder="Buy Price"
                         type="number"
                         className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         required
                       ></input>
                     </div>
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex w-40">
                       <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
                         ₹
@@ -287,8 +287,8 @@ const InvestmentsTableView = (props: Props) => {
                         required
                       ></input>
                     </div>
-                  </td>
-                  <td className="px-1 py-4 text-right">
+                  </TableCell>
+                  <TableCell>
                     <BaseButtons type="justify-start lg:justify-end" noWrap>
                       <BaseButton
                         color="success"
@@ -302,18 +302,15 @@ const InvestmentsTableView = (props: Props) => {
                         color="danger"
                         icon={mdiCancel}
                         small
-                        onClick={props?.handleCreateModeCancel}
+                        onClick={() => setIsCreateMode(false)}
                       ></BaseButton>
                     </BaseButtons>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
               {investmentsQuery.data.investments?.map((investment, i) => (
-                <tr
-                  key={investment.id}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <td className="whitespace-nowrap px-1 py-4 font-medium text-gray-900">
+                <TableRow key={investment.id}>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <ControlledInput
                         control={editForm.control}
@@ -327,8 +324,8 @@ const InvestmentsTableView = (props: Props) => {
                     ) : (
                       investment.symbol
                     )}
-                  </td>
-                  <td className="whitespace-nowrap px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <input
                         className={
@@ -338,8 +335,8 @@ const InvestmentsTableView = (props: Props) => {
                     ) : (
                       investment.name
                     )}
-                  </td>
-                  <td className="whitespace-nowrap px-1 py-4 ">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <input
                         className={
@@ -349,8 +346,8 @@ const InvestmentsTableView = (props: Props) => {
                     ) : (
                       investment.units
                     )}
-                  </td>
-                  <td scope="row" className="px-1 py-4  dark:text-white">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <div className="flex w-40">
                         <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
@@ -358,7 +355,9 @@ const InvestmentsTableView = (props: Props) => {
                         </span>
                         <input
                           form="editForm"
-                          {...editForm.register("buyPrice", { required: true })}
+                          {...editForm.register("buyPrice", {
+                            required: true,
+                          })}
                           placeholder="Buy Price"
                           type="number"
                           className="block min-w-0 flex-1 rounded-none rounded-r-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
@@ -368,8 +367,8 @@ const InvestmentsTableView = (props: Props) => {
                     ) : (
                       CurrencyFormatter.format(investment.buyPrice)
                     )}
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <div className="flex w-40">
                         <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">
@@ -392,8 +391,8 @@ const InvestmentsTableView = (props: Props) => {
                         value={Math.abs(investment?.currentPrice)}
                       ></NumberDynamic>
                     )}
-                  </td>
-                  <td className="px-1 py-4">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode === i ? (
                       <div>N/A</div>
                     ) : (
@@ -425,8 +424,8 @@ const InvestmentsTableView = (props: Props) => {
                           )}%)`}
                       </span>
                     )}
-                  </td>
-                  <td className="px-1 py-4 text-right">
+                  </TableCell>
+                  <TableCell>
                     {isInEditMode !== i ? (
                       <BaseButtons type="justify-start lg:justify-end" noWrap>
                         <BaseButton
@@ -459,13 +458,13 @@ const InvestmentsTableView = (props: Props) => {
                         />
                       </BaseButtons>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
             </tbody>
-          </table>
-        </div>
-      </div>
+          </Table>
+        )}
+      </CardTable>
     </>
   );
 };

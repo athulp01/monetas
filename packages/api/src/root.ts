@@ -1,12 +1,12 @@
-import { accountRouter } from "./router/account";
-import { budgetRouter } from "./router/budget";
-import { categoryRouter } from "./router/category";
-import { integrationRouter } from "./router/intergration";
-import { investmentRouter } from "./router/investment";
-import { payeeRouter } from "./router/payee";
-import { reportsRouter } from "./router/reports";
-import { transactionRouter } from "./router/transaction";
-import { unverifiedTransactionRouter } from "./router/unverifiedTransaction";
+import { accountRouter } from "./router/accountsRouter";
+import { budgetRouter } from "./router/budgetsRouter";
+import { categoryRouter } from "./router/categoriesRouter";
+import { integrationRouter } from "./router/integrationsRouter";
+import { investmentRouter } from "./router/investmentsRouter";
+import { payeeRouter } from "./router/payeesRouter";
+import { reportsRouter } from "./router/reportsRouter";
+import { transactionRouter } from "./router/transactionsRouter";
+import { unverifiedTransactionRouter } from "./router/unverifiedTransactionsRouter";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
