@@ -27,6 +27,7 @@ import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
+import { PayeeList } from "~/components/payees/PayeeTableView";
 import { HDFCInstructions } from "~/components/transactions/HDFCInstructions";
 import { ITEMS_PER_PAGE } from "~/config/site";
 import { useDialog } from "~/hooks/useDialog";
@@ -64,6 +65,12 @@ enum STATE {
   IMPORT_IN_PROGRESS,
   IMPORT_PARTIAL_SUCCESS,
 }
+
+const tryFindPayee = (description: string, payees: PayeeList) => {
+  return payees.find((payee) =>
+    description.toLowerCase().includes(payee.name.toLowerCase()),
+  );
+};
 
 const ImportTableView = (props: Props) => {
   const topLoadingBar = useContext(TopLoadingBarStateContext);
@@ -115,7 +122,7 @@ const ImportTableView = (props: Props) => {
         category: categoriesQuery.data?.categories.find(
           (category) => category.name === "Others",
         ),
-        payee: null,
+        payee: tryFindPayee(transaction.notes, payeesQuery.data?.payees),
         notes: transaction.notes,
       };
       return formData;
@@ -173,6 +180,7 @@ const ImportTableView = (props: Props) => {
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentPage(0);
     setParsingError(null);
     setParsedStatement(null);
     const file = e.target.files[0];

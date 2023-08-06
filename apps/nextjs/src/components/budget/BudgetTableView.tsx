@@ -216,10 +216,10 @@ const BudgetTableView = () => {
           </div>
         </div>
 
-        {budgetQuery.data?.totalCount === 0 && !isCreateMode && (
+        {budgetQuery.data?.budget?.length === 0 && !isCreateMode && (
           <EmptyBudget></EmptyBudget>
         )}
-        {(budgetQuery.data?.totalCount != 0 || isCreateMode) && (
+        {(budgetQuery.data?.budget?.length != 0 || isCreateMode) && (
           <Table>
             <TableHeaderBlock>
               <tr>
