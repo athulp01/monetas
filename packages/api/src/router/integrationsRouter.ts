@@ -1,3 +1,5 @@
+import type { Credentials } from "google-auth-library";
+import { google } from "googleapis";
 import { z } from "zod";
 
 import {
@@ -34,4 +36,62 @@ export const integrationRouter = createTRPCRouter({
         ctx.prisma,
       );
     }),
+  revokeGmailIntegration: protectedProcedure.mutation(async ({ ctx }) => {
+    const gmailIntegration = await getGmailIntegration(ctx.prisma);
+    const credentials: Credentials = {
+      access_token: gmailIntegration.accessToken,
+      refresh_token: gmailIntegration.refreshToken,
+      expiry_date: parseInt(gmailIntegration.expiry, 10),
+    };
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
+      process.env.GMAIL_OAUTH_CLIENT_SECRET,
+      process.env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
+    );
+    oAuth2Client.setCredentials(credentials);
+    const resp = await oAuth2Client.revokeCredentials();
+    if (resp.status === 200) {
+      await deleteGmailIntegration(ctx.prisma);
+    }
+    return resp;
+  }),
+  verifyGmailIntegration: protectedProcedure.query(async ({ ctx }) => {
+    const response = {
+      isTokenValid: false,
+    };
+    const gmailIntegration = await getGmailIntegration(ctx.prisma);
+    const credentials: Credentials = {
+      access_token: gmailIntegration.accessToken,
+      refresh_token: gmailIntegration.refreshToken,
+      expiry_date: parseInt(gmailIntegration.expiry, 10),
+    };
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
+      process.env.GMAIL_OAUTH_CLIENT_SECRET,
+      process.env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
+    );
+    oAuth2Client.setCredentials(credentials);
+    try {
+      const tokenInfo = await oAuth2Client.getTokenInfo(
+        credentials.access_token,
+      );
+      if (tokenInfo) {
+        console.log("Access token is valid:", tokenInfo);
+        response.isTokenValid = true;
+      } else {
+        console.error("Invalid token");
+        response.isTokenValid = false;
+      }
+    } catch (error) {
+      console.error("Error verifying access token:", error.message);
+      response.isTokenValid = false;
+    }
+    if (!response.isTokenValid) {
+      const resp = await oAuth2Client.revokeCredentials();
+      if (resp.status === 200) {
+        await deleteGmailIntegration(ctx.prisma);
+      }
+    }
+    return response;
+  }),
 });

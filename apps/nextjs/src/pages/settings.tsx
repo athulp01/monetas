@@ -1,4 +1,4 @@
-import React, { type ReactElement } from "react";
+import React, { useEffect, type ReactElement } from "react";
 import Head from "next/head";
 import { mdiConnection, mdiGmail, mdiTune } from "@mdi/js";
 
@@ -38,16 +38,20 @@ const SettingsPage = () => {
         console.log(err);
       },
     });
-  const deleteGmailIntegrationMutation =
-    api.integration.deleteGmailIntegration.useMutation();
+  const revokeGmailIntegrationMutation =
+    api.integration.revokeGmailIntegration.useMutation();
+  const verifyGmailIntegrationQuery =
+    api.integration.verifyGmailIntegration.useQuery();
 
   const addTelegramIntegration = (chatId: string) => {
     telegramIntegrationMutation.mutate({ chatId });
   };
 
-  const deleteGmailIntegration = () => {
-    deleteGmailIntegrationMutation.mutate();
-  };
+  useEffect(() => {
+    if (gmailIntegrationQuery.data?.isConnected) {
+      verifyGmailIntegrationQuery.refetch();
+    }
+  }, [gmailIntegrationQuery.data]);
 
   const authenticate = () => {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${
@@ -124,6 +128,16 @@ const SettingsPage = () => {
                     icon={mdiGmail}
                     iconSize={28}
                     color={"success"}
+                    small
+                  ></BaseButton>
+                )}
+                {gmailIntegrationQuery.data?.isConnected && (
+                  <BaseButton
+                    onClick={() => revokeGmailIntegrationMutation.mutate()}
+                    label={"Revoke"}
+                    icon={mdiGmail}
+                    iconSize={28}
+                    color={"danger"}
                     small
                   ></BaseButton>
                 )}
