@@ -87,10 +87,8 @@ export const integrationRouter = createTRPCRouter({
       response.isTokenValid = false;
     }
     if (!response.isTokenValid) {
-      const resp = await oAuth2Client.revokeCredentials();
-      if (resp.status === 200) {
-        await deleteGmailIntegration(ctx.prisma);
-      }
+      await oAuth2Client.revokeCredentials();
+      await deleteGmailIntegration(ctx.prisma);
     }
     return response;
   }),
