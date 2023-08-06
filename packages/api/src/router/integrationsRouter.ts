@@ -87,7 +87,7 @@ export const integrationRouter = createTRPCRouter({
       response.isTokenValid = false;
     }
     if (!response.isTokenValid) {
-      await oAuth2Client.revokeCredentials();
+      console.log("Deleting credentials");
       await deleteGmailIntegration(ctx.prisma);
     }
     return response;
