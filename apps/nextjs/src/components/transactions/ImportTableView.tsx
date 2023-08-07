@@ -66,10 +66,10 @@ enum STATE {
   IMPORT_PARTIAL_SUCCESS,
 }
 
-const tryFindPayee = (description: string, payees: PayeeList) => {
-  return payees.find((payee) =>
-    description.toLowerCase().includes(payee.name.toLowerCase()),
-  );
+const tryFindPayee = (description: string, payees: PayeeList): PayeeList[0] => {
+  return payees.find((payee) => {
+    return description.toLowerCase().includes(payee.name.toLowerCase());
+  });
 };
 
 const ImportTableView = (props: Props) => {
@@ -114,15 +114,26 @@ const ImportTableView = (props: Props) => {
 
   const convertToFormData = (data: ParsedTransaction[]) => {
     return data.map((transaction) => {
+      const matchedPayee = tryFindPayee(
+        transaction.notes,
+        payeesQuery.data?.payees,
+      );
+      const matchedCategory = matchedPayee
+        ? categoriesQuery.data?.categories.find(
+            (cat) => cat.id === matchedPayee.categories[0]?.id,
+          )
+        : undefined;
       const formData: TransactionImportForm["form"][0] = {
         sourceAccount: targetAccountForm.getValues("targetAccount"),
         type: transaction.type,
         timeCreated: transaction.timeCreated,
         amount: Math.floor(transaction.amount),
-        category: categoriesQuery.data?.categories.find(
-          (category) => category.name === "Others",
-        ),
-        payee: tryFindPayee(transaction.notes, payeesQuery.data?.payees),
+        category:
+          matchedCategory ??
+          categoriesQuery.data?.categories.find(
+            (category) => category.name === "Others",
+          ),
+        payee: matchedPayee ?? undefined,
         notes: transaction.notes,
       };
       return formData;
@@ -349,7 +360,7 @@ const ImportTableView = (props: Props) => {
               </TableHeaderBlock>
               <tbody>
                 {paginatedTransactions?.map((transaction, i) => (
-                  <TableRow>
+                  <TableRow key={transaction.notes}>
                     <TableCell>
                       <ControlledSelect
                         control={importForm.control}
