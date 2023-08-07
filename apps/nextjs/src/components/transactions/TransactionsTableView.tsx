@@ -295,7 +295,7 @@ const TransactionsTableView = () => {
           </div>
         </div>
 
-        {(transactionsQuery.data?.totalCount === 0 || mode === "EMPTY") && (
+        {transactionsQuery.data?.totalCount === 0 && mode !== "EMPTY" && (
           <EmptyTransactions></EmptyTransactions>
         )}
 

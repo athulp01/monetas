@@ -86,10 +86,10 @@ export const integrationRouter = createTRPCRouter({
       console.error("Error verifying access token:", error.message);
       response.isTokenValid = false;
     }
-    if (!response.isTokenValid) {
-      console.log("Deleting credentials");
-      await deleteGmailIntegration(ctx.prisma);
-    }
+    // if (!response.isTokenValid) {
+    //   console.log("Deleting credentials");
+    //   await deleteGmailIntegration(ctx.prisma);
+    // }
     return response;
   }),
 });

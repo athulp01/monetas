@@ -18,13 +18,13 @@ export const HDFCInstructions = () => {
             <ol className="mt-2 list-inside list-decimal space-y-1">
               <li>Log in to your HDFC Bank net banking account</li>
               <li>
-                After successfully logging in, navigate to the "Accounts" or
-                "Account Summary" section.
+                After successfully logging in, navigate to the "Enquire" section
+                under "Accounts".
               </li>
-              <li>Click on the "Download Account Statement" option.</li>
+              <li>Click on the "A/c Statements - upto 5 years" option.</li>
               <li>
                 Choose the account number, select the statement period and
-                select the csv format to download the statement.
+                select the format as delimited.
               </li>
               <li>Click on the "Download" button.</li>
             </ol>
