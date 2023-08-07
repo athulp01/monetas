@@ -18,11 +18,7 @@ export const categoryRouter = createTRPCRouter({
       z.object({ type: z.nativeEnum(TRANSACTION_TYPE).optional() }).optional(),
     )
     .query(async ({ input, ctx }) => {
-      const categories =
-        (await getCategories(
-          input?.type ?? TRANSACTION_TYPE.DEBIT,
-          ctx.prisma,
-        )) ?? [];
+      const categories = (await getCategories(input?.type, ctx.prisma)) ?? [];
       const totalCount = await ctx.prisma.category.count();
       return {
         totalCount,

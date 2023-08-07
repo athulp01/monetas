@@ -83,9 +83,7 @@ const ImportTableView = (props: Props) => {
   const [parsedTransactions, setParsedTransactions] =
     useState<TransactionImportForm>(null);
 
-  const accountsQuery = api.account.listAccounts.useQuery({
-    provider: "HDFC Bank",
-  });
+  const accountsQuery = api.account.listAccounts.useQuery();
   const categoriesQuery = api.category.listCategories.useQuery();
   const payeesQuery = api.payee.listPayees.useQuery({});
 
@@ -266,7 +264,9 @@ const ImportTableView = (props: Props) => {
                   control={targetAccountForm.control}
                   form="targetAccountForm"
                   name="targetAccount"
-                  options={accountsQuery?.data.accounts}
+                  options={accountsQuery?.data.accounts.filter(
+                    (account) => account.accountProvider.name === "HDFC Bank",
+                  )}
                 ></ControlledSelect>
               </div>
             </div>
@@ -387,7 +387,16 @@ const ImportTableView = (props: Props) => {
                         name={`form.${
                           i + currentPage * ITEMS_PER_PAGE
                         }.category`}
-                        options={categoriesQuery?.data?.categories}
+                        options={categoriesQuery?.data?.categories.filter(
+                          (cat) => {
+                            return (
+                              cat.type ===
+                              importForm.watch(
+                                `form.${i + currentPage * ITEMS_PER_PAGE}.type`,
+                              )
+                            );
+                          },
+                        )}
                       ></ControlledSelect>
                     </TableCell>
                     <TableCell>
