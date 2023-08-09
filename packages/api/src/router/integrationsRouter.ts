@@ -77,7 +77,7 @@ export const integrationRouter = createTRPCRouter({
       if (tokenInfo?.token) {
         console.log("Access token is valid:", tokenInfo);
         await updateGmailIntegration(
-          { accessToken: tokenInfo.token },
+          { accessToken: tokenInfo.token, id: gmailIntegration.id },
           ctx.prisma,
         );
         response.isTokenValid = true;
