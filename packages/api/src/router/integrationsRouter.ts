@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   deleteGmailIntegration,
   getGmailIntegration,
+  updateGmailIntegration,
 } from "../repository/integrationsRepo";
 import {
   addTelegramIntegration,
@@ -72,11 +73,13 @@ export const integrationRouter = createTRPCRouter({
     );
     oAuth2Client.setCredentials(credentials);
     try {
-      const tokenInfo = await oAuth2Client.getTokenInfo(
-        credentials.access_token,
-      );
-      if (tokenInfo) {
+      const tokenInfo = await oAuth2Client.getAccessToken();
+      if (tokenInfo?.token) {
         console.log("Access token is valid:", tokenInfo);
+        await updateGmailIntegration(
+          { accessToken: tokenInfo.token },
+          ctx.prisma,
+        );
         response.isTokenValid = true;
       } else {
         console.error("Invalid token");
@@ -86,10 +89,10 @@ export const integrationRouter = createTRPCRouter({
       console.error("Error verifying access token:", error.message);
       response.isTokenValid = false;
     }
-    // if (!response.isTokenValid) {
-    //   console.log("Deleting credentials");
-    //   await deleteGmailIntegration(ctx.prisma);
-    // }
+    if (!response.isTokenValid) {
+      console.log("Deleting credentials");
+      await deleteGmailIntegration(ctx.prisma);
+    }
     return response;
   }),
 });
