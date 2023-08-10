@@ -69,7 +69,7 @@ async function getEmailUsingMessageId(
 ) {
   await gmail.users.messages
     .get({
-      userId: "me",
+      userId,
       id: messageId,
       format: "raw",
     })
@@ -109,8 +109,9 @@ function getEmailsUsingHistoryId(
   const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
   return gmail.users.history
     .list({
-      userId: "me",
+      userId: userId,
       startHistoryId: historyId,
+      historyTypes: ["messageAdded"],
     })
     .then((response) => {
       const { history } = response.data;
@@ -122,7 +123,7 @@ function getEmailsUsingHistoryId(
             historyItem.messagesAdded.length > 0
           ) {
             console.info(
-              `Found ${historyItem.messagesAdded.length} new emails for ${userId} since historyId ${historyId}`,
+              `Found ${historyItem.messagesAdded.length} new emails for ${userId} since historyId ${historyId} and current historyId ${historyItem.id}`,
             );
             for (const messageAdded of historyItem.messagesAdded) {
               const messageId = messageAdded.message.id;
