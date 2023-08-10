@@ -36,7 +36,7 @@ const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
     console.log("Setting up watch");
     const watchResponse = await gmail.users.watch({
-      userId: payload.email,
+      userId: "me",
       requestBody: {
         topicName: env.PUB_SUB_TOPIC_NAME,
         labelIds: ["INBOX"],

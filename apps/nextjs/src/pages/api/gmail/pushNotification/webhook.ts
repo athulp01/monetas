@@ -69,7 +69,7 @@ async function getEmailUsingMessageId(
 ) {
   await gmail.users.messages
     .get({
-      userId,
+      userId: "me",
       id: messageId,
       format: "raw",
     })
@@ -109,7 +109,7 @@ function getEmailsUsingHistoryId(
   const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
   return gmail.users.history
     .list({
-      userId: userId,
+      userId: "me",
       startHistoryId: historyId,
       historyTypes: ["messageAdded"],
     })
