@@ -4,9 +4,9 @@ on:
   push:
     branches: ["master"]
 
-#env:
-#  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-#  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
   build:
@@ -49,6 +49,12 @@ jobs:
 
       - name: Prisma migrate
         run: pnpm turbo db:migrate
+
+      - name: create env file
+        run: |
+            touch .env
+            echo DATABASE_URL=${{ secrets.VERCEL_DB_URL }} >> .env
+            echo DIRECT_URL=${{ secrets.VERCEL_DB_NONPOOLING_URL }} >> .env
 
       - name: Prisma seed
         run: pnpm turbo db:seed
