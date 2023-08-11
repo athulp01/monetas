@@ -6,6 +6,10 @@
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
+    "db:migrate": {
+      "dependsOn": ["^db:generate"],
+      "cache": false
+    },
     "db:push": {
       "inputs": ["prisma/schema.prisma"],
       "cache": false
