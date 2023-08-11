@@ -6,7 +6,7 @@ import {
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 
-import { forUser, prisma as originalPrisma } from "../index";
+import { bypassRLS, prisma as originalPrisma } from "../index";
 import * as AccountsData from "./accounts.json";
 import * as CategoriesData from "./categories.json";
 import * as PayeeData from "./payees.json";
@@ -67,44 +67,53 @@ const createRandomPayees = async (count: number, client: PrismaClient) => {
 };
 
 async function main() {
-  const prisma = originalPrisma.$extends(
-    forUser("user_2PWFBOkCpkZcoDaByZOZma39nra"),
-  );
-  prisma.$executeRaw`SELECT set_config('app.user_id', ${"user_2PWFBOkCpkZcoDaByZOZma39nra"}, TRUE)`;
-  const categories: Prisma.CategoryCreateManyInput[] = [];
-  CategoriesData.forEach((category) => {
-    categories.push({
-      id: category.id,
-      name: category.name,
-      type: category.type as TRANSACTION_TYPE,
+  const prisma = originalPrisma.$extends(bypassRLS());
+  CategoriesData.forEach(async (category) => {
+    await prisma.category.upsert({
+      where: {
+        name: category.name,
+      },
+      update: {
+        type: category.type as TRANSACTION_TYPE,
+        name: category.name,
+        icon: category.icon,
+      },
+      create: {
+        type: category.type as TRANSACTION_TYPE,
+        name: category.name,
+        icon: category.icon,
+      },
     });
-  });
-  await prisma.category.createMany({ data: categories, skipDuplicates: true });
-  // await prisma.category.updateMany({ data: categories });
-
-  const types: Prisma.FinancialAccountTypeCreateManyInput[] = [];
-  TypesData.forEach((type) => {
-    types.push({
-      id: type.id,
-      name: type.name,
-    });
-  });
-  await prisma.financialAccountType.createMany({
-    data: types,
-    skipDuplicates: true,
   });
 
-  const providers: Prisma.FinancialAccountProviderCreateManyInput[] = [];
-  ProvidersData.forEach((provider) => {
-    providers.push({
-      id: provider.id,
-      name: provider.name,
-      icon: provider.icon,
+  TypesData.forEach(async (type) => {
+    await prisma.financialAccountType.upsert({
+      where: {
+        name: type.name,
+      },
+      update: {
+        name: type.name,
+      },
+      create: {
+        name: type.name,
+      },
     });
   });
-  await prisma.financialAccountProvider.createMany({
-    data: providers,
-    skipDuplicates: true,
+
+  ProvidersData.forEach(async (provider) => {
+    await prisma.financialAccountProvider.upsert({
+      where: {
+        name: provider.name,
+      },
+      update: {
+        name: provider.name,
+        icon: provider.icon,
+      },
+      create: {
+        name: provider.name,
+        icon: provider.icon,
+      },
+    });
   });
 
   if (process.env.NODE_ENV !== "production") {
