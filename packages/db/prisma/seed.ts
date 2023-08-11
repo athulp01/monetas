@@ -3,7 +3,6 @@ import {
   type Prisma,
   type PrismaClient,
 } from "@prisma/client";
-import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 
 import { bypassRLS, prisma as originalPrisma } from "../index";
@@ -116,34 +115,34 @@ async function main() {
     });
   });
 
-  if (process.env.NODE_ENV !== "production") {
-    await createRandomPayees(10, prisma as PrismaClient);
-
-    const accounts: Prisma.FinancialAccountCreateManyInput[] = [];
-    AccountsData.forEach((account) => {
-      accounts.push({
-        id: account.id,
-        name: account.name,
-        balance: account.balance,
-        accountTypeId: account.accountTypeId,
-        accountProviderId: account.accountProviderId,
-        accountNumber: account.accountNumber,
-      });
-    });
-    await prisma.financialAccount.createMany({
-      data: accounts,
-      skipDuplicates: true,
-    });
-
-    await prisma.transaction.createMany({
-      data: createRandomTransactionBetweenDates(
-        1000,
-        moment().startOf("year").toDate(),
-        moment().endOf("year").toDate(),
-      ),
-      skipDuplicates: true,
-    });
-  }
+  // if (process.env.NODE_ENV !== "production") {
+  //   await createRandomPayees(10, prisma as PrismaClient);
+  //
+  //   const accounts: Prisma.FinancialAccountCreateManyInput[] = [];
+  //   AccountsData.forEach((account) => {
+  //     accounts.push({
+  //       id: account.id,
+  //       name: account.name,
+  //       balance: account.balance,
+  //       accountTypeId: account.accountTypeId,
+  //       accountProviderId: account.accountProviderId,
+  //       accountNumber: account.accountNumber,
+  //     });
+  //   });
+  //   await prisma.financialAccount.createMany({
+  //     data: accounts,
+  //     skipDuplicates: true,
+  //   });
+  //
+  //   await prisma.transaction.createMany({
+  //     data: createRandomTransactionBetweenDates(
+  //       1000,
+  //       moment().startOf("year").toDate(),
+  //       moment().endOf("year").toDate(),
+  //     ),
+  //     skipDuplicates: true,
+  //   });
+  // }
 }
 
 main()

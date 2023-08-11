@@ -13,7 +13,7 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.VERCEL_DB_URL }}
       DIRECT_URL: ${{ secrets.VERCEL_DB_NONPOOLING_URL }}
-      NODE_ENV: production
+
     runs-on: ubuntu-latest
 
     steps:
