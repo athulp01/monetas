@@ -210,7 +210,7 @@
     "type": "DEBIT"
   },
   {
-    "name": "Restaurant",
+    "name": "Eating Out",
     "icon": "receipt-text-outline",
     "id": "05c1c4e0-d7c0-4fac-8ea6-dedd5316fc88",
     "type": "DEBIT"

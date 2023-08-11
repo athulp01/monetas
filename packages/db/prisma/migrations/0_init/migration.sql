@@ -162,6 +162,7 @@ CREATE TABLE "GmailOauthDetails" (
     "historyId" TEXT NOT NULL,
     "emailId" TEXT NOT NULL,
     "expiry" TEXT NOT NULL,
+    "watchExpiry" TIMESTAMP(3) NOT NULL DEFAULT now() + interval '7 days',
     "userId" TEXT NOT NULL DEFAULT (current_setting('app.user_id'::text)),
 
     CONSTRAINT "GmailOauthDetails_pkey" PRIMARY KEY ("id")

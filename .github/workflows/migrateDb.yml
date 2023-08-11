@@ -1,22 +1,20 @@
-name: Lint, type-check and build
+name: Migrate DB
 
 on:
-  pull_request:
-    branches: ["*"]
   push:
     branches: ["master"]
-  merge_group:
+    paths:
+      - "./prisma/**/*.*"
 
-# You can leverage Vercel Remote Caching with Turbo to speed up your builds
-# @link https://turborepo.org/docs/core-concepts/remote-caching#remote-caching-on-vercel-builds
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  build-lint:
+  build:
     env:
-      DATABASE_URL: file:./db.sqlite
+      DATABASE_URL: ${{ secrets.VERCEL_DB_URL }}
+      DIRECT_URL: ${{ secrets.VERCEL_DB_NONPOOLING_URL }}
     runs-on: ubuntu-latest
 
     steps:
@@ -47,13 +45,8 @@ jobs:
       - name: Install deps (with cache)
         run: pnpm install
 
-      # Normally, this would be done as part of the turbo pipeline - however since the Expo app doesn't depend on `@monetas/db` it doesn't care.
-      # TODO: Free for all to find a better solution here.
       - name: Generate Prisma Client
         run: pnpm turbo db:generate
 
-      - name: Build, lint and type-check
-        run: pnpm turbo build lint type-check
-
-      - name: Check workspaces
-        run: pnpm manypkg check
+      - name: Prisma migrate
+        run: pnpm turbo db:migrate
