@@ -12,7 +12,7 @@
     "db:migrate-dev": "pnpm with-env prisma migrate dev",
     "dev": "pnpm with-env prisma studio --port 5556",
     "with-env": "dotenv -e ../../.env --",
-    "db:seed": "pnpm prisma db seed"
+    "db:seed": "pnpm with-env prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^4.13.0"
@@ -21,10 +21,10 @@
     "@types/node": "^20.2.1",
     "dotenv-cli": "^7.2.1",
     "prisma": "^4.13.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^3.12.7",
     "typescript": "^5.0.4"
   },
   "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "pnpm with-env tsx prisma/seed.ts"
   }
 }
