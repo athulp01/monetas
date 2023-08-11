@@ -20,7 +20,7 @@
   "devDependencies": {
     "@types/node": "^20.2.1",
     "dotenv-cli": "^7.2.1",
-    "prisma": "^4.13.0",
+    "prisma": "^4.15.0",
     "tsx": "^3.12.7",
     "typescript": "^5.0.4"
   },
