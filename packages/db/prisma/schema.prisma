@@ -180,6 +180,7 @@ model GmailOauthDetails {
   emailId      String @unique
   expiry       String
   userId       String @unique @default(dbgenerated("(current_setting('app.user_id'::text))"))
+  watchExpiry  DateTime @default(dbgenerated("now() + interval '7 days'"))
 }
 
 enum TRANSACTION_TYPE {

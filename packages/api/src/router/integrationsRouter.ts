@@ -80,6 +80,40 @@ export const integrationRouter = createTRPCRouter({
           { accessToken: tokenInfo.token, id: gmailIntegration.id },
           ctx.prisma,
         );
+        if (
+          gmailIntegration.watchExpiry == null ||
+          (gmailIntegration.watchExpiry.getTime() - Date.now()) / 1000 < 259200
+        ) {
+          console.log(
+            "Watch about to expire / expired, setting up watch again",
+          );
+          const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+          console.log("Setting up watch");
+          const watchResponse = await gmail.users.watch({
+            userId: "me",
+            requestBody: {
+              topicName: process.env.PUB_SUB_TOPIC_NAME,
+              labelIds: ["INBOX"],
+            },
+          });
+          await updateGmailIntegration(
+            {
+              watchExpiry: watchResponse.data.expiration.toString(),
+              historyId: watchResponse.data.historyId.toString(),
+              id: gmailIntegration.id,
+            },
+            ctx.prisma,
+          );
+        }
+        const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+        console.log("Setting up watch");
+        const watchResponse = await gmail.users.watch({
+          userId: "me",
+          requestBody: {
+            topicName: process.env.PUB_SUB_TOPIC_NAME,
+            labelIds: ["INBOX"],
+          },
+        });
         response.isTokenValid = true;
       } else {
         console.error("Invalid token");

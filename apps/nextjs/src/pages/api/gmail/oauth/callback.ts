@@ -48,6 +48,7 @@ const gmailApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         refreshToken: tokens.refresh_token,
         expiry: tokens.expiry_date.toString(),
         historyId: watchResponse.data.historyId,
+        watchExpiry: watchResponse.data.expiration.toString(),
         emailId: payload.email,
       },
       prisma,
