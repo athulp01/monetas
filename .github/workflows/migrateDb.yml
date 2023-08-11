@@ -53,8 +53,8 @@ jobs:
       - name: create env file
         run: |
             touch .env
-            echo DATABASE_URL=${{ secrets.VERCEL_DB_URL }} >> .env
             echo DIRECT_URL=${{ secrets.VERCEL_DB_NONPOOLING_URL }} >> .env
+            echo DATABASE_URL=${{ secrets.VERCEL_DB_URL }} >> .env
 
       - name: Prisma seed
         run: pnpm turbo db:seed
