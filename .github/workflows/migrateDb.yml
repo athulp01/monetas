@@ -1,18 +1,108 @@
-name: Migrate DB
+name: Migrate databases
 
 on:
   push:
     branches: ["master"]
+    paths:
+      - "./packages/db/prisma/**/*"
 
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  build:
+  migrateDemoDB:
     env:
       DATABASE_URL: ${{ secrets.VERCEL_DB_URL }}
       DIRECT_URL: ${{ secrets.VERCEL_DB_NONPOOLING_URL }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+
+      - name: Setup Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install deps (with cache)
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        run: pnpm turbo db:generate
+
+      - name: Prisma migrate
+        run: pnpm turbo db:migrate
+
+      - name: Prisma seed
+        run: pnpm turbo db:seed
+
+  migrateProdDB:
+    env:
+      DATABASE_URL: ${{ secrets.PROD_DB_URL }}
+      DIRECT_URL: ${{ secrets.PROD_DB_NONPOOLING_URL }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+
+      - name: Setup Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install deps (with cache)
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        run: pnpm turbo db:generate
+
+      - name: Prisma migrate
+        run: pnpm turbo db:migrate
+
+      - name: Prisma seed
+        run: pnpm turbo db:seed
+
+  migrateDevDB:
+    env:
+      DATABASE_URL: ${{ secrets.DEV_DB_URL }}
+      DIRECT_URL: ${{ secrets.DEV_DB_NONPOOLING_URL }}
 
     runs-on: ubuntu-latest
 
