@@ -85,7 +85,7 @@
   },
   {
     "name": "Food Delivery",
-    "icon": "food-fork-drink",
+    "icon": "food-takeout-box",
     "id": "b0226a05-c25f-4e93-bd31-983357e3256a",
     "type": "DEBIT"
   },
@@ -151,67 +151,67 @@
   },
   {
     "name": "Mobile & Internet",
-    "icon": "receipt-text-outline",
+    "icon": "web",
     "id": "c56ed67d-9feb-416a-b69b-dbc3fa6ce4d2",
     "type": "DEBIT"
   },
   {
     "name": "Rent",
-    "icon": "receipt-text-outline",
+    "icon": "home",
     "id": "02e04b9f-f6b5-4ff2-a2f5-5ddc9bfbd15c",
     "type": "DEBIT"
   },
   {
     "name": "Gift",
-    "icon": "receipt-text-outline",
+    "icon": "gift",
     "id": "4c9f9cb3-6400-4a9a-83bb-f42c7dd04b72",
     "type": "DEBIT"
   },
   {
     "name": "Gym",
-    "icon": "receipt-text-outline",
+    "icon": "dumbbell",
     "id": "915f72c3-1b6c-4a8c-bf45-edb65d0bc9d5",
     "type": "DEBIT"
   },
   {
     "name": "Tuition",
-    "icon": "receipt-text-outline",
+    "icon": "school",
     "id": "4b7cd729-544b-41f3-8bc2-b3b700d5dc68",
     "type": "DEBIT"
   },
   {
     "name": "Investment",
-    "icon": "receipt-text-outline",
+    "icon": "piggy-bank",
     "id": "9ca275e5-77a1-4b6e-a0c5-f587a286c24d",
     "type": "DEBIT"
   },
   {
     "name": "Electricity",
-    "icon": "receipt-text-outline",
+    "icon": "meter-electric-outline",
     "id": "f9178445-b0a0-4d2d-bdfe-b7cfc155cbc9",
     "type": "DEBIT"
   },
   {
     "name": "Lending",
-    "icon": "receipt-text-outline",
+    "icon": "account-arrow-right",
     "id": "36474b34-d0e7-40fd-b2a5-91cb14a65f4b",
     "type": "DEBIT"
   },
   {
     "name": "Home Construction",
-    "icon": "receipt-text-outline",
+    "icon": "office-building-cog",
     "id": "bd0193cc-b182-42e4-8ca1-064828fc3d99",
     "type": "DEBIT"
   },
   {
     "name": "Subscription",
-    "icon": "receipt-text-outline",
+    "icon": "youtube-subscription",
     "id": "1cd74567-759d-44b3-b0b1-eeb550e79c2c",
     "type": "DEBIT"
   },
   {
     "name": "Eating Out",
-    "icon": "receipt-text-outline",
+    "icon": "food-fork-drink",
     "id": "05c1c4e0-d7c0-4fac-8ea6-dedd5316fc88",
     "type": "DEBIT"
   }
