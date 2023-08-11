@@ -4,7 +4,7 @@ on:
   push:
     branches: ["master"]
     paths:
-      - "./packages/db/prisma/**/*"
+      - "packages/db/**/*"
 
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
