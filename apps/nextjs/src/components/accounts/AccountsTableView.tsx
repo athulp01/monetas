@@ -44,6 +44,7 @@ const AccountsTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<AccountList[0]>();
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [hack, setHack] = useState(false);
 
   const providersQuery = api.account.listAccountProviders.useQuery();
   const typesQuery = api.account.listAccountTypes.useQuery();
@@ -124,6 +125,10 @@ const AccountsTableView = () => {
   };
 
   const onEditFormSubmit = (account: AccountList[0]) => {
+    if (hack) {
+      setHack(false);
+      return;
+    }
     const payload: AccountUpdate = {
       id: account.id,
       name: account.name,
@@ -146,6 +151,7 @@ const AccountsTableView = () => {
   const handleEdit = (i: number) => {
     setIsInEditMode(i);
     editForm.reset(accountsQuery.data?.accounts[i]);
+    setHack(true);
   };
 
   const handleDelete = (id: string) => {

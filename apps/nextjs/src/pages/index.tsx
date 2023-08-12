@@ -51,7 +51,7 @@ const Dashboard = () => {
   const transactionsQuery = api.transaction.listTransactions.useQuery({
     page: 0,
     perPage: 10,
-    month: moment().startOf("month").toDate(),
+    month: moment().startOf("day").toDate(),
   });
 
   if (
