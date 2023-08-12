@@ -1,32 +1,40 @@
-import { mdiClose } from '@mdi/js'
-import React, { type ReactNode, useState } from 'react'
-import { type ColorKey } from '../../../interfaces'
-import { colorsBgLight, colorsOutline } from '../../../config/colors'
-import BaseButton from '../buttons/BaseButton'
-import BaseIcon from '../icon/BaseIcon'
+import React, { useState, type ReactNode } from "react";
+import { mdiClose } from "@mdi/js";
+
+import { colorsBgLight, colorsOutline } from "~/config/colors";
+import { type ColorKey } from "~/interfaces";
+import BaseButton from "../buttons/BaseButton";
+import BaseIcon from "../icon/BaseIcon";
 
 type Props = {
-  color: ColorKey
-  icon?: string
-  outline?: boolean
-  children: ReactNode
-  button?: ReactNode
-  className?: string
-}
+  color: ColorKey;
+  icon?: string;
+  outline?: boolean;
+  children: ReactNode;
+  button?: ReactNode;
+  className?: string;
+};
 
-const NotificationBar = ({ outline = false, children, className, ...props }: Props) => {
-  const componentColorClass = outline ? colorsOutline[props.color] : colorsBgLight[props.color]
+const NotificationBar = ({
+  outline = false,
+  children,
+  className,
+  ...props
+}: Props) => {
+  const componentColorClass = outline
+    ? (colorsOutline[props.color] as string)
+    : colorsBgLight[props.color];
 
-  const [isDismissed, setIsDismissed] = useState(false)
+  const [isDismissed, setIsDismissed] = useState(false);
 
   const dismiss = (e: React.MouseEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    setIsDismissed(true)
-  }
+    setIsDismissed(true);
+  };
 
   if (isDismissed) {
-    return null
+    return null;
   }
 
   return (
@@ -48,11 +56,17 @@ const NotificationBar = ({ outline = false, children, className, ...props }: Pro
         </div>
         {props.button}
         {!props.button && (
-          <BaseButton icon={mdiClose} color="white" onClick={dismiss} small roundedFull />
+          <BaseButton
+            icon={mdiClose}
+            color="white"
+            onClick={dismiss}
+            small
+            roundedFull
+          />
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NotificationBar
+export default NotificationBar;

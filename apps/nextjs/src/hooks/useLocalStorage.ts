@@ -1,9 +1,9 @@
 import {
-  Dispatch,
-  SetStateAction,
   useCallback,
   useEffect,
   useState,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 
 type SetValue<T> = Dispatch<SetStateAction<T>>;
@@ -22,7 +22,7 @@ export function useLocalStorage<T>(
 
     try {
       const item = window.localStorage.getItem(key);
-      return item ? (parseJSON(item) as T) : initialValue;
+      return item ? parseJSON(item) : initialValue;
     } catch (error) {
       console.warn(`Error reading localStorage key “${key}”:`, error);
       return initialValue;
@@ -71,7 +71,7 @@ export function useLocalStorage<T>(
 // A wrapper for "JSON.parse()"" to support "undefined" value
 function parseJSON<T>(value: string | null): T | undefined {
   try {
-    return value === "undefined" ? undefined : JSON.parse(value ?? "");
+    return value === "undefined" ? undefined : (JSON.parse(value ?? "") as T);
   } catch {
     console.log("parsing error on", { value });
     return undefined;

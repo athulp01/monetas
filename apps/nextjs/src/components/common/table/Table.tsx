@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import TableLoading from "~/components/common/loading/TableLoading";
 import { Pagination } from "~/components/common/table/Pagination";

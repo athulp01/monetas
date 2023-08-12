@@ -57,7 +57,7 @@ const getIconAndTitle = (path: string) => {
   }
 };
 
-const getSubtitle = (path: string, query: Object) => {
+const getSubtitle = (path: string, query: unknown) => {
   if (path === "/transactions") {
     if (Object.keys(query).length === 1 && query["import"]) {
       return "Import";
@@ -77,7 +77,7 @@ export const BreadCrumb = () => {
           className={`inline-flex ${
             subtitle ? "cursor-pointer" : ""
           } items-center`}
-          onClick={subtitle ? () => router.back() : () => {}}
+          onClick={subtitle ? () => router.back() : () => void 0}
         >
           <div
             className={`inline-flex items-center font-sans text-lg text-gray-700 ${

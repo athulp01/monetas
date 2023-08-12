@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
 
-import { getButtonColor } from "../../../config/colors";
-import type { ColorButtonKey } from "../../../interfaces";
+import { getButtonColor } from "~/config/colors";
+import type { ColorButtonKey } from "~/interfaces";
 import BaseIcon from "../icon/BaseIcon";
 
 type Props = {

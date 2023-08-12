@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { type NextApiRequest, type NextApiResponse } from "next/types";
 
 import {
   getAccounts,
@@ -21,6 +21,7 @@ export default async function handler(
     accountId: account.id,
     balance: account.balance,
     date: new Date(),
+    userId: account.userId,
   }));
   const resp = await logAccountBalance(payload, prisma);
   return res.status(200).json(resp);

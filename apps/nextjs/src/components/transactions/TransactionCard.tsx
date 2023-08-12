@@ -1,49 +1,48 @@
-import React from 'react'
-import CardBox from '../common/cards/CardBox'
-import { DateFormater } from '../../lib/utils'
-import { type TransactionsList } from './TransactionsTableView'
-import BaseIcon from '~/components/common/icon/BaseIcon'
-import { mdiDelete, mdiPencil } from '@mdi/js'
+import React from "react";
+import { mdiDelete, mdiPencil } from "@mdi/js";
+
+import BaseIcon from "~/components/common/icon/BaseIcon";
+import { DateFormater } from "../../lib/utils";
+import CardBox from "../common/cards/CardBox";
+import { type TransactionsList } from "./TransactionsTableView";
 
 type Props = {
-  transaction: TransactionsList[0]
-  index: number
-  handleEdit: (i: number) => void
-}
+  transaction: TransactionsList[0];
+  index: number;
+  handleEdit: (i: number) => void;
+};
 
 const TransactionCard = (props: Props) => {
-  const typeColor = () => {
-    switch (props.transaction.type) {
-      case 'DEBIT':
-        return 'danger'
-      case 'CREDIT':
-        return 'success'
-      case 'TRANSFER':
-        return 'info'
-    }
-  }
-
   return (
-    <CardBox hasTable className="mb-1 ml-2 mr-2 border-2 border-gray-100 p-2 shadow-md last:mb-0">
+    <CardBox
+      hasTable
+      className="mb-1 ml-2 mr-2 border-2 border-gray-100 p-2 shadow-md last:mb-0"
+    >
       <div className="flex flex-row justify-between">
         <div className="mb-0 flex flex-row items-center justify-start">
           <div className="mr-6 space-y-1 text-left">
             <p className="text-sm font-medium text-gray-500">
               {props.transaction.sourceAccount?.name}
             </p>
-            <p className="text-sm text-gray-500">{props.transaction.payee?.name}</p>
-            <p className="text-sm text-gray-500">{props.transaction.category?.name}</p>
+            <p className="text-sm text-gray-500">
+              {props.transaction.payee?.name}
+            </p>
+            <p className="text-sm text-gray-500">
+              {props.transaction.category?.name}
+            </p>
           </div>
         </div>
         <div className="space-y-2 text-right">
           <h4
             className={
-              props?.transaction?.type === 'DEBIT'
-                ? 'text-md font-semibold text-red-600'
-                : 'text-md font-semibold text-green-500'
+              props?.transaction?.type === "DEBIT"
+                ? "text-md font-semibold text-red-600"
+                : "text-md font-semibold text-green-500"
             }
           >
-            {`${props?.transaction?.type === 'DEBIT' ? '-' : '+'} ₹${props.transaction.amount}`}
+            {`${props?.transaction?.type === "DEBIT" ? "-" : "+"} ₹${
+              props.transaction.amount
+            }`}
           </h4>
           <p className="text-sm text-gray-500 dark:text-slate-400">
             {DateFormater.format(new Date(props.transaction?.timeCreated))}
@@ -67,7 +66,7 @@ const TransactionCard = (props: Props) => {
         </div>
       </div>
     </CardBox>
-  )
-}
+  );
+};
 
-export default TransactionCard
+export default TransactionCard;

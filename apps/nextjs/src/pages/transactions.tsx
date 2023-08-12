@@ -7,7 +7,6 @@ import LayoutAuthenticated from "../components/layout";
 import TransactionsTableView from "../components/transactions/TransactionsTableView";
 import { getPageTitle } from "../config/config";
 import "flowbite";
-import { api } from "~/utils/api";
 import ImportTableView from "~/components/transactions/ImportTableView";
 import UnverifiedTransactionsTableView from "../components/transactions/UnverifiedTransactionsTableView";
 
@@ -19,8 +18,8 @@ enum Mode {
 }
 const TransactionsPage = () => {
   const [mode, setMode] = useState<Mode>(Mode.View);
-  const unverifiedTranstotalCountQuery =
-    api.unverifiedTransaction.getUnverifiedTransactionCount.useQuery();
+  // const unverifiedTranstotalCountQuery =
+  //   api.unverifiedTransaction.getUnverifiedTransactionCount.useQuery();
 
   const handleSave = () => {
     setMode(Mode.View);
@@ -48,17 +47,17 @@ const TransactionsPage = () => {
   );
 };
 
-const getTitle = (mode: Mode) => {
-  switch (mode) {
-    case Mode.Review:
-      return "Review Transactions";
-    case Mode.Import:
-      return "Import Transactions";
-    case Mode.View:
-    case Mode.Create:
-      return "Transactions";
-  }
-};
+// const getTitle = (mode: Mode) => {
+//   switch (mode) {
+//     case Mode.Review:
+//       return "Review Transactions";
+//     case Mode.Import:
+//       return "Import Transactions";
+//     case Mode.View:
+//     case Mode.Create:
+//       return "Transactions";
+//   }
+// };
 
 TransactionsPage.getLayout = function getLayout(page: ReactElement) {
   return <LayoutAuthenticated>{page}</LayoutAuthenticated>;

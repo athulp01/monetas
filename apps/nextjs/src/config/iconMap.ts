@@ -37,7 +37,7 @@ import {
   mdiYoutubeSubscription,
 } from "@mdi/js";
 
-export const IconMap = {
+export const IconMap: { [key: string]: string } = {
   "food-turkey": mdiFoodTurkey,
   "food-fork-drink": mdiFoodForkDrink,
   "bank-transfer": mdiBankTransfer,

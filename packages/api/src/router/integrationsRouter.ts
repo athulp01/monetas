@@ -114,12 +114,14 @@ export const integrationRouter = createTRPCRouter({
             labelIds: ["INBOX"],
           },
         });
+        console.log("Watch response", watchResponse);
         response.isTokenValid = true;
       } else {
         console.error("Invalid token");
         response.isTokenValid = false;
       }
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       console.error("Error verifying access token:", error.message);
       response.isTokenValid = false;
     }

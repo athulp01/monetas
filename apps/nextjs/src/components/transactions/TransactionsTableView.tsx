@@ -79,7 +79,6 @@ const TransactionsTableView = () => {
     month: selectedMonth.toDate(),
   });
   const totalCount = transactionsQuery.data?.totalCount || 0;
-  const numPages = Math.floor(totalCount / ITEMS_PER_PAGE) + 1;
 
   const accountsQuery = api.account.listAccounts.useQuery();
   const categoriesQuery = api.category.listCategories.useQuery({

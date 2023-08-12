@@ -11,7 +11,7 @@ export const GET_STARTED_STEP_KEY = "get-started-step";
 export const GetStarted = () => {
   const router = useRouter();
   const accountsQuery = api.account.listAccounts.useQuery();
-  const [getStartedInProgess, setGetStartedInProgress] = useLocalStorage(
+  const [, setGetStartedInProgress] = useLocalStorage(
     GET_STARTED_IN_PROGRESS_KEY,
     true,
   );
@@ -57,7 +57,7 @@ export const GetStarted = () => {
           actionName="Setup Accounts"
           actionHandler={() => {
             setCurrentStep(2);
-            router.push("/accounts");
+            void router.push("/accounts");
           }}
         ></StepCard>
         <StepCard
@@ -73,7 +73,7 @@ export const GetStarted = () => {
           actionName="Add Payees"
           actionHandler={() => {
             setCurrentStep(3);
-            router.push("/payees");
+            void router.push("/payees");
           }}
         ></StepCard>
         <StepCard
@@ -90,7 +90,7 @@ export const GetStarted = () => {
           actionName="Setup Integrations"
           actionHandler={() => {
             setGetStartedInProgress(false);
-            router.push("/settings");
+            void router.push("/settings");
           }}
         ></StepCard>
       </div>

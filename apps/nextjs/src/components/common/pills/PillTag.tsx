@@ -1,20 +1,28 @@
-import React from 'react'
-import { type ColorKey } from '../../../interfaces'
-import { colorsBgLight, colorsOutline } from '../../../config/colors'
-import PillTagPlain from './PillTagPlain'
+import React from "react";
+
+import { colorsBgLight, colorsOutline } from "~/config/colors";
+import { type ColorKey } from "~/interfaces";
+import PillTagPlain from "./PillTagPlain";
 
 type Props = {
-  label?: string
-  color: ColorKey
-  icon?: string
-  small?: boolean
-  outline?: boolean
-  className?: string
-}
+  label?: string;
+  color: ColorKey;
+  icon?: string;
+  small?: boolean;
+  outline?: boolean;
+  className?: string;
+};
 
-const PillTag = ({ small = false, outline = false, className = '', ...props }: Props) => {
-  const layoutClassName = small ? 'py-1 px-3' : 'py-1.5 px-4'
-  const colorClassName = outline ? colorsOutline[props.color] : colorsBgLight[props.color]
+const PillTag = ({
+  small = false,
+  outline = false,
+  className = "",
+  ...props
+}: Props) => {
+  const layoutClassName = small ? "py-1 px-3" : "py-1.5 px-4";
+  const colorClassName: string = outline
+    ? (colorsOutline[props.color] as string)
+    : colorsBgLight[props.color];
 
   return (
     <PillTagPlain
@@ -23,7 +31,7 @@ const PillTag = ({ small = false, outline = false, className = '', ...props }: P
       label={props.label}
       small={small}
     />
-  )
-}
+  );
+};
 
-export default PillTag
+export default PillTag;

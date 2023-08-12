@@ -6,21 +6,21 @@ import "flowbite";
 import "react-datetime/css/react-datetime.css";
 import "@yaireo/tagify/dist/tagify.css";
 import { useRouter } from "next/router";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
 import { v4 as uuid } from "uuid";
 
 import {
-  ParsedTransaction,
   parseHDFCAccountStatement,
   parseHDFCCreditCardStatement,
   type ParsedStatementResult,
+  type ParsedTransaction,
 } from "@monetas/importer";
 
-import { RouterInputs, RouterOutputs, api } from "~/utils/api";
+import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
 import { TransactionTypeOptions } from "~/utils/constants";
 import { TopLoadingBarStateContext } from "~/utils/contexts";
-import { AccountList } from "~/components/accounts/AccountsTableView";
+import { type AccountList } from "~/components/accounts/AccountsTableView";
 import { Alert } from "~/components/common/alerts/Alert";
 import { CardTable } from "~/components/common/cards/CardTable";
 import TableLoading from "~/components/common/loading/TableLoading";
@@ -28,7 +28,7 @@ import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
-import { PayeeList } from "~/components/payees/PayeeTableView";
+import { type PayeeList } from "~/components/payees/PayeeTableView";
 import { HDFCInstructions } from "~/components/transactions/HDFCInstructions";
 import { ITEMS_PER_PAGE } from "~/config/site";
 import { useDialog } from "~/hooks/useDialog";
@@ -59,14 +59,14 @@ interface Props {
   handleSave: () => void;
 }
 
-enum STATE {
-  ACCOUNT_SELECTION,
-  FILE_UPLOAD,
-  IMPORT_SUCCESS,
-  IMPORT_FAILED,
-  IMPORT_IN_PROGRESS,
-  IMPORT_PARTIAL_SUCCESS,
-}
+// enum STATE {
+//   ACCOUNT_SELECTION,
+//   FILE_UPLOAD,
+//   IMPORT_SUCCESS,
+//   IMPORT_FAILED,
+//   IMPORT_IN_PROGRESS,
+//   IMPORT_PARTIAL_SUCCESS,
+// }
 
 const tryFindPayee = (description: string, payees: PayeeList): PayeeList[0] => {
   return payees.find((payee) => {
@@ -93,13 +93,13 @@ const ImportTableView = (props: Props) => {
 
   useEffect(() => {
     // Always do navigations after the first render
-    router.push("/transactions?import=true", undefined, { shallow: true });
+    void router.push("/transactions?import=true", undefined, { shallow: true });
   }, []);
 
   const importTransactionsMutation =
     api.transaction.importTransactions.useMutation({
-      onSuccess: async () => {
-        router.push("/transactions");
+      onSuccess: () => {
+        void router.push("/transactions");
         props?.handleSave();
         toast.success("Transaction imported successfully");
       },
@@ -113,7 +113,7 @@ const ImportTableView = (props: Props) => {
     });
 
   const convertToFormData = (data: ParsedTransaction[]) => {
-    return data.map((transaction, i) => {
+    return data.map((transaction) => {
       const matchedPayee = tryFindPayee(
         transaction.notes,
         payeesQuery.data?.payees,
@@ -124,7 +124,8 @@ const ImportTableView = (props: Props) => {
           )
         : undefined;
       const formData: TransactionImportForm["form"][0] = {
-        id: uuid(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        id: uuid() as string,
         sourceAccount: targetAccountForm.getValues("targetAccount"),
         type: transaction.type,
         timeCreated: transaction.timeCreated,
@@ -226,6 +227,11 @@ const ImportTableView = (props: Props) => {
           const convertedData = convertToFormData(result.transactions);
           setParsedTransactions({ form: convertedData });
           importForm.reset({ form: convertedData });
+        })
+        .catch((err) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          setParsingError(err);
+          console.log(err);
         });
     } else {
       parseHDFCAccountStatement(file)
@@ -236,6 +242,7 @@ const ImportTableView = (props: Props) => {
           importForm.reset({ form: convertedData });
         })
         .catch((err) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           setParsingError(err);
           console.log(err);
         });
@@ -348,7 +355,7 @@ const ImportTableView = (props: Props) => {
             <form
               id="importForm"
               hidden
-              onSubmit={importForm.handleSubmit(onImportFormSubmit)}
+              onSubmit={void importForm.handleSubmit(onImportFormSubmit)}
             ></form>
             <Table
               isPaginated={true}

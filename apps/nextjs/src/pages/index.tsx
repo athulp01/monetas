@@ -13,7 +13,6 @@ import CardBox from "~/components/common/cards/CardBox";
 import TableLoading from "~/components/common/loading/TableLoading";
 import {
   GET_STARTED_IN_PROGRESS_KEY,
-  GET_STARTED_STEP_KEY,
   GetStarted,
 } from "~/components/dashboard/GetStarted";
 import { useLocalStorage } from "~/hooks/useLocalStorage";
@@ -27,10 +26,6 @@ const Dashboard = () => {
   const [getStartedInProgess] = useLocalStorage(
     GET_STARTED_IN_PROGRESS_KEY,
     false,
-  );
-  const [currentStep, setCurrentStep] = useLocalStorage<number>(
-    GET_STARTED_STEP_KEY,
-    1,
   );
 
   const incomeQuery = api.reports.getTotalIncomeForMonth.useQuery({

@@ -3,16 +3,13 @@
   "globalDependencies": ["**/.env"],
   "pipeline": {
     "db:generate": {
-      "inputs": ["prisma/schema.prisma"],
-      "cache": false
+      "inputs": ["prisma/schema.prisma"]
     },
     "db:migrate": {
-      "dependsOn": ["^db:generate"],
-      "cache": false
+      "dependsOn": ["^db:generate"]
     },
     "db:seed": {
-      "dependsOn": ["^db:generate"],
-      "cache": false
+      "dependsOn": ["^db:generate"]
     },
     "db:push": {
       "inputs": ["prisma/schema.prisma"],
@@ -49,6 +46,7 @@
     "VERCEL",
     "VERCEL_URL",
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "PUB_SUB_TOPIC_NAME",
     "CLERK_SECRET_KEY",
     "TELEGRAM_API_KEY",
     "NEXT_PUBLIC_TELEGRAM_BOT_NAME",

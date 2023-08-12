@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 export const HDFCInstructions = () => {
   return (
     <div className={"mb-10 mt-8"}>

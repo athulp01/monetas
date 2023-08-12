@@ -70,7 +70,7 @@ export default function LayoutAuthenticated({ children }: Props) {
               <Menu
                 closeOnClick
                 menuItemStyles={{
-                  button: ({ level, active, disabled }) => {
+                  button: ({ level, active }) => {
                     // only apply styles on first level elements of the tree
                     if (level === 0)
                       return {

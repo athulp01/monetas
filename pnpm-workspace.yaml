@@ -1,5 +1,5 @@
 packages:
-  - apps/expo
+#  - apps/expo
   - apps/nextjs
   - apps/email-listener
   - packages/api

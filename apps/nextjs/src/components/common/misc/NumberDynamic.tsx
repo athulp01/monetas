@@ -10,11 +10,11 @@ type Props = {
 };
 
 const NumberDynamic = ({
-  prefix = "",
+  // prefix = "",
   suffix = "",
   value,
-  duration = 1000,
-}: Props) => {
+}: // duration = 1000,
+Props) => {
   // const [newValue, setNewValue] = useState(value)
 
   // const newValueFormatted = newValue

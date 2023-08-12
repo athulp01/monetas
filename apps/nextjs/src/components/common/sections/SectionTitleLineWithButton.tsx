@@ -8,8 +8,6 @@ type Props = {
 };
 
 export default function SectionTitleLineWithButton({
-  icon,
-  title,
   main = false,
   children,
 }: Props) {

@@ -49,9 +49,9 @@ const SettingsPage = () => {
 
   useEffect(() => {
     if (gmailIntegrationQuery.data?.isConnected) {
-      verifyGmailIntegrationQuery.refetch();
+      void verifyGmailIntegrationQuery.refetch();
     }
-  }, [gmailIntegrationQuery.data]);
+  }, [gmailIntegrationQuery.data, verifyGmailIntegrationQuery]);
 
   const authenticate = () => {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${
@@ -101,7 +101,7 @@ const SettingsPage = () => {
                   <TelegramLoginButton
                     bottonSize="medium"
                     dataOnauth={(data) => {
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
                       addTelegramIntegration(data.id.toString());
                     }}
                     botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}

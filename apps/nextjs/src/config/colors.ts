@@ -135,8 +135,8 @@ export const getButtonColor = (
   }
 
   if (hasHover) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     base.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       isOutlinedProcessed ? colors.outlineHover[color] : colors.bgHover[color],
     );
   }

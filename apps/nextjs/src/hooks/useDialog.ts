@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { DialogProps } from "~/components/common/cards/CardBoxModal";
+import { type DialogProps } from "~/components/common/cards/CardBoxModal";
 
 export const useDialog = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
