@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 
 const checkIfElectron = () => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   if (
     typeof window !== "undefined" &&
     typeof window.process === "object" &&
-    window.process.type === "renderer"
+    window.process["type"] === "renderer"
   ) {
     return true;
   }
