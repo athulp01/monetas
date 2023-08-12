@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/trpc/account/logAccountBalance",
+      "path": "/api/cron/accountBalance",
       "schedule": "0 5 * * *"
     }
   ]
