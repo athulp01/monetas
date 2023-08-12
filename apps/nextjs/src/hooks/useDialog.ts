@@ -6,7 +6,10 @@ export const useDialog = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogProps, setDialogProps] =
     useState<
-      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
+      Pick<
+        DialogProps,
+        "title" | "buttonColor" | "onConfirm" | "message" | "warning"
+      >
     >();
   return {
     isOpen: isDialogOpen,

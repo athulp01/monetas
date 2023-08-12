@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -22,6 +22,7 @@ import moment from "moment";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { EmptyBudget } from "~/components/budget/EmptyBudget";
 import { CardTable } from "~/components/common/cards/CardTable";
 import { Table } from "~/components/common/table/Table";
@@ -29,8 +30,9 @@ import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
 import { SearchInput } from "~/components/forms/SearchInput";
+import { useDialog } from "~/hooks/useDialog";
 import { useTable } from "~/hooks/useTable";
-import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledInputMoney } from "../forms/ControlledInputMoney";
 import { ControlledSelect } from "../forms/ControlledSelect";
@@ -50,6 +52,8 @@ const getColorOfRemaining = (remaining: number) => {
 };
 
 const BudgetTableView = () => {
+  const topLoadingBar = useContext(TopLoadingBarStateContext);
+  const dialog = useDialog();
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<BudgetList[0]>();
   const [isCreateMode, setIsCreateMode] = useState<boolean>(false);
@@ -62,53 +66,48 @@ const BudgetTableView = () => {
 
   const budgetCreateMutation = api.budget.addBudget.useMutation({
     onSuccess: async () => {
+      await budgetQuery.refetch();
       createForm.reset();
       setIsCreateMode(false);
-      toast.success("BudgetScreen created successfully");
-      await budgetQuery.refetch();
+      toast.success("Budget created successfully");
     },
     onError: (err) => {
       toast.error("Error creating budget");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const budgetUpdateMutation = api.budget.updateBudget.useMutation({
     onSuccess: async () => {
-      editForm.reset();
-      toast.success("BudgetScreen updated successfully");
       await budgetQuery.refetch();
+      setIsInEditMode(-1);
+      editForm.reset();
+      toast.success("Budget updated successfully");
     },
     onError: (err) => {
       toast.error("Error updating budget");
       console.log(err);
     },
     onSettled: () => {
-      setIsInEditMode(-1);
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const budgetDeleteMutation = api.budget.deleteBudget.useMutation({
     onSuccess: async () => {
-      toast.success("BudgetScreen deleted successfully");
       await budgetQuery.refetch();
+      toast.success("Budget deleted successfully");
     },
     onError: (err) => {
       toast.error("Error deleting budget");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogProps, setDialogProps] =
-    useState<
-      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
-    >(null);
   const [hack, setHack] = useState(false);
 
   const onCreateFormSubmit = (data: BudgetList[0]) => {
@@ -117,15 +116,17 @@ const BudgetTableView = () => {
       categoryId: data.category.id,
       month: selectedMonth.toDate(),
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to create this budget?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         budgetCreateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const onEditFormSubmit = (data: BudgetList[0]) => {
@@ -138,15 +139,17 @@ const BudgetTableView = () => {
       amount: +data.budgetedAmount,
       categoryId: data.category.id,
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to edit this budget?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         budgetUpdateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const handleEdit = (i: number) => {
@@ -156,15 +159,17 @@ const BudgetTableView = () => {
   };
 
   const handleDelete = (id: string) => {
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "danger",
       message: "Do you want to delete this budget?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         budgetDeleteMutation.mutate({ id });
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   if (budgetQuery.isLoading) {
@@ -174,10 +179,10 @@ const BudgetTableView = () => {
   return (
     <>
       <CardBoxModal
-        {...dialogProps}
+        {...dialog.props}
         buttonLabel="Confirm"
-        isActive={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
+        isActive={dialog.isOpen}
+        onCancel={() => dialog.hide()}
       ></CardBoxModal>
       <CardTable>
         <form

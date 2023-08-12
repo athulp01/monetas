@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -20,14 +20,16 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { CardTable } from "~/components/common/cards/CardTable";
 import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
 import { SearchInput } from "~/components/forms/SearchInput";
+import { useDialog } from "~/hooks/useDialog";
 import { useTable } from "~/hooks/useTable";
-import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledInput } from "../forms/ControlledInput";
 import { ControlledInputMoney } from "../forms/ControlledInputMoney";
@@ -45,6 +47,8 @@ const AccountsTableView = () => {
     useTable<AccountList[0]>();
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [hack, setHack] = useState(false);
+  const dialog = useDialog();
+  const topLoadingBar = useContext(TopLoadingBarStateContext);
 
   const providersQuery = api.account.listAccountProviders.useQuery();
   const typesQuery = api.account.listAccountTypes.useQuery();
@@ -54,56 +58,47 @@ const AccountsTableView = () => {
     onSuccess: async () => {
       createForm.reset();
       setIsCreateMode(false);
-      toast.success("Account created successfully");
       await accountsQuery.refetch();
+      toast.success("Account created successfully");
     },
     onError: (err) => {
       toast.error("Error creating account");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const accountUpdateMutation = api.account.updateAccount.useMutation({
     onSuccess: async () => {
+      await accountsQuery.refetch();
+      setIsInEditMode(-1);
       editForm.reset();
       toast.success("Account updated successfully");
-      await accountsQuery.refetch();
     },
     onError: (err) => {
       toast.error("Error updating transaction");
       console.log(err);
     },
     onSettled: () => {
-      setIsInEditMode(-1);
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const accountDeleteMutation = api.account.deleteAccount.useMutation({
     onSuccess: async () => {
-      toast.success("Account deleted successfully");
       await accountsQuery.refetch();
+      toast.success("Account deleted successfully");
     },
     onError: (err) => {
       toast.error("Error deleting account");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
 
   const watchProvider = editForm.watch("accountProvider");
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogProps, setDialogProps] =
-    useState<
-      Pick<
-        DialogProps,
-        "title" | "buttonColor" | "onConfirm" | "message" | "warning"
-      >
-    >(null);
 
   const onCreateFormSubmit = (account: AccountList[0]) => {
     const payload: AccountCreate = {
@@ -113,15 +108,17 @@ const AccountsTableView = () => {
       accountProviderId: account.accountProvider.id,
       accountNumber: account.accountNumber,
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to create this account?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         accountCreateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const onEditFormSubmit = (account: AccountList[0]) => {
@@ -137,15 +134,17 @@ const AccountsTableView = () => {
       accountProviderId: account.accountProvider.id,
       accountNumber: account.accountNumber,
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to edit this account?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         accountUpdateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const handleEdit = (i: number) => {
@@ -155,17 +154,19 @@ const AccountsTableView = () => {
   };
 
   const handleDelete = (id: string) => {
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "danger",
       message: "Do you want to delete this account?",
       warning:
         "This action would delete all transactions associated with this account",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         accountDeleteMutation.mutate({ id });
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   if (accountsQuery.isLoading) {
@@ -175,10 +176,10 @@ const AccountsTableView = () => {
   return (
     <>
       <CardBoxModal
-        {...dialogProps}
+        {...dialog.props}
         buttonLabel="Confirm"
-        isActive={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
+        isActive={dialog.isOpen}
+        onCancel={() => dialog.hide()}
       ></CardBoxModal>
       <CardTable>
         <form

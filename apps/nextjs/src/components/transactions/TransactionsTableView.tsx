@@ -109,8 +109,8 @@ const TransactionsTableView = () => {
     onSuccess: async () => {
       createForm.reset();
       setMode("VIEW");
-      toast.success("Transaction created successfully");
       await transactionsQuery.refetch();
+      toast.success("Transaction created successfully");
     },
     onError: (err) => {
       toast.error("Error creating transaction");
@@ -124,10 +124,11 @@ const TransactionsTableView = () => {
   const updateTransactionMutation =
     api.transaction.updateTransaction.useMutation({
       onSuccess: async () => {
+        await transactionsQuery.refetch();
+        setIsInEditMode(-1);
         editForm.reset();
         topLoadingBar.hide();
         toast.success("Transaction updated successfully");
-        await transactionsQuery.refetch();
       },
       onError: (err) => {
         topLoadingBar.hide();
@@ -138,8 +139,8 @@ const TransactionsTableView = () => {
   const deleteTransactionMutation =
     api.transaction.deleteTransaction.useMutation({
       onSuccess: async () => {
-        toast.success("Transaction deleted successfully");
         await transactionsQuery.refetch();
+        toast.success("Transaction deleted successfully");
       },
       onError: (err) => {
         toast.error("Error deleting transaction");
@@ -167,8 +168,8 @@ const TransactionsTableView = () => {
       message: "Do you want to create this transaction?",
       onConfirm: () => {
         topLoadingBar.show();
-        addTransactionMutation.mutate(payload);
         dialog.hide();
+        addTransactionMutation.mutate(payload);
       },
     });
     dialog.show();
@@ -199,9 +200,8 @@ const TransactionsTableView = () => {
       message: "Do you want to edit this transaction?",
       onConfirm: () => {
         topLoadingBar.show();
-        updateTransactionMutation.mutate(payload);
-        setIsInEditMode(-1);
         dialog.hide();
+        updateTransactionMutation.mutate(payload);
       },
     });
     dialog.show();
