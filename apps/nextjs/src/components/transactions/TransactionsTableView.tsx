@@ -136,6 +136,7 @@ const TransactionsTableView = () => {
         console.log(err);
       },
     });
+
   const deleteTransactionMutation =
     api.transaction.deleteTransaction.useMutation({
       onSuccess: async () => {
@@ -147,7 +148,7 @@ const TransactionsTableView = () => {
         console.log(err);
       },
       onSettled: () => {
-        dialog.hide();
+        topLoadingBar.hide();
       },
     });
 
@@ -219,6 +220,8 @@ const TransactionsTableView = () => {
       buttonColor: "danger",
       message: "Do you want to delete this transaction?",
       onConfirm: () => {
+        topLoadingBar.show();
+        dialog.hide();
         deleteTransactionMutation.mutate(id);
       },
     });

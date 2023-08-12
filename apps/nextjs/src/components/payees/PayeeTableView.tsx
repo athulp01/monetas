@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -18,14 +18,16 @@ import "react-datetime/css/react-datetime.css";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { CardTable } from "~/components/common/cards/CardTable";
 import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
 import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
 import { SearchInput } from "~/components/forms/SearchInput";
+import { useDialog } from "~/hooks/useDialog";
 import { useTable } from "~/hooks/useTable";
-import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledInput } from "../forms/ControlledInput";
 import { ControlledSelect } from "../forms/ControlledSelect";
@@ -41,56 +43,54 @@ const PayeeTableView = () => {
   const categoriesQuery = api.category.listCategories.useQuery();
   const payeesQuery = api.payee.listPayees.useQuery();
 
+  const dialog = useDialog();
+  const topLoadingBar = useContext(TopLoadingBarStateContext);
+
   const payeeUpdateMutation = api.payee.updatePayee.useMutation({
     onSuccess: async () => {
       createForm.reset();
       setIsCreateMode(false);
-      toast.success("Payee updated successfully");
       await payeesQuery.refetch();
+      toast.success("Payee updated successfully");
     },
     onError: (err) => {
       toast.error("Error updating payee");
       console.log(err);
     },
     onSettled: () => {
+      topLoadingBar.hide();
       setIsInEditMode(-1);
-      setIsDialogOpen(false);
     },
   });
   const payeeCreateMutation = api.payee.addPayee.useMutation({
     onSuccess: async () => {
       editForm.reset();
       setIsCreateMode(false);
-      toast.success("Payee created successfully");
       await payeesQuery.refetch();
+      toast.success("Payee created successfully");
     },
     onError: (err) => {
       toast.error("Error creating payee");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const payeeDeleteMutation = api.payee.deletePayee.useMutation({
     onSuccess: async () => {
-      toast.success("Payee deleted successfully");
       await payeesQuery.refetch();
+      toast.success("Payee deleted successfully");
     },
     onError: (err) => {
       toast.error("Error deleting payee");
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogProps, setDialogProps] =
-    useState<
-      Pick<DialogProps, "title" | "buttonColor" | "onConfirm" | "message">
-    >(null);
   const [hack, setHack] = useState(false);
 
   const onCreateFormSubmit = (data: PayeeList[0]) => {
@@ -99,15 +99,16 @@ const PayeeTableView = () => {
       name: data.name,
       categoryIds: data.categories.map((c) => c.id),
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to create this payee?",
       onConfirm: () => {
+        dialog.hide();
         payeeCreateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const onEditFormSubmit = (data: PayeeList[0]) => {
@@ -120,15 +121,16 @@ const PayeeTableView = () => {
       id: payeesQuery.data.payees[isInEditMode].id,
       categoryIds: data.categories.map((c) => c.id),
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to edit this payee?",
       onConfirm: () => {
+        dialog.hide();
         payeeUpdateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const handleEdit = (i: number) => {
@@ -138,15 +140,16 @@ const PayeeTableView = () => {
   };
 
   const handleDelete = (id: string) => {
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "danger",
       message: "Do you want to delete this payee?",
       onConfirm: () => {
+        dialog.hide();
         payeeDeleteMutation.mutate({ id });
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   if (payeesQuery.isLoading) {
@@ -156,10 +159,10 @@ const PayeeTableView = () => {
   return (
     <>
       <CardBoxModal
-        {...dialogProps}
+        {...dialog.props}
         buttonLabel="Confirm"
-        isActive={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
+        isActive={dialog.isOpen}
+        onCancel={() => dialog.hide()}
       ></CardBoxModal>
       <CardTable>
         <form

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -20,6 +20,7 @@ import { INVESTMENT_TYPE } from "@prisma/client";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { CardTable } from "~/components/common/cards/CardTable";
 import { Table } from "~/components/common/table/Table";
 import { TableCell } from "~/components/common/table/TableCell";
@@ -27,9 +28,10 @@ import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
 import { SearchInput } from "~/components/forms/SearchInput";
 import { EmptyInvestments } from "~/components/investments/EmptyInvestments";
+import { useDialog } from "~/hooks/useDialog";
 import { useTable } from "~/hooks/useTable";
 import { CurrencyFormatter } from "~/lib/utils";
-import CardBoxModal, { type DialogProps } from "../common/cards/CardBoxModal";
+import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledInput } from "../forms/ControlledInput";
 
@@ -42,6 +44,8 @@ const InvestmentsTableView = () => {
   const [isInEditMode, setIsInEditMode, createForm, editForm] =
     useTable<InvestmentList[0]>();
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const dialog = useDialog();
+  const topLoadingBar = useContext(TopLoadingBarStateContext);
 
   const investmentsQuery = api.investment.listInvestments.useQuery();
   api.investment.getQuote.useQuery(
@@ -67,7 +71,7 @@ const InvestmentsTableView = () => {
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const investmentUpdateMutation = api.investment.updateInvestment.useMutation({
@@ -82,7 +86,7 @@ const InvestmentsTableView = () => {
     },
     onSettled: () => {
       setIsInEditMode(-1);
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
   const investmentDeleteMutation = api.investment.deleteInvestment.useMutation({
@@ -95,18 +99,9 @@ const InvestmentsTableView = () => {
       console.log(err);
     },
     onSettled: () => {
-      setIsDialogOpen(false);
+      topLoadingBar.hide();
     },
   });
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogProps, setDialogProps] =
-    useState<
-      Pick<
-        DialogProps,
-        "title" | "buttonColor" | "onConfirm" | "message" | "warning"
-      >
-    >(null);
 
   const onCreateFormSubmit = (investment: InvestmentList[0]) => {
     const payload: InvestmentCreate = {
@@ -118,15 +113,17 @@ const InvestmentsTableView = () => {
       symbol: investment.symbol,
       currentPrice: +Math.floor(investment.currentPrice),
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to add this investment?",
       onConfirm: () => {
+        dialog.hide();
+        topLoadingBar.show();
         investmentCreateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const onEditFormSubmit = (investment: InvestmentList[0]) => {
@@ -138,15 +135,17 @@ const InvestmentsTableView = () => {
       buyDate: investment.buyDate,
       symbol: investment.symbol,
     };
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "success",
       message: "Do you want to edit this investment?",
       onConfirm: () => {
+        dialog.hide();
+        topLoadingBar.show();
         investmentUpdateMutation.mutate(payload);
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   const handleEdit = (i: number) => {
@@ -155,15 +154,16 @@ const InvestmentsTableView = () => {
   };
 
   const handleDelete = (id: string) => {
-    setDialogProps({
+    dialog.setProps({
       title: "Confirmation",
       buttonColor: "danger",
       message: "Do you want to remove this investment?",
       onConfirm: () => {
+        topLoadingBar.show();
         investmentDeleteMutation.mutate({ id });
       },
     });
-    setIsDialogOpen(true);
+    dialog.show();
   };
 
   if (investmentsQuery.isLoading) {
@@ -173,10 +173,10 @@ const InvestmentsTableView = () => {
   return (
     <>
       <CardBoxModal
-        {...dialogProps}
+        {...dialog.props}
         buttonLabel="Confirm"
-        isActive={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
+        isActive={dialog.isOpen}
+        onCancel={() => dialog.hide()}
       ></CardBoxModal>
       <CardTable>
         <form
