@@ -8,6 +8,7 @@ import "@yaireo/tagify/dist/tagify.css";
 import { useRouter } from "next/router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { v4 as uuid } from "uuid";
 
 import {
   ParsedTransaction,
@@ -44,6 +45,7 @@ export type TransactionImportInput =
 
 type TransactionImportForm = {
   form: {
+    id: string;
     sourceAccount: AccountList[0];
     type: TRANSACTION_TYPE;
     timeCreated: Date;
@@ -111,7 +113,7 @@ const ImportTableView = (props: Props) => {
     });
 
   const convertToFormData = (data: ParsedTransaction[]) => {
-    return data.map((transaction) => {
+    return data.map((transaction, i) => {
       const matchedPayee = tryFindPayee(
         transaction.notes,
         payeesQuery.data?.payees,
@@ -122,6 +124,7 @@ const ImportTableView = (props: Props) => {
           )
         : undefined;
       const formData: TransactionImportForm["form"][0] = {
+        id: uuid(),
         sourceAccount: targetAccountForm.getValues("targetAccount"),
         type: transaction.type,
         timeCreated: transaction.timeCreated,
@@ -136,6 +139,13 @@ const ImportTableView = (props: Props) => {
       };
       return formData;
     });
+  };
+
+  const deleteTransaction = (id: string) => {
+    parsedTransactions.form = parsedTransactions.form.filter(
+      (transaction) => transaction.id !== id,
+    );
+    setParsedTransactions({ ...parsedTransactions });
   };
 
   const onImportFormSubmit: SubmitHandler<TransactionImportForm> = (data) => {
@@ -182,7 +192,8 @@ const ImportTableView = (props: Props) => {
       buttonColor: "danger",
       message: "Do you want to delete this transaction?",
       onConfirm: () => {
-        id;
+        deleteTransaction(id);
+        dialog.hide();
       },
     });
     dialog.show();
@@ -221,7 +232,6 @@ const ImportTableView = (props: Props) => {
         .then((result) => {
           setParsedStatement(result);
           const convertedData = convertToFormData(result.transactions);
-          console.log("Converted", convertedData);
           setParsedTransactions({ form: convertedData });
           importForm.reset({ form: convertedData });
         })
@@ -360,7 +370,7 @@ const ImportTableView = (props: Props) => {
               </TableHeaderBlock>
               <tbody>
                 {paginatedTransactions?.map((transaction, i) => (
-                  <TableRow key={transaction.notes}>
+                  <TableRow key={transaction.id}>
                     <TableCell>
                       <ControlledSelect
                         control={importForm.control}
