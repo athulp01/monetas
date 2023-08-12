@@ -294,7 +294,7 @@ const TransactionsTableView = () => {
           </div>
         </div>
 
-        {transactionsQuery.data?.totalCount === 0 && mode !== "EMPTY" && (
+        {transactionsQuery.data?.totalCount === 0 && mode !== "CREATE" && (
           <EmptyTransactions></EmptyTransactions>
         )}
 
@@ -671,13 +671,15 @@ const TransactionsTableView = () => {
                       </TableRow>
                     ),
                   )}
-                  {!transactionsQuery.isLoading && totalCount === 0 && (
-                    <tr className="h-40">
-                      <td rowSpan={6} className="text-center" colSpan={5}>
-                        No transactions found!
-                      </td>
-                    </tr>
-                  )}
+                  {!transactionsQuery.isLoading &&
+                    totalCount === 0 &&
+                    mode !== "CREATE" && (
+                      <tr className="h-40">
+                        <td rowSpan={6} className="text-center" colSpan={5}>
+                          No transactions found!
+                        </td>
+                      </tr>
+                    )}
                 </tbody>
               </Table>
             </>

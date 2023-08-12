@@ -6,7 +6,7 @@ export const EmptyTransactions = () => {
           No transactions yet
         </h3>
         <p className="mb-2 mb-20 text-sm text-gray-500 dark:text-gray-400">
-          Get started by adding your first transaction for this time period
+          Get started by adding your first transaction for this month
         </p>
         <img
           className="h-72 rounded-t-lg"

@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 
 export const EmptyBudget = () => {
   return (
@@ -11,7 +10,7 @@ export const EmptyBudget = () => {
         <p className="mb-20 text-sm text-gray-500 dark:text-gray-400">
           Get started by creating a new budget for this month.
         </p>
-        <Image
+        <img
           className="mb-4 h-72 rounded-t-lg"
           src={"/emptyBudget.svg"}
           alt=""

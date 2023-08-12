@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { mdiContentSave, mdiTrashCan } from "@mdi/js";
+import { mdiContentSave } from "@mdi/js";
 import { TRANSACTION_TYPE } from "@prisma/client";
 
 import "flowbite";
@@ -33,7 +33,6 @@ import { HDFCInstructions } from "~/components/transactions/HDFCInstructions";
 import { ITEMS_PER_PAGE } from "~/config/site";
 import { useDialog } from "~/hooks/useDialog";
 import BaseButton from "../common/buttons/BaseButton";
-import BaseButtons from "../common/buttons/BaseButtons";
 import CardBoxModal from "../common/cards/CardBoxModal";
 import { TableHeader } from "../common/table/TableHeader";
 import { ControlledDateTime } from "../forms/ControlledDateTime";
@@ -142,13 +141,6 @@ const ImportTableView = (props: Props) => {
     });
   };
 
-  const deleteTransaction = (id: string) => {
-    parsedTransactions.form = parsedTransactions.form.filter(
-      (transaction) => transaction.id !== id,
-    );
-    setParsedTransactions({ ...parsedTransactions });
-  };
-
   const onImportFormSubmit: SubmitHandler<TransactionImportForm> = (data) => {
     const payload: TransactionImportInput = {
       transactions: data.form.map((transaction) => ({
@@ -186,19 +178,6 @@ const ImportTableView = (props: Props) => {
 
     [parsedStatement, currentPage],
   );
-
-  const handleDelete = (id: string) => {
-    dialog.setProps({
-      title: "Confirmation",
-      buttonColor: "danger",
-      message: "Do you want to delete this transaction?",
-      onConfirm: () => {
-        deleteTransaction(id);
-        dialog.hide();
-      },
-    });
-    dialog.show();
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentPage(0);
@@ -372,7 +351,6 @@ const ImportTableView = (props: Props) => {
                   <TableHeader title="Date"></TableHeader>
                   <TableHeader title="Amount"></TableHeader>
                   <TableHeader title="Description"></TableHeader>
-                  <TableHeader></TableHeader>
                 </tr>
               </TableHeaderBlock>
               <tbody>
@@ -485,16 +463,6 @@ const ImportTableView = (props: Props) => {
                         {transaction.notes}
                       </div>
                     </TableCell>
-                    <td className="px-1 py-4 text-right">
-                      <BaseButtons type="justify-start lg:justify-end" noWrap>
-                        <BaseButton
-                          color="danger"
-                          icon={mdiTrashCan}
-                          onClick={() => handleDelete(i.toString())}
-                          small
-                        ></BaseButton>
-                      </BaseButtons>
-                    </td>
                   </TableRow>
                 ))}
               </tbody>
