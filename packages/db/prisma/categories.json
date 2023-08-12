@@ -7,49 +7,49 @@
   },
   {
   "name": "Dividend",
-  "icon": "briefcase",
+  "icon": "hand-coin",
   "id": "b3210507-f007-44c2-a045-9619fcd6fbc7",
   "type": "CREDIT"
   },
   {
     "name": "Interest",
-    "icon": "briefcase",
+    "icon": "percent",
     "id": "4487ebf6-9da0-4d70-a2a0-36ce06cc7ddf",
     "type": "CREDIT"
   },
   {
   "name": "Reimbursement",
-  "icon": "briefcase",
+  "icon": "cash-refund",
   "id": "dbe894c3-f0a6-4cd6-9253-0727e5de66fb",
   "type": "CREDIT"
   },
   {
     "name": "Repayment",
-    "icon": "briefcase",
+    "icon": "credit-card-refund",
     "id": "dbe894c3-f0a6-4cd6-9253-0727e5de66fb",
     "type": "CREDIT"
   },
   {
     "name": "Refund",
-    "icon": "briefcase",
+    "icon": "credit-card-refund",
     "id": "4e0cefcc-2752-4f3c-af7c-c632376a021d",
     "type": "CREDIT"
   },
   {
     "name": "Transfer",
-    "icon": "",
+    "icon": "bank-transfer",
     "id": "773a94b7-b3c9-474e-99dc-a90dffcc4ff5",
     "type": "TRANSFER"
   },
   {
     "name": "Credit Card Bill",
-    "icon": "",
+    "icon": "credit-card-clock",
     "id": "1f3942b6-3dec-43f8-8905-32a934aca65f",
     "type": "TRANSFER"
   },
   {
     "name": "EMI",
-    "icon": "",
+    "icon": "cash-minus",
     "id": "40a49ec6-c468-4ec6-a289-fadd30aa5e4c",
     "type": "TRANSFER"
   },
@@ -213,6 +213,12 @@
     "name": "Eating Out",
     "icon": "food-fork-drink",
     "id": "05c1c4e0-d7c0-4fac-8ea6-dedd5316fc88",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Movie",
+    "icon": "filmstrip",
+    "id": "b2b0b2a9-5b0a-4b7e-8b0a-9b0b2b7e8b0a",
     "type": "DEBIT"
   }
 ]
