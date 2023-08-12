@@ -1,7 +1,4 @@
 {
-  "github": {
-    "silent": true
-  },
   "crons": [
     {
       "path": "/api/trpc/account/logAccountBalance",

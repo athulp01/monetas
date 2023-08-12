@@ -14,6 +14,7 @@ import {
   mdiFilmstrip,
   mdiFoodForkDrink,
   mdiFoodTakeoutBox,
+  mdiFoodTurkey,
   mdiGasStation,
   mdiGift,
   mdiHairDryer,
@@ -37,6 +38,7 @@ import {
 } from "@mdi/js";
 
 export const IconMap = {
+  "food-turkey": mdiFoodTurkey,
   "food-fork-drink": mdiFoodForkDrink,
   "bank-transfer": mdiBankTransfer,
   "cash-minus": mdiCashMinus,
