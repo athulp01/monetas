@@ -1,7 +1,9 @@
 packages:
-  - apps/expo
+#  - apps/expo
   - apps/nextjs
+  - apps/email-listener
   - packages/api
-  - packages/auth
+  - packages/importer
   - packages/db
+  - packages/parser
   - packages/config/*

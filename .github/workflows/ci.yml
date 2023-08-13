@@ -1,10 +1,10 @@
-name: CI
+name: Lint, type-check and build
 
 on:
   pull_request:
     branches: ["*"]
   push:
-    branches: ["main"]
+    branches: ["master"]
   merge_group:
 
 # You can leverage Vercel Remote Caching with Turbo to speed up your builds
@@ -17,6 +17,7 @@ jobs:
   build-lint:
     env:
       DATABASE_URL: file:./db.sqlite
+      SKIP_ENV_VALIDATION: 1
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +48,7 @@ jobs:
       - name: Install deps (with cache)
         run: pnpm install
 
-      # Normally, this would be done as part of the turbo pipeline - however since the Expo app doesn't depend on `@acme/db` it doesn't care.
+      # Normally, this would be done as part of the turbo pipeline - however since the Expo app doesn't depend on `@monetas/db` it doesn't care.
       # TODO: Free for all to find a better solution here.
       - name: Generate Prisma Client
         run: pnpm turbo db:generate

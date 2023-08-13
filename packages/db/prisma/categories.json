@@ -1,0 +1,224 @@
+[
+  {
+    "name": "Salary",
+    "icon": "briefcase",
+    "id": "f92b55b2-48f8-4021-96ab-e13a2a7fff60",
+    "type": "CREDIT"
+  },
+  {
+  "name": "Dividend",
+  "icon": "hand-coin",
+  "id": "b3210507-f007-44c2-a045-9619fcd6fbc7",
+  "type": "CREDIT"
+  },
+  {
+    "name": "Interest",
+    "icon": "percent",
+    "id": "4487ebf6-9da0-4d70-a2a0-36ce06cc7ddf",
+    "type": "CREDIT"
+  },
+  {
+  "name": "Reimbursement",
+  "icon": "cash-refund",
+  "id": "dbe894c3-f0a6-4cd6-9253-0727e5de66fb",
+  "type": "CREDIT"
+  },
+  {
+    "name": "Repayment",
+    "icon": "credit-card-refund",
+    "id": "dbe894c3-f0a6-4cd6-9253-0727e5de66fb",
+    "type": "CREDIT"
+  },
+  {
+    "name": "Refund",
+    "icon": "credit-card-refund",
+    "id": "4e0cefcc-2752-4f3c-af7c-c632376a021d",
+    "type": "CREDIT"
+  },
+  {
+    "name": "Transfer",
+    "icon": "bank-transfer",
+    "id": "773a94b7-b3c9-474e-99dc-a90dffcc4ff5",
+    "type": "TRANSFER"
+  },
+  {
+    "name": "Credit Card Bill",
+    "icon": "credit-card-clock",
+    "id": "1f3942b6-3dec-43f8-8905-32a934aca65f",
+    "type": "TRANSFER"
+  },
+  {
+    "name": "EMI",
+    "icon": "cash-minus",
+    "id": "40a49ec6-c468-4ec6-a289-fadd30aa5e4c",
+    "type": "TRANSFER"
+  },
+  {
+    "name": "Vacation",
+    "icon": "beach",
+    "id": "91c18e01-ddf5-487e-9027-0e06fb71b635",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Hotel",
+    "icon": "bed",
+    "id": "a69ed596-b398-4b5d-ab4e-89bd7e4764fb",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Vehicle Maintenance",
+    "icon": "road-variant",
+    "id": "95fcd3c6-8c6c-490a-9c59-68ffe7fb2663",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Insurance",
+    "icon": "shield-half-full",
+    "id": "891eb00f-e06f-4639-a73b-93fee36568ff",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Grooming",
+    "icon": "hair-dryer",
+    "id": "0b247546-b772-489c-8314-3c8091e0036c",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Food Delivery",
+    "icon": "food-turkey",
+    "id": "b0226a05-c25f-4e93-bd31-983357e3256a",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Household",
+    "icon": "home",
+    "id": "3eed5a10-c928-4948-a219-7328252abc73",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Grocery",
+    "icon": "cart",
+    "id": "9fe23aca-89d8-4541-b3b0-07159b2d157f",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Electronics",
+    "icon": "monitor-cellphone",
+    "id": "0864e28c-8eac-44a9-87c4-342b11ad0701",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Fuel",
+    "icon": "gas-station",
+    "id": "9f9b204b-7135-4440-a654-038b2a330661",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Travel",
+    "icon": "train-car",
+    "id": "d1d5836f-5ba0-4061-8285-3813986e8b46",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Apparel",
+    "icon": "hanger",
+    "id": "2736b7fe-3f9c-4bc4-9b11-66a2be08a16f",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Hospital",
+    "icon": "hospital-building",
+    "id": "f8acb13a-dce0-40c8-b95f-dc9e4ba01e2a",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Others",
+    "icon": "basket",
+    "id": "87aa95e5-4627-4784-9295-7dba27cf52b1",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Entertainment",
+    "icon": "party-popper",
+    "id": "dca09b52-1c7e-404c-be75-4212323abc0c",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Bills",
+    "icon": "receipt-text-outline",
+    "id": "2f86a506-45be-4ec5-aab6-7dd48c8380e4",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Mobile & Internet",
+    "icon": "web",
+    "id": "c56ed67d-9feb-416a-b69b-dbc3fa6ce4d2",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Rent",
+    "icon": "home",
+    "id": "02e04b9f-f6b5-4ff2-a2f5-5ddc9bfbd15c",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Gift",
+    "icon": "gift",
+    "id": "4c9f9cb3-6400-4a9a-83bb-f42c7dd04b72",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Gym",
+    "icon": "dumbbell",
+    "id": "915f72c3-1b6c-4a8c-bf45-edb65d0bc9d5",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Tuition",
+    "icon": "school",
+    "id": "4b7cd729-544b-41f3-8bc2-b3b700d5dc68",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Investment",
+    "icon": "piggy-bank",
+    "id": "9ca275e5-77a1-4b6e-a0c5-f587a286c24d",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Electricity",
+    "icon": "meter-electric-outline",
+    "id": "f9178445-b0a0-4d2d-bdfe-b7cfc155cbc9",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Lending",
+    "icon": "account-arrow-right",
+    "id": "36474b34-d0e7-40fd-b2a5-91cb14a65f4b",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Home Construction",
+    "icon": "office-building-cog",
+    "id": "bd0193cc-b182-42e4-8ca1-064828fc3d99",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Subscription",
+    "icon": "youtube-subscription",
+    "id": "1cd74567-759d-44b3-b0b1-eeb550e79c2c",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Eating Out",
+    "icon": "food-fork-drink",
+    "id": "05c1c4e0-d7c0-4fac-8ea6-dedd5316fc88",
+    "type": "DEBIT"
+  },
+  {
+    "name": "Movie",
+    "icon": "filmstrip",
+    "id": "b2b0b2a9-5b0a-4b7e-8b0a-9b0b2b7e8b0a",
+    "type": "DEBIT"
+  }
+]

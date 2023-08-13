@@ -1,8 +1,15 @@
+import { createContext } from "react";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import superjson from "superjson";
 
-import type { AppRouter } from "@acme/api";
+import type { AppRouter } from "@monetas/api";
+
+let telegramDate: string = null;
+export const setTelegramData = (data: string) => {
+  console.log("setting telegram data", data);
+  telegramDate = data;
+};
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
@@ -10,6 +17,8 @@ const getBaseUrl = () => {
 
   return `http://localhost:3000`; // dev SSR should use localhost
 };
+
+export const MutationContext = createContext<[() => void, () => void]>(null);
 
 export const api = createTRPCNext<AppRouter>({
   config() {
@@ -23,6 +32,11 @@ export const api = createTRPCNext<AppRouter>({
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          headers: () => {
+            return {
+              "x-telegram-data": telegramDate,
+            };
+          },
         }),
       ],
     };
@@ -30,4 +44,4 @@ export const api = createTRPCNext<AppRouter>({
   ssr: false,
 });
 
-export { type RouterInputs, type RouterOutputs } from "@acme/api";
+export { type RouterInputs, type RouterOutputs } from "@monetas/api";

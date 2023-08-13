@@ -1,0 +1,7 @@
+@import 'tailwind/_base.css';
+@import 'tailwind/_components.css';
+@import 'tailwind/_utilities.css';
+
+.rdt {
+    position: static;
+}

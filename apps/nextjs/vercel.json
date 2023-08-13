@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/accountBalance",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}

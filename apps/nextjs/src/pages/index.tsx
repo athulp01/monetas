@@ -1,161 +1,228 @@
-import { useState } from "react";
-import type { NextPage } from "next";
+import React, { type ReactElement } from "react";
 import Head from "next/head";
-import { signIn, signOut } from "next-auth/react";
+import {
+  mdiAccountCash,
+  mdiBankTransferIn,
+  mdiBankTransferOut,
+  mdiCashClock,
+  mdiChartPie,
+} from "@mdi/js";
+import moment from "moment";
 
-import { api, type RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
+import CardBox from "~/components/common/cards/CardBox";
+import { CardTable } from "~/components/common/cards/CardTable";
+import IconRounded from "~/components/common/icon/IconRounded";
+import TableLoading from "~/components/common/loading/TableLoading";
+import NumberDynamic from "~/components/common/misc/NumberDynamic";
+import { Table } from "~/components/common/table/Table";
+import { TableCell } from "~/components/common/table/TableCell";
+import { TableHeader } from "~/components/common/table/TableHeader";
+import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
+import { TableRow } from "~/components/common/table/TableRow";
+import {
+  GET_STARTED_IN_PROGRESS_KEY,
+  GetStarted,
+} from "~/components/dashboard/GetStarted";
+import { EmptyTransactions } from "~/components/transactions/EmptyTransactions";
+import { getPageTitle } from "~/config/config";
+import { IconMap } from "~/config/iconMap";
+import { useLocalStorage } from "~/hooks/useLocalStorage";
+import { DateFormater } from "~/lib/utils";
+import CardBoxWidget from "../components/common/cards/CardBoxWidget";
+import SectionMain from "../components/common/sections/SectionMain";
+import SectionTitleLineWithButton from "../components/common/sections/SectionTitleLineWithButton";
+import LayoutAuthenticated from "../components/layout";
 
-const PostCard: React.FC<{
-  post: RouterOutputs["post"]["all"][number];
-  onPostDelete?: () => void;
-}> = ({ post, onPostDelete }) => {
-  return (
-    <div className="flex flex-row rounded-lg bg-white/10 p-4 transition-all hover:scale-[101%]">
-      <div className="flex-grow">
-        <h2 className="text-2xl font-bold text-pink-400">{post.title}</h2>
-        <p className="mt-2 text-sm">{post.content}</p>
-      </div>
-      <div>
-        <span
-          className="cursor-pointer text-sm font-bold uppercase text-pink-400"
-          onClick={onPostDelete}
-        >
-          Delete
-        </span>
-      </div>
-    </div>
+const Dashboard = () => {
+  const [getStartedInProgess] = useLocalStorage(
+    GET_STARTED_IN_PROGRESS_KEY,
+    false,
   );
-};
 
-const CreatePostForm: React.FC = () => {
-  const utils = api.useContext();
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  const { mutate, error } = api.post.create.useMutation({
-    async onSuccess() {
-      setTitle("");
-      setContent("");
-      await utils.post.all.invalidate();
-    },
+  const incomeQuery = api.reports.getTotalIncomeForMonth.useQuery({
+    month: moment().startOf("day").toDate(),
+  });
+  const expenseQuery = api.reports.getTotalExpensesForMonth.useQuery({
+    month: moment().startOf("day").toDate(),
+  });
+  const netWorthQuery = api.reports.getNetWorth.useQuery();
+  const accountsQuery = api.account.listAccounts.useQuery();
+  const transactionsQuery = api.transaction.listTransactions.useQuery({
+    page: 0,
+    perPage: 5,
+    month: moment().startOf("day").toDate(),
   });
 
-  return (
-    <div className="flex w-full max-w-2xl flex-col p-4">
-      <input
-        className="mb-2 rounded bg-white/10 p-2 text-white"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-      />
-      {error?.data?.zodError?.fieldErrors.title && (
-        <span className="mb-2 text-red-500">
-          {error.data.zodError.fieldErrors.title}
-        </span>
-      )}
-      <input
-        className="mb-2 rounded bg-white/10 p-2 text-white"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Content"
-      />
-      {error?.data?.zodError?.fieldErrors.content && (
-        <span className="mb-2 text-red-500">
-          {error.data.zodError.fieldErrors.content}
-        </span>
-      )}
-      <button
-        className="rounded bg-pink-400 p-2 font-bold"
-        onClick={() => {
-          mutate({
-            title,
-            content,
-          });
-        }}
-      >
-        Create
-      </button>
-    </div>
-  );
-};
+  if (
+    accountsQuery.isLoading ||
+    incomeQuery.isLoading ||
+    expenseQuery.isLoading ||
+    netWorthQuery.isLoading ||
+    transactionsQuery.isLoading
+  ) {
+    return (
+      <SectionMain>
+        <CardBox hasTable>
+          {" "}
+          <TableLoading></TableLoading>
+        </CardBox>
+      </SectionMain>
+    );
+  }
 
-const Home: NextPage = () => {
-  const postQuery = api.post.all.useQuery();
-
-  const deletePostMutation = api.post.delete.useMutation({
-    onSettled: () => postQuery.refetch(),
-  });
+  const haveAnAccount =
+    accountsQuery.data?.totalCount > 0 && !getStartedInProgess;
 
   return (
     <>
       <Head>
-        <title>Create T3 App</title>
-        <meta name="description" content="Generated by create-t3-app" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>{getPageTitle("Dashboard")}</title>
       </Head>
-      <main className="flex h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container mt-12 flex flex-col items-center justify-center gap-4 px-4 py-8">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-pink-400">T3</span> Turbo
-          </h1>
-          <AuthShowcase />
-
-          <CreatePostForm />
-
-          {postQuery.data ? (
-            <div className="w-full max-w-2xl">
-              {postQuery.data?.length === 0 ? (
-                <span>There are no posts!</span>
-              ) : (
-                <div className="flex h-[40vh] justify-center overflow-y-scroll px-4 text-2xl">
-                  <div className="flex w-full flex-col gap-4">
-                    {postQuery.data?.map((p) => {
-                      return (
-                        <PostCard
-                          key={p.id}
-                          post={p}
-                          onPostDelete={() => deletePostMutation.mutate(p.id)}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+      <SectionMain>
+        {haveAnAccount && (
+          <>
+            <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <CardBoxWidget
+                icon={mdiAccountCash}
+                iconColor="info"
+                number={netWorthQuery?.data?.netWorth ?? 0}
+                numberPrefix={"₹"}
+                label="Net worth"
+              />
+              <CardBoxWidget
+                icon={mdiBankTransferOut}
+                iconColor="danger"
+                number={expenseQuery?.data?.totalExpenses ?? 0}
+                numberPrefix={"₹"}
+                label="Expenses"
+              />
+              <CardBoxWidget
+                icon={mdiBankTransferIn}
+                iconColor="success"
+                number={incomeQuery?.data?.totalIncome ?? 0}
+                numberPrefix={"₹"}
+                label="Income"
+              />
             </div>
-          ) : (
-            <p>Loading...</p>
-          )}
-        </div>
-      </main>
+            <SectionTitleLineWithButton
+              icon={mdiChartPie}
+              title="Trends overview"
+            ></SectionTitleLineWithButton>
+
+            <div className="mb-3 mt-3 flex items-center justify-start">
+              <IconRounded
+                icon={mdiCashClock}
+                color="transparent"
+                className="mr-3"
+                bg
+              />
+              <h1 className={`leading-tight`}>Recent Transactions</h1>
+            </div>
+
+            <CardBox hasTable>
+              {transactionsQuery?.data?.transactions?.length === 0 && (
+                <EmptyTransactions></EmptyTransactions>
+              )}
+              {transactionsQuery?.data?.transactions?.length > 0 && (
+                <CardTable>
+                  <Table isPaginated={false}>
+                    <TableHeaderBlock>
+                      <tr>
+                        <TableHeader title={""}></TableHeader>
+                        <TableHeader title="Account"></TableHeader>
+                        <TableHeader title="Type"></TableHeader>
+                        <TableHeader title="Category" isSortable></TableHeader>
+                        <TableHeader title="Payee" isSortable></TableHeader>
+                        <TableHeader title="Date"></TableHeader>
+                        <TableHeader title="Amount"></TableHeader>
+                        <TableHeader title="Tags"></TableHeader>
+                        <TableHeader></TableHeader>
+                      </tr>
+                    </TableHeaderBlock>
+                    <tbody>
+                      {transactionsQuery?.data?.transactions?.map(
+                        (transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell>
+                              <IconRounded
+                                color={"transparent"}
+                                bg
+                                icon={IconMap[transaction.category.icon]}
+                              ></IconRounded>{" "}
+                            </TableCell>
+                            <TableCell>
+                              {transaction.sourceAccount.name}
+                            </TableCell>
+                            <TableCell>
+                              {transaction.type.charAt(0) +
+                                transaction.type.substring(1).toLowerCase()}
+                            </TableCell>
+                            <TableCell>{transaction.category.name}</TableCell>
+                            <TableCell>
+                              {transaction.type === "TRANSFER"
+                                ? transaction?.transferredAccount?.name
+                                : transaction.payee?.name}
+                            </TableCell>
+
+                            <TableCell>
+                              {DateFormater.format(
+                                new Date(transaction.timeCreated),
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              <span
+                                className={
+                                  transaction?.type === "DEBIT"
+                                    ? "font-semibold text-red-600"
+                                    : transaction?.type === "CREDIT"
+                                    ? "font-semibold text-green-500"
+                                    : "font-semibold text-blue-500"
+                                }
+                              >
+                                <NumberDynamic
+                                  value={transaction?.amount}
+                                  prefix={`${
+                                    transaction?.type === "DEBIT"
+                                      ? "-"
+                                      : transaction?.type === "CREDIT"
+                                      ? "+"
+                                      : "  "
+                                  } ₹`}
+                                ></NumberDynamic>
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {transaction?.tags.map((tag) => (
+                                <span
+                                  className={
+                                    "mr-2 rounded-lg border-0 bg-gray-300 p-1 pl-2 pr-2 text-black"
+                                  }
+                                  key={tag.id}
+                                >
+                                  {tag.name}
+                                </span>
+                              ))}
+                            </TableCell>
+                          </TableRow>
+                        ),
+                      )}
+                    </tbody>
+                  </Table>
+                </CardTable>
+              )}
+            </CardBox>
+          </>
+        )}
+        {!haveAnAccount && <GetStarted></GetStarted>}
+      </SectionMain>
     </>
   );
 };
 
-export default Home;
-
-const AuthShowcase: React.FC = () => {
-  const { data: session } = api.auth.getSession.useQuery();
-
-  const { data: secretMessage } = api.auth.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: !!session?.user },
-  );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      {session?.user && (
-        <p className="text-center text-2xl text-white">
-          {session && <span>Logged in as {session?.user?.name}</span>}
-          {secretMessage && <span> - {secretMessage}</span>}
-        </p>
-      )}
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={session ? () => void signOut() : () => void signIn()}
-      >
-        {session ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
+Dashboard.getLayout = function getLayout(page: ReactElement) {
+  return <LayoutAuthenticated>{page}</LayoutAuthenticated>;
 };
+
+export default Dashboard;
