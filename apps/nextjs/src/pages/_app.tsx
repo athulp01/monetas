@@ -52,8 +52,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 
   const title = `Monetas`;
   const description = "Personal finance manager";
-  const url = "https://monetas-app.vercel.app";
-  const image = `https://static.justboil.me/templates/one/repo-tailwind-react.png`;
+  const url = "https://monetas.athulp.in.net";
+  const image = `/ss.png`;
   const imageWidth = "1920";
   const imageHeight = "960";
 
