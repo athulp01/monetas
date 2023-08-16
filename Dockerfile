@@ -26,9 +26,12 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 
 # Set this to use turbo remote cache
-#ENV TURBO_TOKEN value
-#ENV TURBO_TEAM value
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN $TURBO_TOKEN
+ARG TURBO_TEAM
+ENV TURBO_TEAM $TURBO_TEAM
 
+ENV SKIP_ENV_VALIDATION true
 RUN pnpm build
 
 # Production image, copy all the files and run next
