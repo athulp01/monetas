@@ -29,19 +29,26 @@ services:
         condition: service_healthy
     ports:
       - 3000:3000
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+# Check README to understand about env vars
     environment:
       DATABASE_URL: postgresql://monetas:password@db:5432/monetasdb
       DIRECT_URL: postgresql://monetas:password@db:5432/monetasdb
-      NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID:
-      GMAIL_OAUTH_CLIENT_SECRET:
-      NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: http://localhost:3000/api/gmail/oauth/callback
-      PUB_SUB_TOPIC_NAME:
-      TELEGRAM_API_KEY:
-      TELEGRAM_SECRET_TOKEN:
-      NEXT_PUBLIC_TELEGRAM_BOT_NAME:
-      BASE_URL:
+      BASE_URL: http://localhost:3000
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       CLERK_SECRET_KEY:
+# Optional env vars
+#      NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID:
+#      GMAIL_OAUTH_CLIENT_SECRET:
+#      NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: http://localhost:3000/api/gmail/oauth/callback
+#      PUB_SUB_TOPIC_NAME:
+#      TELEGRAM_API_KEY:
+#      TELEGRAM_SECRET_TOKEN:
+#      NEXT_PUBLIC_TELEGRAM_BOT_NAME:
     restart: always
 
 volumes:

@@ -4,19 +4,19 @@ import { z } from "zod";
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars.
  */
+
+const isRunningInVercel = process.env.VERCEL;
+
 const server = z.object({
   DATABASE_URL: z.string().url().min(1),
   DIRECT_URL: z.string().url().min(1),
-  NODE_ENV: z.enum(["development", "test", "production"]),
-  CLERK_SECRET_KEY:
-    process.env.NODE_ENV === "production"
-      ? z.string().min(1)
-      : z.string().min(1).optional(),
-  TELEGRAM_API_KEY: z.string().min(1),
-  TELEGRAM_SECRET_TOKEN: z.string().min(1),
+  CLERK_SECRET_KEY: z.string().min(1),
   BASE_URL: z.string().url().min(1),
-  GMAIL_OAUTH_CLIENT_SECRET: z.string().min(1),
-  PUB_SUB_TOPIC_NAME: z.string().min(1),
+  TELEGRAM_API_KEY: z.string().optional(),
+  TELEGRAM_SECRET_TOKEN: z.string().optional(),
+  GMAIL_OAUTH_CLIENT_SECRET: z.string().optional(),
+  PUB_SUB_TOPIC_NAME: z.string().optional(),
+  NODE_ENV: z.enum(["development", "test", "production"]),
 });
 
 /**
@@ -25,9 +25,9 @@ const server = z.object({
  */
 const client = z.object({
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: z.string().min(1),
-  NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: z.string().url().min(1),
-  NEXT_PUBLIC_TELEGRAM_BOT_NAME: z.string().min(1),
+  NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: z.string().optional(),
+  NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: z.string().optional(),
+  NEXT_PUBLIC_TELEGRAM_BOT_NAME: z.string().optional(),
 });
 
 /**
@@ -37,23 +37,20 @@ const client = z.object({
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
 const processEnv = {
-  DATABASE_URL: process.env.DATABASE_URL,
-  DIRECT_URL: process.env.DATABASE_URL,
+  DATABASE_URL: process.env.DATABASE_URL ?? process.env.POSTGRES_PRISMA_URL,
+  DIRECT_URL: process.env.DIRECT_URL ?? process.env.POSTGRES_URL_NON_POOLING,
   NODE_ENV: process.env.NODE_ENV,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   TELEGRAM_API_KEY: process.env.TELEGRAM_API_KEY,
   TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
-  BASE_URL: process.env.BASE_URL,
+  BASE_URL: process.env.BASE_URL ?? process.env.VERCEL_URL,
   NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: process.env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
   GMAIL_OAUTH_CLIENT_SECRET: process.env.GMAIL_OAUTH_CLIENT_SECRET,
   NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,
   PUB_SUB_TOPIC_NAME: process.env.PUB_SUB_TOPIC_NAME,
   NEXT_PUBLIC_TELEGRAM_BOT_NAME: process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME,
 };
-
-// Don't touch the part below
-// --------------------------
 
 const merged = server.merge(client);
 

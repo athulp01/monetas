@@ -61,6 +61,11 @@ const SettingsPage = () => {
     }&response_type=code&scope=${scopes.join("%20")}&access_type=offline`;
   };
 
+  const isGmailIntegrationEnabled =
+    !!env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID &&
+    !!env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL;
+  const isTelegramIntegrationEnabled = !!env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
+
   return (
     <>
       <Head>
@@ -97,16 +102,17 @@ const SettingsPage = () => {
                   notifications, allowing you to conveniently edit and verify
                   transactions directly from Telegram.
                 </div>
-                {!telegramIntegrationQuery.data?.isConnected && (
-                  <TelegramLoginButton
-                    bottonSize="medium"
-                    dataOnauth={(data) => {
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
-                      addTelegramIntegration(data.id.toString());
-                    }}
-                    botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
-                  />
-                )}
+                {!telegramIntegrationQuery.data?.isConnected &&
+                  isTelegramIntegrationEnabled && (
+                    <TelegramLoginButton
+                      bottonSize="medium"
+                      dataOnauth={(data) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
+                        addTelegramIntegration(data.id.toString());
+                      }}
+                      botName={env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}
+                    />
+                  )}
                 <div className={"mt-12 flex justify-between"}>
                   <span className={"text-xl"}>Gmail</span>
                   {gmailIntegrationQuery.data?.isConnected && (
@@ -127,6 +133,7 @@ const SettingsPage = () => {
                     label={"Authorize"}
                     icon={mdiGmail}
                     iconSize={28}
+                    disabled={!isGmailIntegrationEnabled}
                     color={"success"}
                     small
                   ></BaseButton>
