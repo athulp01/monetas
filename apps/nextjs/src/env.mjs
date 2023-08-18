@@ -5,13 +5,11 @@ import { z } from "zod";
  * built with invalid env vars.
  */
 
-const isRunningInVercel = process.env.VERCEL;
-
 const server = z.object({
   DATABASE_URL: z.string().url().min(1),
   DIRECT_URL: z.string().url().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
-  BASE_URL: z.string().url().min(1),
+  BASE_URL: z.string().url().optional(),
   TELEGRAM_API_KEY: z.string().optional(),
   TELEGRAM_SECRET_TOKEN: z.string().optional(),
   GMAIL_OAUTH_CLIENT_SECRET: z.string().optional(),
@@ -44,7 +42,7 @@ const processEnv = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   TELEGRAM_API_KEY: process.env.TELEGRAM_API_KEY,
   TELEGRAM_SECRET_TOKEN: process.env.TELEGRAM_SECRET_TOKEN,
-  BASE_URL: process.env.BASE_URL ?? process.env.VERCEL_URL,
+  BASE_URL: process.env.BASE_URL ?? (process.env.VERCEL_URL?"https://" + process.env.VERCEL_URL: undefined),
   NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID: process.env.NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID,
   GMAIL_OAUTH_CLIENT_SECRET: process.env.GMAIL_OAUTH_CLIENT_SECRET,
   NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL,

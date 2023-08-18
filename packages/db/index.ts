@@ -1,12 +1,21 @@
+import * as process from "process";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 export * from "@prisma/client";
 
 const globalForPrisma = globalThis as { prisma?: PrismaClient };
+const isVercel = !!process.env.VERCEL;
 
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
+    datasources: isVercel
+      ? {
+          db: {
+            url: process.env.POSTGRES_PRISMA_URL,
+          },
+        }
+      : undefined,
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
