@@ -3,6 +3,20 @@
 [![Lint, type-check and build](https://github.com/athulp01/monetas/actions/workflows/ci.yml/badge.svg)](https://github.com/athulp01/monetas/actions/workflows/ci.yml)
 [![Migrate databases](https://github.com/athulp01/monetas/actions/workflows/migrateDb.yml/badge.svg)](https://github.com/athulp01/monetas/actions/workflows/migrateDb.yml)
 
+# Features
+* Automatically detects transactions in realtime by parsing emails.
+   * List of supported banks and wallets - 
+     1. HDFC accounts
+     2. HDFC credit cards
+     3. ICICI credit cards
+     4. Axis credit cards
+     5. Amazon pay wallet
+* Supports importing of transactions from bank statements.
+  * List of supported banks
+    1. HDFC account statement - CSV format
+    2. HDFC credit card statement - PDF format
+* Stock and mutual fund portfolio tracking.
+* Budgeting
 
 # Installation
 ## Self Hosting
@@ -34,7 +48,7 @@ Monetas can be deployed to cloud like any other nextjs app. Refer the nextjs dep
 
 # Auth setup
 
-# Integrations Setup
+# Integrations setup
 ## Telegram
 
 ## Gmail API
