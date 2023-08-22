@@ -1,5 +1,5 @@
 # Hitting a weird network error when using alpine images
-FROM node:18-bullseye AS base
+FROM node:18-bullseye-slim AS base
 RUN corepack enable && corepack prepare pnpm@8.4.0 --activate
 
 # Install dependencies only when needed
