@@ -23,8 +23,12 @@ RUN pnpm i --frozen-lockfile;
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/nextjs/node_modules ./apps/nextjs/node_modules
+COPY --from=deps /app/packages/api/node_modules ./packages/api/node_modules
+
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
+
 
 # Set this to use turbo remote cache
 ARG TURBO_TOKEN
@@ -33,6 +37,9 @@ ARG TURBO_TEAM
 ENV TURBO_TEAM $TURBO_TEAM
 
 ENV SKIP_ENV_VALIDATION true
+ARG CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY $CLERK_PUBLISHABLE_KEY
+
 RUN pnpm next --version
 RUN pnpm build
 

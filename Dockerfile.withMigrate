@@ -22,6 +22,9 @@ RUN pnpm i --frozen-lockfile;
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/nextjs/node_modules ./apps/nextjs/node_modules
+COPY --from=deps /app/packages/api/node_modules ./packages/api/node_modules
+
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 
