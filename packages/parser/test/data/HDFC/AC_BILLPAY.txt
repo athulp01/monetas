@@ -1,0 +1,11 @@
+Dear Customer,
+Your ICICI Bank Credit Card bill of Rs. 5124.00 for HGadsfdsf475235659 has been processed successfully via on BillPay.
+Details are as follows:
+Biller Name: ICICI Bank Credit Card
+ICICI Card Number:XXXXXXXXXXXX1234
+
+Bill Amount (Rs.): 5124.00
+Payment Date: 07-Aug-2023
+Transaction Reference No: HGadsfdsf47523565
+Did you know you can earn up to Rs.1800 Cashback by setting up AutoPay on your bills?
+Top 3 reasons why customers have switched their bills to AutoPay:

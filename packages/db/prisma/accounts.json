@@ -1,0 +1,50 @@
+[
+  {
+    "balance": 0,
+    "name": "Salary Account",
+    "id": "8cbc0085-319b-479e-874a-c05e97f0114e",
+    "accountTypeId": "427e52ef-edbf-4705-89fe-b4cae2d8a62e",
+    "accountProviderId": "6e7d3e51-3c8d-4b8a-881f-c5864eca0447",
+    "accountNumber": ""
+  },
+  {
+    "balance": 0,
+    "name": "MyZone",
+    "id": "f3c98bb7-021a-48b3-b237-f64cdaa8c387",
+    "accountTypeId": "c8386db9-86fb-4e1e-9841-d5cc336d9ddf",
+    "accountProviderId": "2bc3d601-3ed1-47a2-9b89-ad024fb70f72",
+    "accountNumber": ""
+  },
+  {
+    "balance": 0,
+    "name": "Amazon Pay",
+    "id": "2b857e0e-2fd6-4d3d-a5df-3d4dfb43bcea",
+    "accountTypeId": "c8386db9-86fb-4e1e-9841-d5cc336d9ddf",
+    "accountProviderId": "98a62cb6-3a15-45a9-af5d-4fe13aef5c74",
+    "accountNumber": ""
+  },
+  {
+    "balance": 0,
+    "name": "RubyX",
+    "id": "42f40859-a4d4-48cc-8e11-9cd125251f6a",
+    "accountTypeId": "c8386db9-86fb-4e1e-9841-d5cc336d9ddf",
+    "accountProviderId": "98a62cb6-3a15-45a9-af5d-4fe13aef5c74",
+    "accountNumber": ""
+  },
+  {
+    "balance": 0,
+    "name": "Amazon Pay Wallet",
+    "id": "b68d37c7-b682-4c7b-9566-c4647ea7b573",
+    "accountTypeId": "ec694026-7a12-4f22-859b-4194cb3c3abb",
+    "accountProviderId": "4ff70a84-5d22-46e5-8283-ca08472cb85a",
+    "accountNumber": ""
+  },
+  {
+    "balance": -5875,
+    "name": "Regalia",
+    "id": "a4023d90-e516-457d-8d1c-00824f5d9dda",
+    "accountTypeId": "c8386db9-86fb-4e1e-9841-d5cc336d9ddf",
+    "accountProviderId": "6e7d3e51-3c8d-4b8a-881f-c5864eca0447",
+    "accountNumber": ""
+  }
+]

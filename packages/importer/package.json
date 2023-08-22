@@ -1,0 +1,19 @@
+{
+  "name": "@monetas/importer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/hdfc/index.ts",
+  "devDependencies": {
+    "@monetas/db": "^0.1.0",
+    "@types/papaparse": "^5.3.7",
+    "typescript": "^5.0.4"
+  },
+  "private": true,
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "papaparse": "^5.4.1",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^3.7.107"
+  }
+}

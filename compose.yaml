@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: superadmin
+      DATABASE_USER: monetas
+      DATABASE_NAME: monetasdb
+      DATABASE_USER_PASSWORD: password
+    expose:
+      - 5432
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./scripts/db-init.sh:/docker-entrypoint-initdb.d/db-init.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    container_name: nextjs
+    build:
+      context: ./
+      target: runner
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+# Check README to understand about env vars
+    environment:
+      DATABASE_URL: postgresql://monetas:password@db:5432/monetasdb
+      DIRECT_URL: postgresql://monetas:password@db:5432/monetasdb
+      BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+      CLERK_SECRET_KEY:
+# Optional env vars
+#      NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID:
+#      GMAIL_OAUTH_CLIENT_SECRET:
+#      NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL: http://localhost:3000/api/gmail/oauth/callback
+#      PUB_SUB_TOPIC_NAME:
+#      TELEGRAM_API_KEY:
+#      TELEGRAM_SECRET_TOKEN:
+#      NEXT_PUBLIC_TELEGRAM_BOT_NAME:
+    restart: always
+
+volumes:
+  db:
+    driver: local

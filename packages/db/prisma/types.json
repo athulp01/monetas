@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Credit Card",
+    "id": "c8386db9-86fb-4e1e-9841-d5cc336d9ddf"
+  },
+  {
+    "name": "Cash",
+    "id": "138fe50d-3d0e-4e5b-a42e-87581b7bc6bf"
+  },
+  {
+    "name": "Savings Account",
+    "id": "427e52ef-edbf-4705-89fe-b4cae2d8a62e"
+  },
+  {
+    "name": "Current Account",
+    "id": "833cac1a-2789-4748-aac4-97483bc2c729"
+  },
+  {
+    "name": "Digital Wallet",
+    "id": "ec694026-7a12-4f22-859b-4194cb3c3abb"
+  }
+]

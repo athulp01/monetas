@@ -1,0 +1,37 @@
+[
+  {
+    "monthAndYear": 323,
+    "budgetedAmount": 2345,
+    "id": "35392e5e-abac-41c8-8b17-92a71fbe6f82",
+    "categoryId": "9fe23aca-89d8-4541-b3b0-07159b2d157f",
+    "spent": 0
+  },
+  {
+    "monthAndYear": 323,
+    "budgetedAmount": 124,
+    "id": "bb6c24b8-01cf-45b5-8eb2-0d4e232efa23",
+    "categoryId": "d1d5836f-5ba0-4061-8285-3813986e8b46",
+    "spent": 0
+  },
+  {
+    "monthAndYear": 323,
+    "budgetedAmount": 1000,
+    "id": "8754164a-c796-4c7a-b4e6-4130dc7726d9",
+    "categoryId": "0864e28c-8eac-44a9-87c4-342b11ad0701",
+    "spent": 500
+  },
+  {
+    "monthAndYear": 323,
+    "budgetedAmount": 1000,
+    "id": "9d3a12e8-1805-4f9f-9a94-2d3432f8f0b2",
+    "categoryId": "9f9b204b-7135-4440-a654-038b2a330661",
+    "spent": 199
+  },
+  {
+    "monthAndYear": 323,
+    "budgetedAmount": 10000,
+    "id": "387ba7db-a53a-4d92-97b0-64ff1b3c8f5b",
+    "categoryId": "b0226a05-c25f-4e93-bd31-983357e3256a",
+    "spent": 97
+  }
+]

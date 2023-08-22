@@ -6,6 +6,12 @@
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
+    "db:migrate": {
+      "dependsOn": ["^db:generate"]
+    },
+    "db:seed": {
+      "dependsOn": ["^db:generate"]
+    },
     "db:push": {
       "inputs": ["prisma/schema.prisma"],
       "cache": false
@@ -34,14 +40,23 @@
   "globalEnv": [
     "CI",
     "DATABASE_URL",
-    "DISCORD_CLIENT_ID",
-    "DISCORD_CLIENT_SECRET",
+    "DIRECT_URL",
     "EXPO_ROUTER_APP_ROOT",
-    "NEXTAUTH_SECRET",
-    "NEXTAUTH_URL",
     "NODE_ENV",
     "SKIP_ENV_VALIDATION",
     "VERCEL",
-    "VERCEL_URL"
+    "VERCEL_URL",
+    "POSTGRES_PRISMA_URL",
+    "POSTGRES_URL_NON_POOLING",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "PUB_SUB_TOPIC_NAME",
+    "CLERK_SECRET_KEY",
+    "TELEGRAM_API_KEY",
+    "NEXT_PUBLIC_TELEGRAM_BOT_NAME",
+    "TELEGRAM_SECRET_TOKEN",
+    "BASE_URL",
+    "NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID",
+    "GMAIL_OAUTH_CLIENT_SECRET",
+    "NEXT_PUBLIC_GMAIL_OAUTH_REDIRECT_URL"
   ]
 }

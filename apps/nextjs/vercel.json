@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd ../.. && npx turbo run build --filter=nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/accountBalance",
+      "schedule": "0 5 * * *"
+    }
+  ],
+  "framework": "nextjs",
+  "installCommand": "pnpm --filter \\!expo  install --store=node_modules/.pnpm-store",
+  "regions": ["bom1"]
+}
