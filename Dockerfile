@@ -1,3 +1,4 @@
+## This Dockerfile.withMigrate creates a production image without running migrations and seeding the database. This in turn reduces image size to 350MB from 600MB
 # Hitting a weird network error when using alpine images
 FROM node:18-bullseye-slim AS base
 RUN corepack enable && corepack prepare pnpm@8.4.0 --activate
@@ -32,6 +33,7 @@ ARG TURBO_TEAM
 ENV TURBO_TEAM $TURBO_TEAM
 
 ENV SKIP_ENV_VALIDATION true
+RUN pnpm next --version
 RUN pnpm build
 
 # Production image, copy all the files and run next
@@ -42,16 +44,7 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/tsconfig.json ./
-RUN cd packages/db && pnpm install && cd ../../
-
 ENV NODE_ENV production
-COPY --from=builder /app/scripts/docker-startup-script.sh ./
-RUN chmod +x ./docker-startup-script.sh
-
-COPY --from=builder /app/scripts/setup-telegram.sh ./
-RUN chmod +x ./setup-telegram.sh
 
 COPY --from=builder /app/apps/nextjs/public ./apps/nextjs/public
 
@@ -63,4 +56,5 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
-CMD ["./docker-startup-script.sh"]
+WORKDIR /app/apps/nextjs
+CMD ["node", "server.js"]

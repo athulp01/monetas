@@ -24,6 +24,7 @@ services:
     build:
       context: ./
       target: runner
+      dockerfile: ./Dockerfile.withMigrate
     depends_on:
       db:
         condition: service_healthy
