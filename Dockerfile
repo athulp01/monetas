@@ -43,12 +43,15 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/tsconfig.json ./packages/db
+COPY --from=builder /app/tsconfig.json ./
 RUN cd packages/db && pnpm install && cd ../../
 
 ENV NODE_ENV production
 COPY --from=builder /app/scripts/docker-startup-script.sh ./
 RUN chmod +x ./docker-startup-script.sh
+
+COPY --from=builder /app/scripts/setup-telegram.sh ./
+RUN chmod +x ./setup-telegram.sh
 
 COPY --from=builder /app/apps/nextjs/public ./apps/nextjs/public
 

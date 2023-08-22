@@ -24,7 +24,7 @@
 # Installation
 ## Self Hosting
 1. Edit docker-compose.yml to fill all missing env vars. Refer [here](#environment-variables) for more info.
-2. Run `docker-compose up -d `
+2. Run `docker-compose up -d --build`
 3. Navigate to http://localhost:3000
 
 ## Vercel

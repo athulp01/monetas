@@ -5,3 +5,5 @@ pnpm db:migrate
 pnpm db:seed
 cd ../../apps/nextjs || exit
 node server.js
+
+. setup-telegram.sh
