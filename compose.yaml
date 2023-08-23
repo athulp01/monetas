@@ -25,6 +25,11 @@ services:
       context: ./
       target: runner
       dockerfile: ./Dockerfile.withMigrate
+      args:
+        TURBO_TOKEN:
+        TURBO_TEAM:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+
     depends_on:
       db:
         condition: service_healthy
@@ -40,8 +45,8 @@ services:
       DATABASE_URL: postgresql://monetas:password@db:5432/monetasdb
       DIRECT_URL: postgresql://monetas:password@db:5432/monetasdb
       BASE_URL: http://localhost:3000
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      CLERK_SECRET_KEY:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_d29ya2FibGUtYmF0LTg5LmNsZXJrLmFjY291bnRzLmRldiQ
+      CLERK_SECRET_KEY: sk_test_7nhJtEGSt1hKyequyazCiUWFzA6HVz1hI62ND7nkqZ
 # Optional env vars
 #      NEXT_PUBLIC_GMAIL_OAUTH_CLIENT_ID:
 #      GMAIL_OAUTH_CLIENT_SECRET:
