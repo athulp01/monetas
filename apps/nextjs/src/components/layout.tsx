@@ -27,6 +27,9 @@ type Props = {
 
 export default function LayoutAuthenticated({ children }: Props) {
   const [isCollapsed, setIsCollapsed] = React.useState(true);
+  const [isToggled, setIsToggled] = React.useState(false);
+  const [sidebarBreakpointReached, setSidebarBreakpointReached] =
+    React.useState(false);
   const loadingBarRef = useRef();
   const router = useRouter();
 
@@ -39,10 +42,29 @@ export default function LayoutAuthenticated({ children }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const hideLoadingBar: () => void = loadingBarRef.current?.complete;
 
+  const handleSidebarBreakpointChange = (isBreakpointReached: boolean) => {
+    console.log("isBreakpointReached", isBreakpointReached);
+    if (isBreakpointReached) {
+      setIsToggled(false);
+      setIsCollapsed(false);
+    } else {
+      setIsCollapsed(true);
+    }
+    setSidebarBreakpointReached(isBreakpointReached);
+  };
+
   return (
     <div className={"flex"}>
       <aside className={"sticky top-0 h-screen"}>
-        <Sidebar collapsed={isCollapsed} className={"absolute max-h-screen"}>
+        <Sidebar
+          toggled={isToggled}
+          onBreakPoint={handleSidebarBreakpointChange}
+          backgroundColor={"white"}
+          onBackdropClick={() => setIsToggled(false)}
+          collapsed={isCollapsed}
+          className={"absolute max-h-screen"}
+          breakPoint={"sm"}
+        >
           <div>
             <div
               className={`mt-5 flex min-w-full ${
@@ -59,12 +81,14 @@ export default function LayoutAuthenticated({ children }: Props) {
                   />
                 </div>
               )}
-              <div onClick={() => setIsCollapsed(!isCollapsed)}>
-                <BaseIcon
-                  path={isCollapsed ? mdiMenu : mdiBackburger}
-                  size={48}
-                />
-              </div>
+              {!isToggled && (
+                <div onClick={() => setIsCollapsed(!isCollapsed)}>
+                  <BaseIcon
+                    path={isCollapsed ? mdiMenu : mdiBackburger}
+                    size={48}
+                  />
+                </div>
+              )}
             </div>
             <div className={"mt-6"}>
               <Menu
@@ -143,7 +167,10 @@ export default function LayoutAuthenticated({ children }: Props) {
       </aside>
       <main className={"min-h-screen w-screen overflow-hidden"}>
         <LoadingBar height={6} color="black" ref={loadingBarRef} />
-        <NavBar></NavBar>
+        <NavBar
+          isHambugerVisible={sidebarBreakpointReached}
+          onHamburgerClick={() => setIsToggled(true)}
+        ></NavBar>
         <TopLoadingBarStateContext.Provider
           value={{ show: showLoadingBar, hide: hideLoadingBar }}
         >
@@ -152,7 +179,4 @@ export default function LayoutAuthenticated({ children }: Props) {
       </main>
     </div>
   );
-  // ) : (
-  //
-  // )
 }
