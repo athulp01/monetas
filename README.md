@@ -5,6 +5,12 @@
 
 ![screeshot](screenshots/ss.png)
 
+# Demo
+
+URL: https://monetas-athulp01.vercel.app
+username: demo+clerk_test@monetas.github
+password: monetas1234
+
 # Features
 * Automatically detects transactions in realtime by parsing emails.
    * List of supported banks and wallets - 
