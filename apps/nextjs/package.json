@@ -13,7 +13,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.17.1",
+    "@clerk/nextjs": "^4.23.2",
     "@hookform/resolvers": "^2.9.11",
     "@mdi/js": "^7.0.96",
     "@monetas/api": "^0.1.0",
