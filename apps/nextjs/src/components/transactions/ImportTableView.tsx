@@ -305,7 +305,7 @@ const ImportTableView = (props: Props) => {
                     onChange={handleFileUpload}
                   ></input>
                   <BaseButton
-                    onClick={void importForm.handleSubmit(onImportFormSubmit)}
+                    onClick={importForm.handleSubmit(onImportFormSubmit)}
                     className={"ml-4"}
                     icon={mdiContentSave}
                     // form={"importForm"}
