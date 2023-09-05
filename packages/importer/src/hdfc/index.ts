@@ -58,42 +58,48 @@ const parseCCStatementLine = (lastLine: string): ParsedTransaction => {
   return null;
 };
 
-export const parseHDFCCreditCardStatement = async (data: ArrayBuffer) => {
+export const parseHDFCCreditCardStatement = async (
+  data: File,
+  password?: string,
+) => {
+  const arrayBuffer = await data.arrayBuffer();
   return new Promise<ParsedStatementResult>((resolve) => {
     const transactions: ParsedTransaction[] = [];
-    void getDocument(data).promise.then(async (doc) => {
-      for (let i = 0; i < doc.numPages; ++i) {
-        const page = await doc.getPage(i + 1);
-        const textItems = (await page.getTextContent()).items;
-        let finalString = "";
-        let lineNumber = 0;
-        let transactionTableStart = false;
-        for (let i = 0; i < textItems.length; i++) {
-          const textItem = textItems[i] as TextItem;
-          if ("transform" in textItem) {
-            if (
-              "transform" in textItems[i] &&
-              lineNumber != textItem.transform[5]
-            ) {
-              if (lineNumber != 0) {
-                if (transactionTableStart) {
-                  const transaction = parseCCStatementLine(finalString);
-                  transaction && transactions.push(transaction);
-                } else {
-                  if (finalString.includes("Domestic Transactions")) {
-                    transactionTableStart = true;
+    void getDocument({ data: arrayBuffer, password: password }).promise.then(
+      async (doc) => {
+        for (let i = 0; i < doc.numPages; ++i) {
+          const page = await doc.getPage(i + 1);
+          const textItems = (await page.getTextContent()).items;
+          let finalString = "";
+          let lineNumber = 0;
+          let transactionTableStart = false;
+          for (let i = 0; i < textItems.length; i++) {
+            const textItem = textItems[i] as TextItem;
+            if ("transform" in textItem) {
+              if (
+                "transform" in textItems[i] &&
+                lineNumber != textItem.transform[5]
+              ) {
+                if (lineNumber != 0) {
+                  if (transactionTableStart) {
+                    const transaction = parseCCStatementLine(finalString);
+                    transaction && transactions.push(transaction);
+                  } else {
+                    if (finalString.includes("Domestic Transactions")) {
+                      transactionTableStart = true;
+                    }
                   }
+                  finalString = "";
                 }
-                finalString = "";
+                lineNumber = textItem.transform[5] as number;
               }
-              lineNumber = textItem.transform[5] as number;
+              finalString += textItem.str;
             }
-            finalString += textItem.str;
           }
         }
-      }
-      return resolve({ transactions, errors: 0 });
-    });
+        return resolve({ transactions, errors: 0 });
+      },
+    );
   });
 };
 

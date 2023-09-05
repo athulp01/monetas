@@ -46,11 +46,16 @@ DIRECT_URL=<POSTGRES_URL_NON_POOLING> DATABASE_URL=$DIRECT_URL pnpm db:migrate
 DIRECT_URL=<POSTGRES_URL_NON_POOLING> DATABASE_URL=$DIRECT_URL pnpm db:seed
 ```
 5. Setup auth by following this [section](#auth-setup)
-6. Setup integrations by following this [section](#integrations-setup)
-7. Click the below button which will take you through the rest of process.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fathulp01%2Fmonetas&project-name=monetas&repository-name=monetas&demo-title=Monetas&demo-url=https%3A%2F%2Fmonetas.vercel.app&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a)
-8. Integrations are disabled by default. If you want to enable them, follow this [section](#integrations-setup) and then add the env vars to [vercel project](https://vercel.com/docs/projects/environment-variables).
+6. Install vercel cli by running `npm i -g vercel`
+7. Run `vercel login` and follow the instructions.
+8. Run the below command to deploy the app. Make sure to replace the values of `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` with the values obtained in step 5.
+```bash
+# Replace the values of NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY with the values obtained in step 5
+# When prompted for the project directory, enter apps/nextjs
+vercel -b NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<placeholder> -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<placeholder> -e CLERK_SECRET_KEY=<placeholder>
+```
+9. Go to vercel dashboard and navigate to the project which was created from the above step, click on storage tab and then link the database created in step 2 to the project.
+10. Integrations are disabled by default. If you want to enable them, follow this [section](#integrations-setup) and then add the env vars to [vercel project](https://vercel.com/docs/projects/environment-variables) and then redeploy.
 
 ## Other Cloud Provider
 Monetas can be deployed to cloud like any other nextjs app. Refer the nextjs deployment instructions [here](https://nextjs.org/docs/pages/building-your-application/deploying#other-services).

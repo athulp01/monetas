@@ -11,10 +11,6 @@ import { toast } from "react-toastify";
 import { v4 as uuid } from "uuid";
 
 import {
-  parseHDFCAccountStatement,
-  parseHDFCCreditCardStatement,
-} from "@monetas/importer";
-import {
   type ParsedStatementResult,
   type ParsedTransaction,
 } from "@monetas/importer/src/types";
@@ -24,6 +20,7 @@ import { TransactionTypeOptions } from "~/utils/constants";
 import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { type AccountList } from "~/components/accounts/AccountsTableView";
 import { Alert } from "~/components/common/alerts/Alert";
+import CardBoxTextInputModal from "~/components/common/cards/CardBoxTextInputModal";
 import { CardTable } from "~/components/common/cards/CardTable";
 import TableLoading from "~/components/common/loading/TableLoading";
 import { Table } from "~/components/common/table/Table";
@@ -32,6 +29,13 @@ import { TableHeaderBlock } from "~/components/common/table/TableHeaderBlock";
 import { TableRow } from "~/components/common/table/TableRow";
 import { type PayeeList } from "~/components/payees/PayeeTableView";
 import { HDFCInstructions } from "~/components/transactions/HDFCInstructions";
+import {
+  checkIfPasswordIsCorrect,
+  isPdfPasswordProtected,
+  isStatementImportSupported,
+  parseCSVStatement,
+  parsePDFStatement,
+} from "~/components/transactions/importUtils";
 import { ITEMS_PER_PAGE } from "~/config/site";
 import { useDialog } from "~/hooks/useDialog";
 import BaseButton from "../common/buttons/BaseButton";
@@ -60,15 +64,6 @@ interface Props {
   handleSave: () => void;
 }
 
-// enum STATE {
-//   ACCOUNT_SELECTION,
-//   FILE_UPLOAD,
-//   IMPORT_SUCCESS,
-//   IMPORT_FAILED,
-//   IMPORT_IN_PROGRESS,
-//   IMPORT_PARTIAL_SUCCESS,
-// }
-
 const tryFindPayee = (description: string, payees: PayeeList): PayeeList[0] => {
   return payees.find((payee) => {
     return description.toLowerCase().includes(payee.name.toLowerCase());
@@ -80,6 +75,8 @@ const ImportTableView = (props: Props) => {
   const importForm = useForm<TransactionImportForm>();
   const targetAccountForm = useForm<{ targetAccount: AccountList[0] }>();
   const dialog = useDialog();
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [uploadedFile, setUploadFile] = useState<File>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
   const [parsingError, setParsingError] = useState<string>(null);
@@ -181,6 +178,42 @@ const ImportTableView = (props: Props) => {
     [parsedStatement, currentPage],
   );
 
+  const handlePDFFileUpload = async (file: File, password?: string) => {
+    return parsePDFStatement(
+      targetAccountForm.watch("targetAccount"),
+      file,
+      password,
+    )
+      .then((result) => {
+        setParsedStatement(result);
+        const convertedData = convertToFormData(result.transactions);
+        setParsedTransactions({ form: convertedData });
+        importForm.reset({ form: convertedData });
+      })
+      .catch((err: unknown) => {
+        setParsingError(err.toString());
+        console.log(err.toString());
+      })
+      .finally(topLoadingBar.hide);
+  };
+
+  const handleCSVFileUpload = async (file: File) => {
+    try {
+      const result = await parseCSVStatement(
+        targetAccountForm.watch("targetAccount"),
+        file,
+      );
+      setParsedStatement(result);
+      const convertedData = convertToFormData(result.transactions);
+      setParsedTransactions({ form: convertedData });
+      importForm.reset({ form: convertedData });
+    } catch (err: unknown) {
+      setParsingError(err.toString());
+      console.log(err);
+    } finally {
+      topLoadingBar.hide();
+    }
+  };
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentPage(0);
     setParsingError(null);
@@ -199,37 +232,33 @@ const ImportTableView = (props: Props) => {
     }
     topLoadingBar.show();
     if (file.name.toLowerCase().endsWith(".pdf")) {
-      file
-        .arrayBuffer()
-        .then((buffer) => {
-          return parseHDFCCreditCardStatement(buffer);
+      isPdfPasswordProtected(file)
+        .then((isProtected) => {
+          if (isProtected) {
+            topLoadingBar.hide();
+            setIsPasswordModalOpen(true);
+            setUploadFile(file);
+          } else {
+            void handlePDFFileUpload(file);
+          }
         })
-        .then((result) => {
-          setParsedStatement(result);
-          const convertedData = convertToFormData(result.transactions);
-          setParsedTransactions({ form: convertedData });
-          importForm.reset({ form: convertedData });
-        })
-        .catch((err) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          setParsingError(err);
+        .catch((err: string) => {
           console.log(err);
-        })
-        .finally(topLoadingBar.hide);
+          setParsingError(err.toString());
+        });
     } else {
-      parseHDFCAccountStatement(file)
-        .then((result) => {
-          setParsedStatement(result);
-          const convertedData = convertToFormData(result.transactions);
-          setParsedTransactions({ form: convertedData });
-          importForm.reset({ form: convertedData });
-        })
-        .catch((err) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          setParsingError(err);
-          console.log(err);
-        })
-        .finally(topLoadingBar.hide);
+      void handleCSVFileUpload(file);
+    }
+  };
+
+  const handlePasswordSubmit = async (password: string) => {
+    const isCorrect = await checkIfPasswordIsCorrect(uploadedFile, password);
+    if (isCorrect) {
+      setIsPasswordModalOpen(false);
+      topLoadingBar.show();
+      void handlePDFFileUpload(uploadedFile, password);
+    } else {
+      toast.error("Incorrect password");
     }
   };
 
@@ -248,6 +277,13 @@ const ImportTableView = (props: Props) => {
         isActive={dialog.isOpen}
         onCancel={dialog.hide}
       ></CardBoxModal>
+      <CardBoxTextInputModal
+        title={"Enter the password to open the PDF file"}
+        buttonColor={"success"}
+        buttonLabel={"Confirm"}
+        isActive={isPasswordModalOpen}
+        onConfirm={handlePasswordSubmit}
+      ></CardBoxTextInputModal>
       <CardTable>
         {!targetAccountForm.watch("targetAccount") && (
           <>
@@ -265,15 +301,17 @@ const ImportTableView = (props: Props) => {
                   control={targetAccountForm.control}
                   form="targetAccountForm"
                   name="targetAccount"
-                  options={accountsQuery?.data.accounts.filter(
-                    (account) => account.accountProvider.name === "HDFC Bank",
+                  options={accountsQuery?.data.accounts.filter((account) =>
+                    isStatementImportSupported(account),
                   )}
                 ></ControlledSelect>
               </div>
             </div>
             <Alert
               showIcon
-              text={"Statements from HDFC bank is only supported currently"}
+              text={
+                "Statements from HDFC & ICICI bank are only supported currently"
+              }
               type={"info"}
             ></Alert>
           </>
@@ -290,6 +328,7 @@ const ImportTableView = (props: Props) => {
                   form="targetAccountForm"
                   name="targetAccount"
                   options={accountsQuery?.data.accounts}
+                  isDisabled={!!parsedStatement}
                 ></ControlledSelect>
               </div>
               <div className="ml-6 mt-4 sm:mr-6 sm:mt-0">
