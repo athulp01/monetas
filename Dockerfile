@@ -53,8 +53,8 @@ ENV NODE_ENV production
 
 COPY --from=builder /app/apps/nextjs/public ./apps/nextjs/public
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/nextjs/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/nextjs/.next/static ./apps/nextjs/.next/static
+COPY --from=builder /app/apps/nextjs/.next/standalone ./
+COPY --from=builder /app/apps/nextjs/.next/static ./apps/nextjs/.next/static
 
 COPY scripts/cron cron
 RUN chmod 664 cron
