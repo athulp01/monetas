@@ -44,11 +44,10 @@ RUN pnpm build
 
 # Production image, copy all the files and run next
 FROM base AS runner
+RUN apt-get update && apt-get -y install cron
+RUN apt-get install -y curl
+
 WORKDIR /app
-
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
 
 ENV NODE_ENV production
 
@@ -57,7 +56,10 @@ COPY --from=builder /app/apps/nextjs/public ./apps/nextjs/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/nextjs/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/nextjs/.next/static ./apps/nextjs/.next/static
 
-USER nextjs
+COPY scripts/cron cron
+RUN chmod 664 cron
+
+RUN crontab cron
 
 EXPOSE 3000
 
@@ -65,4 +67,4 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 WORKDIR /app/apps/nextjs
-CMD ["node", "server.js"]
+CMD service cron start ; node server.js

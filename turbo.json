@@ -3,8 +3,7 @@
   "globalDependencies": ["**/.env"],
   "pipeline": {
     "db:generate": {
-      "inputs": ["prisma/schema.prisma"],
-      "cache": false
+      "inputs": ["prisma/schema.prisma"]
     },
     "db:migrate": {
       "dependsOn": ["^db:generate"]

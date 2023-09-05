@@ -8,6 +8,9 @@ export const addGmailIntegration = (
 export const getGmailIntegration = (client: PrismaClient) =>
   client.gmailOauthDetails.findFirst();
 
+export const getGmailIntegrations = (client: PrismaClient) =>
+  client.gmailOauthDetails.findMany();
+
 export const getGmailIntegrationByEmailAddress = (
   email: string,
   Prisma: PrismaClient,

@@ -5,4 +5,5 @@ pnpm db:migrate
 pnpm db:seed
 cd ../../apps/nextjs || exit
 
+service cron start
 node server.js
