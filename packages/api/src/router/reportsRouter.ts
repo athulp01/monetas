@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   getNetExpensePerCategory,
   getNetExpensePerDay,
+  getNetExpensePerMonth,
   getNetExpensePerPayee,
   getNetWorth,
   getTotalExpensesForTheMonth,
@@ -39,10 +40,16 @@ export const reportsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
+      if (input.precision === "month") {
+        return await getNetExpensePerMonth(
+          input.rangeStart,
+          input.rangeEnd,
+          ctx.prisma,
+        );
+      }
       return await getNetExpensePerDay(
         input.rangeStart,
         input.rangeEnd,
-        input.precision,
         ctx.prisma,
       );
     }),

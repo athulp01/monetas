@@ -1,3 +1,4 @@
+/* eslint-disable-file @typescript-eslint/no-misused-promises */
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { mdiContentSave } from "@mdi/js";
 import { TRANSACTION_TYPE } from "@prisma/client";

@@ -83,13 +83,24 @@ export const getNetWorth = (client: PrismaClient) => {
 export const getNetExpensePerDay = (
   rangeStart: Date,
   rangeEnd: Date,
-  precision: "day" | "month",
   client: PrismaClient,
 ) => {
   return client.$queryRaw<ExpenseReportDaily>`SELECT date_trunc('day',"timeCreated"::date) as "timeCreated", sum(amount)
 FROM "Transaction"
 where type = 'DEBIT' and "timeCreated" >= ${rangeStart.toISOString()}::timestamp and "timeCreated" < ${rangeEnd.toISOString()}::timestamp
 GROUP BY date_trunc('day',"timeCreated"::date)
+ORDER BY "timeCreated" ASC;`;
+};
+
+export const getNetExpensePerMonth = (
+  rangeStart: Date,
+  rangeEnd: Date,
+  client: PrismaClient,
+) => {
+  return client.$queryRaw<ExpenseReportDaily>`SELECT date_trunc('month',"timeCreated"::date) as "timeCreated", sum(amount)
+FROM "Transaction"
+where type = 'DEBIT' and "timeCreated" >= ${rangeStart.toISOString()}::timestamp and "timeCreated" < ${rangeEnd.toISOString()}::timestamp
+GROUP BY date_trunc('month',"timeCreated"::date)
 ORDER BY "timeCreated" ASC;`;
 };
 

@@ -21,6 +21,7 @@
     "@monetas/importer": "^1.0.0",
     "@monetas/parser": "^1.0.0",
     "@monetas/tailwind-config": "^0.1.0",
+    "@nivo/bar": "^0.80.0",
     "@nivo/calendar": "^0.80.0",
     "@nivo/colors": "^0.80.0",
     "@nivo/core": "^0.80.0",
