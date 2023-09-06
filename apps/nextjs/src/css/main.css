@@ -5,3 +5,7 @@
 .rdt {
     position: static;
 }
+
+.rdtPicker {
+    right: 0;
+}
