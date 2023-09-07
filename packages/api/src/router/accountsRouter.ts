@@ -8,6 +8,7 @@ import {
   getAccountTypes,
   getAccounts,
   logAccountBalance,
+  searchAccounts,
   updateAccount,
 } from "../repository/accountsRepo";
 import {
@@ -22,11 +23,20 @@ export const accountRouter = createTRPCRouter({
       z
         .object({
           type: z.string().uuid().optional(),
+          query: z.string().optional(),
           provider: z.string().optional(),
         })
         .optional(),
     )
     .query(async ({ input, ctx }) => {
+      if (input?.query) {
+        const accounts = await searchAccounts(input.query, ctx.prisma);
+        const totalCount = await ctx.prisma.financialAccount.count();
+        return {
+          totalCount,
+          accounts,
+        };
+      }
       const accounts = await getAccounts(
         input?.provider,
         input?.type,

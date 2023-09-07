@@ -24,6 +24,17 @@ interface Props {
   portal?: HTMLElement;
 }
 
+// const Input = (props: InputProps) => {
+//   if (props.isHidden) {
+//     return <components.Input {...props} />;
+//   }
+//   return (
+//     <input
+//       type="search"
+//       className="bg-gray-50 text-sm text-gray-900 focus:ring-0 focus:ring-offset-0"
+//     ></input>
+//   );
+// };
 export const ControlledSelect = ({
   control,
   className,
@@ -64,17 +75,19 @@ export const ControlledSelect = ({
           getOptionLabel={(option) => option.name}
           components={{
             IndicatorSeparator: () => null,
+            // Input,
           }}
           getOptionValue={(option) => option.id}
           options={options}
           menuPortalTarget={portal}
           styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
           form={form}
-          isSearchable={false}
+          isSearchable={true}
           classNames={{
             control: () =>
               " w-full text-sm text-gray-900 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
-            input: () => "border-0 text-white py-4",
+            input: () =>
+              "border-0 text-white py-4 focus:ring-0 focus:ring-offset-0",
           }}
         />
       )}

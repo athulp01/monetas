@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -19,6 +19,7 @@ import TableLoading from "../common/loading/TableLoading";
 import NumberDynamic from "../common/misc/NumberDynamic";
 import "react-datetime/css/react-datetime.css";
 import moment from "moment";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
@@ -59,10 +60,17 @@ const BudgetTableView = () => {
   const [isCreateMode, setIsCreateMode] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<moment.Moment>(moment());
 
+  const searchForm = useForm<{ query: string }>();
+  const [searchQuery, setSearchQuery] = useState<string>();
+
   const categoriesQuery = api.category.listCategories.useQuery();
   const budgetQuery = api.budget.listBudgets.useQuery({
     month: selectedMonth.toDate(),
   });
+
+  const handleSearchFormSubmit = (data: { query: string }) => {
+    setSearchQuery(data.query);
+  };
 
   const budgetCreateMutation = api.budget.addBudget.useMutation({
     onSuccess: async () => {
@@ -196,7 +204,12 @@ const BudgetTableView = () => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <SearchInput></SearchInput>
+          <SearchInput
+            placeholder={"Search budgets"}
+            onEnter={searchForm.handleSubmit(handleSearchFormSubmit)}
+            control={searchForm.control}
+            name={"query"}
+          ></SearchInput>
           <div className="ml-6 mt-4 flex sm:mr-6 sm:mt-0">
             <Datetime
               timeFormat={false}

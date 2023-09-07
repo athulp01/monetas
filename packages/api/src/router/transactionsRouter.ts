@@ -17,6 +17,7 @@ import {
   getTransaction,
   getTransactions,
   getTransactionsCount,
+  searchTransactions,
   updateTransaction,
 } from "../repository/transactionsRepo";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -222,15 +223,53 @@ export const transactionRouter = createTRPCRouter({
       );
       return response;
     }),
-  listTransactions: protectedProcedure
+  searchTransactions: protectedProcedure
     .input(
       z.object({
+        query: z.string(),
         page: z.number().min(0),
         perPage: z.number().min(1).default(10),
         month: z.date(),
       }),
     )
     .query(async ({ input, ctx }) => {
+      const transactionList = await searchTransactions(
+        input.query,
+        input.page,
+        input.perPage,
+        input.month,
+        ctx.prisma,
+      );
+      const totalCount = await getTransactionsCount(input.month, ctx.prisma);
+      return {
+        totalCount,
+        transactions: transactionList,
+      };
+    }),
+  listTransactions: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().min(0),
+        query: z.string().optional(),
+        perPage: z.number().min(1).default(10),
+        month: z.date(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      if (input.query) {
+        const transactionList = await searchTransactions(
+          input.query,
+          input.page,
+          input.perPage,
+          input.month,
+          ctx.prisma,
+        );
+        const totalCount = await getTransactionsCount(input.month, ctx.prisma);
+        return {
+          totalCount,
+          transactions: transactionList,
+        };
+      }
       const transactionList = await getTransactions(
         input.page,
         input.perPage,

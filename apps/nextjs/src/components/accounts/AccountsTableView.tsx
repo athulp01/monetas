@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -17,6 +17,7 @@ import TableLoading from "../common/loading/TableLoading";
 import NumberDynamic from "../common/misc/NumberDynamic";
 import "react-datetime/css/react-datetime.css";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
@@ -50,9 +51,18 @@ const AccountsTableView = () => {
   const dialog = useDialog();
   const topLoadingBar = useContext(TopLoadingBarStateContext);
 
+  const searchForm = useForm<{ query: string }>();
+  const [searchQuery, setSearchQuery] = useState<string>();
+
   const providersQuery = api.account.listAccountProviders.useQuery();
   const typesQuery = api.account.listAccountTypes.useQuery();
-  const accountsQuery = api.account.listAccounts.useQuery();
+  const accountsQuery = api.account.listAccounts.useQuery({
+    query: searchQuery,
+  });
+
+  const handleSearchFormSubmit = (data: { query: string }) => {
+    setSearchQuery(data.query);
+  };
 
   const accountCreateMutation = api.account.addAccount.useMutation({
     onSuccess: async () => {
@@ -193,7 +203,12 @@ const AccountsTableView = () => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <SearchInput></SearchInput>
+          <SearchInput
+            placeholder={"Search accounts"}
+            onEnter={searchForm.handleSubmit(handleSearchFormSubmit)}
+            control={searchForm.control}
+            name={"query"}
+          ></SearchInput>
           <div>
             <BaseButton
               icon={mdiPlusThick}

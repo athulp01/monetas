@@ -40,7 +40,7 @@ import "@yaireo/tagify/dist/tagify.css";
 import { useRouter } from "next/router";
 import { TRANSACTION_TYPE } from "@prisma/client";
 import Tags from "@yaireo/tagify/dist/react.tagify";
-import { Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { TopLoadingBarStateContext } from "~/utils/contexts";
 import { CardTable } from "~/components/common/cards/CardTable";
@@ -74,11 +74,14 @@ const TransactionsTableView = () => {
     useTable<TransactionsList[0]>();
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(moment());
+  const searchForm = useForm<{ query: string }>();
+  const [searchQuery, setSearchQuery] = useState<string>();
   const [hack, setHack] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const transactionsQuery = api.transaction.listTransactions.useQuery({
     page: currentPage,
+    query: searchQuery ?? undefined,
     perPage: ITEMS_PER_PAGE,
     month: selectedMonth.toDate(),
   });
@@ -109,6 +112,10 @@ const TransactionsTableView = () => {
       setMode("VIEW");
     }
   }, [router]);
+
+  const handleSearchFormSubmit = (data: { query: string }) => {
+    setSearchQuery(data.query);
+  };
 
   const handleCardEdit = (index: number) => {
     setIsInEditMode(index);
@@ -293,7 +300,12 @@ const TransactionsTableView = () => {
             onSubmit={editForm.handleSubmit(onEditFormSubmit)}
           ></form>
           <div className="flex min-w-full flex-wrap items-center justify-between pb-4">
-            <SearchInput></SearchInput>
+            <SearchInput
+              placeholder={"Search transactions"}
+              onEnter={searchForm.handleSubmit(handleSearchFormSubmit)}
+              control={searchForm.control}
+              name={"query"}
+            ></SearchInput>
             <div className="ml-6 mt-4 flex sm:mr-6 sm:mt-0">
               <Datetime
                 timeFormat={false}

@@ -12,6 +12,41 @@ export const getTransactionsCount = (month: Date, client: PrismaClient) => {
     },
   });
 };
+
+export const searchTransactions = (
+  query: string,
+  page: number,
+  perPage: number,
+  month: Date,
+  client: PrismaClient,
+) => {
+  const dateMoment = moment(month);
+  return client.transaction.findMany({
+    include: {
+      sourceAccount: true,
+      payee: true,
+      transferredAccount: true,
+      category: true,
+      tags: true,
+    },
+    skip: page * perPage,
+    take: perPage,
+    orderBy: { timeCreated: "desc" },
+    where: {
+      OR: [
+        { sourceAccount: { name: { search: query } } },
+        { transferredAccount: { name: { search: query } } },
+        { payee: { name: { search: query } } },
+        { category: { name: { search: query } } },
+        { tags: { some: { name: { search: query } } } },
+      ],
+      timeCreated: {
+        gt: dateMoment.startOf("month").toISOString(),
+        lte: dateMoment.endOf("month").toISOString(),
+      },
+    },
+  });
+};
 export const getTransactions = (
   page: number,
   perPage: number,

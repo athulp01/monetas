@@ -4,6 +4,16 @@ export type AccountBalanceHistory = {
   date: Date;
   avg: number;
 };
+
+export const searchAccounts = (search: string, client: PrismaClient) => {
+  return client.financialAccount.findMany({
+    include: { accountType: true, accountProvider: true },
+    orderBy: { name: "asc" },
+    where: {
+      OR: [{ name: { search: search } }, { accountNumber: { search: search } }],
+    },
+  });
+};
 export const getAccounts = (
   providerName: string,
   typeId: string,

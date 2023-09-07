@@ -1,6 +1,14 @@
 import React from "react";
+import { Controller } from "react-hook-form";
 
-export const SearchInput = () => {
+interface Props {
+  placeholder?: string;
+  onEnter?: () => void;
+  control: any;
+  name: string;
+}
+
+export const SearchInput = (props?: Props) => {
   return (
     <div className="relative ml-6">
       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -18,12 +26,23 @@ export const SearchInput = () => {
           ></path>
         </svg>
       </div>
-      <input
-        type="text"
-        id="table-search"
-        className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder="Search transactions"
-      ></input>
+      <Controller
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        control={props.control}
+        name={props.name}
+        defaultValue={""}
+        render={({ field }) => (
+          <input
+            {...field}
+            type="search"
+            onKeyDown={(e) => {
+              e.key === "Enter" && props.onEnter && props.onEnter();
+            }}
+            className="block w-80 rounded-lg border border-gray-300 bg-gray-50 p-2 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-0 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            placeholder={`${props?.placeholder ?? "Search"}`}
+          ></input>
+        )}
+      ></Controller>
     </div>
   );
 };

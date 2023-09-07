@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   mdiCancel,
   mdiCheck,
@@ -15,6 +15,7 @@ import BaseButtons from "../common/buttons/BaseButtons";
 import "flowbite";
 import TableLoading from "../common/loading/TableLoading";
 import "react-datetime/css/react-datetime.css";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
@@ -45,6 +46,13 @@ const PayeeTableView = () => {
 
   const dialog = useDialog();
   const topLoadingBar = useContext(TopLoadingBarStateContext);
+
+  const searchForm = useForm<{ query: string }>();
+  const [searchQuery, setSearchQuery] = useState<string>();
+
+  const handleSearchFormSubmit = (data: { query: string }) => {
+    setSearchQuery(data.query);
+  };
 
   const payeeUpdateMutation = api.payee.updatePayee.useMutation({
     onSuccess: async () => {
@@ -176,7 +184,12 @@ const PayeeTableView = () => {
           onSubmit={editForm.handleSubmit(onEditFormSubmit)}
         ></form>
         <div className="flex flex-wrap items-center justify-between pb-4">
-          <SearchInput></SearchInput>
+          <SearchInput
+            placeholder={"Search payees"}
+            onEnter={searchForm.handleSubmit(handleSearchFormSubmit)}
+            control={searchForm.control}
+            name={"query"}
+          ></SearchInput>
           <div className={"mr-2"}>
             <BaseButton
               icon={mdiPlusThick}
